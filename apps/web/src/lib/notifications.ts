@@ -41,6 +41,7 @@ async function sendExpoNotifications(
 
     const messages = tokens
         .filter((t) => t.user_id !== excludeUserId)
+        .filter((t) => t.token.startsWith("ExponentPushToken["))
         .map((t) => ({
             to: t.token,
             sound: "default" as const,

@@ -2,10 +2,10 @@
 
 ## Git Workflow
 
-- **Branching model:** `feature/*` → `develop` → `main`
-- Before making code changes, check the current branch. If on `develop` or `main`, create a feature branch first: `git checkout -b feature/<short-description>` off `develop`. Ask the user for a branch name if the task isn't obvious.
-- If already on a `feature/*` branch, continue working there.
-- Do NOT push directly to `main` or `develop`. Changes reach those branches via PRs.
+- **Branching model:** `develop` → `main`
+- Work directly on the `develop` branch. Do NOT create feature branches.
+- If on `main`, switch to `develop` first: `git checkout develop`.
+- Do NOT push directly to `main`. Changes reach `main` via PRs from `develop`.
 
 ## Scope of Changes
 
@@ -24,6 +24,33 @@ Ambassador Portal is a web app built by Skyler A. Stevens for high school studen
 - **Icons:** Lucide React
 - **Deployment:** Vercel (implied)
 - **PWA:** Service worker + manifest for installable mobile experience
+
+## Running the iOS Simulator (Mobile App)
+
+The mobile app is an Expo SDK 55 dev client at `apps/mobile/`. To run it in the iOS simulator:
+
+1. **Build & install** (only needed once or after native dependency changes):
+   ```bash
+   cd apps/mobile && npx expo run:ios
+   ```
+2. **Start Metro dev server** (run this each time):
+   ```bash
+   cd apps/mobile && npm run dev
+   ```
+   The `dev` script includes `NODE_OPTIONS='--dns-result-order=ipv4first'` and `--localhost` flags. These are required because Metro defaults to IPv6 on this machine, but the iOS simulator connects via IPv4 (`127.0.0.1`). Without these flags, the dev client will show "No development servers found."
+
+3. If the app doesn't auto-connect, use this deep link (scheme is `ambo`):
+   ```bash
+   xcrun simctl openurl booted "ambo://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+   ```
+
+4. To force-quit and relaunch the app:
+   ```bash
+   xcrun simctl terminate booted com.amboportal.app
+   xcrun simctl launch booted com.amboportal.app
+   ```
+
+**Important:** Always run Metro from `apps/mobile/`, not the monorepo root.
 
 ## Commands
 
