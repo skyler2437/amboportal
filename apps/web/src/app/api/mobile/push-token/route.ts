@@ -62,6 +62,13 @@ export async function POST(req: NextRequest) {
         );
     }
 
+    if (!token.startsWith("ExponentPushToken[")) {
+        return NextResponse.json(
+            { error: "Invalid Expo push token format" },
+            { status: 400 }
+        );
+    }
+
     const supabase = createAdminClient();
 
     // Upsert into expo_push_tokens (unique on token)
