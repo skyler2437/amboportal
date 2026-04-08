@@ -69,32 +69,8 @@ export async function POST(req: Request) {
         .eq("event_id", event_id)
         .order("created_at", { ascending: true });
 
-    // ── Notify Admins ────────────────────────────────────
-    // Fetch event details for the notification
-    const { data: event } = await supabase
-        .from("events")
-        .select("title")
-        .eq("id", event_id)
-        .single();
-
-    if (event) {
-        const { sendNotificationToRole } = await import("@/lib/notifications");
-        // Get user name for the notification body
-        const { data: user } = await supabase
-            .from("users")
-            .select("first_name, last_name")
-            .eq("id", session.userId)
-            .single();
-
-        const userName = user ? `${user.first_name} ${user.last_name || ""}`.trim() : "Someone";
-
-        await sendNotificationToRole("admin", {
-            title: `New Event Comment: ${event.title}`,
-            body: `${userName}: ${content.substring(0, 50)}`,
-            url: `/admin/events/${event_id}`,
-            mobilePath: "/(admin)",
-        }, session.userId);
-    }
+    // Notifications are now handled by the Supabase Database Webhook
+    // dispatcher at /api/webhooks/notifications
 
     return NextResponse.json({ comments: data || [] });
 }

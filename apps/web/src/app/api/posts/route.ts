@@ -106,27 +106,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Request failed" }, { status: 400 });
     }
 
-    // ── Notify Users ─────────────────────────────────────
-
-    const { sendNotificationToRole } = await import("@/lib/notifications");
-
-    // 1. Always notify Admins (excluding the sender)
-    await sendNotificationToRole("admin", {
-        title: "New Post from " + data.users.first_name,
-        body: content.substring(0, 100),
-        url: "/admin/posts",
-        mobilePath: "/(admin)/posts",
-    }, session.userId);
-
-    // 2. If sender is Admin/Superadmin, ALSO notify Students
-    if (["admin", "superadmin"].includes(session.role)) {
-        await sendNotificationToRole("student", {
-            title: "New Announcement from " + data.users.first_name,
-            body: content.substring(0, 100),
-            url: "/student/posts",
-            mobilePath: "/(student)/posts",
-        }, session.userId);
-    }
+    // Notifications are now handled by the Supabase Database Webhook
+    // dispatcher at /api/webhooks/notifications
 
     return NextResponse.json({ post: data });
 }
