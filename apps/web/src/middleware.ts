@@ -17,6 +17,7 @@ const PUBLIC_PATHS = [
   "/api/applications", // Guest application flow (used by mobile app)
   "/oauth/", // OAuth endpoints handle their own auth
   "/api/mcp/", // MCP server uses Bearer token auth
+  "/api/webhooks/", // Supabase Database Webhooks (authenticated via x-webhook-secret header)
   "/.well-known/", // OAuth metadata discovery
   "/authorize", // Root-level OAuth authorize (Claude.ai compat)
   "/token", // Root-level OAuth token (Claude.ai compat)
