@@ -1,6 +1,5 @@
 import { createAdminClient } from "@ambo/database/admin-client";
 import { getSession } from "@/lib/session";
-import { sendNotificationToUser } from "@/lib/notifications";
 import { NextRequest, NextResponse } from "next/server";
 import { chatMessageSchema, checkContentLength } from "@/lib/validations";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
@@ -122,26 +121,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Failed to send message" }, { status: 500 });
         }
 
-        // 3. Send Notifications
-        const { data: participants, error: partError } = await supabase
-            .from("chat_participants")
-            .select("user_id")
-            .eq("group_id", groupId);
-
-        if (!partError && participants) {
-            const recipients = participants.filter((p) => p.user_id !== session.userId);
-
-            const notificationPromises = recipients.map((recipient) =>
-                sendNotificationToUser(recipient.user_id, {
-                    title: "New Message",
-                    body: content.length > 50 ? `${content.substring(0, 50)}...` : content,
-                    url: `/student/chat`,
-                    mobilePath: "/(student)/chat",
-                })
-            );
-
-            await Promise.allSettled(notificationPromises);
-        }
+        // Notifications are now handled by the Supabase Database Webhook
+        // dispatcher at /api/webhooks/notifications
 
         return NextResponse.json({ message });
     } catch (error) {

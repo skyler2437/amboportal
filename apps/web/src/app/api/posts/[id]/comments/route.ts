@@ -75,33 +75,8 @@ export async function POST(
         return NextResponse.json({ error: "Request failed" }, { status: 400 });
     }
 
-    // ── Notify Post Author ───────────────────────────────
-    // Get the post author
-    const { data: post, error: postError } = await supabase
-        .from("posts")
-        .select("user_id, title")
-        .eq("id", params.id)
-        .single();
-
-    if (!postError && post && post.user_id !== session.userId) {
-        const { sendNotificationToUser } = await import("@/lib/notifications");
-        await sendNotificationToUser(post.user_id, {
-            title: "New Comment on: " + post.title,
-            body: data.users.first_name + ": " + content.substring(0, 50),
-            url: "/student/posts",
-            mobilePath: "/(student)/posts",
-        });
-    }
-
-    // ── Notify Admins ────────────────────────────────────
-    // Notify all admins about the new activity (unless they are the commenter)
-    const { sendNotificationToRole } = await import("@/lib/notifications");
-    await sendNotificationToRole("admin", {
-        title: "New Comment by " + data.users.first_name,
-        body: `On "${post?.title || "Post"}": ${content.substring(0, 50)}`,
-        url: "/admin/posts",
-        mobilePath: "/(admin)/posts",
-    }, session.userId);
+    // Notifications are now handled by the Supabase Database Webhook
+    // dispatcher at /api/webhooks/notifications
 
     return NextResponse.json({ comment: data });
 }
