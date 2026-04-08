@@ -14,9 +14,9 @@ const DEDUP_TTL_MS = 60_000; // 60 seconds
 function isDuplicate(key: string): boolean {
     const now = Date.now();
     // Clean up expired entries
-    for (const [k, ts] of recentlyProcessed) {
+    recentlyProcessed.forEach((ts, k) => {
         if (now - ts > DEDUP_TTL_MS) recentlyProcessed.delete(k);
-    }
+    });
     if (recentlyProcessed.has(key)) return true;
     recentlyProcessed.set(key, now);
     return false;
