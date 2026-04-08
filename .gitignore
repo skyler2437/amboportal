@@ -49,3 +49,4 @@ supabase/.temp/
 *.key
 *.mobileprovision
 *.orig.*
+.vercel
