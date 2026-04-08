@@ -4,6 +4,8 @@ import { setSessionCookie } from "@/lib/session";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const rateKey = getRateLimitKey(req, "register");
