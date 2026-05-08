@@ -100,10 +100,22 @@ async function deleteTokenFromServer(token: string): Promise<boolean> {
 }
 
 export function PushNotificationsProvider({ children }: { children: React.ReactNode }) {
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const currentTokenRef = useRef<string | null>(null);
   const registeredRef = useRef(false);
+  // Holds a notification-driven route that arrived before auth resolved.
+  // Applied (or discarded) by the effect below once we know the session.
+  const pendingRouteRef = useRef<string | null>(null);
+  // Mirror auth state into refs so handleNotificationResponse can stay
+  // referentially stable — otherwise its dep change re-fires the cold-start
+  // listener effect and we'd handle the launch tap twice.
+  const sessionRef = useRef(session);
+  const authLoadingRef = useRef(authLoading);
+  useEffect(() => {
+    sessionRef.current = session;
+    authLoadingRef.current = authLoading;
+  }, [session, authLoading]);
 
   // Set foreground notification handler
   useEffect(() => {
@@ -131,7 +143,23 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
     return () => subscription.remove();
   }, []);
 
-  // Handle notification taps
+  const applyRoute = useCallback(
+    (route: string) => {
+      try {
+        router.push(route as any);
+      } catch {
+        // Navigator not mounted yet — keep the route pending so the auth
+        // effect re-applies it on the next render.
+        pendingRouteRef.current = route;
+      }
+    },
+    [router]
+  );
+
+  // Handle notification taps. We never push to a protected route until auth
+  // has resolved with a valid session — otherwise the destination screen can
+  // mount with no session, fire a stale-JWT query, and surface the inline
+  // "Try Again" error state with no path to recover.
   const handleNotificationResponse = useCallback(
     (response: Notifications.NotificationResponse) => {
       const data = response.notification.request.content.data as
@@ -146,16 +174,28 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
         route = mapWebUrlToMobileRoute(data.url);
       }
 
-      if (route) {
-        try {
-          router.push(route as any);
-        } catch {
-          // Navigation may not be ready yet
-        }
+      if (!route) return;
+
+      if (!authLoadingRef.current && sessionRef.current) {
+        applyRoute(route);
+      } else {
+        // Defer until auth resolves; the effect below picks it up.
+        pendingRouteRef.current = route;
       }
     },
-    [router]
+    [applyRoute]
   );
+
+  // Apply (or discard) a deferred notification route once auth resolves.
+  // If the user has no session, RootNavigator will route them to login —
+  // we drop the pending route rather than fight that redirect.
+  useEffect(() => {
+    if (authLoading) return;
+    const pending = pendingRouteRef.current;
+    if (!pending) return;
+    pendingRouteRef.current = null;
+    if (session) applyRoute(pending);
+  }, [authLoading, session, applyRoute]);
 
   // Register response listener + process cold-launch tap
   useEffect(() => {
