@@ -1,6 +1,7 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Button, Icon } from 'react-native-paper';
+import { supabase } from '@/lib/supabase';
 
 interface Props {
   children: ReactNode;
@@ -10,13 +11,14 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  signingOut: boolean;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false, error: null };
+  state: State = { hasError: false, error: null, signingOut: false };
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error, signingOut: false };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
@@ -26,7 +28,20 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null, signingOut: false });
+  };
+
+  // Escape hatch when the same render keeps throwing — e.g. a stale session
+  // is causing a child to crash on mount. Signing out clears AuthProvider
+  // state so RootNavigator routes to login on the next render.
+  private handleSignOut = async () => {
+    this.setState({ signingOut: true });
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // ignore — onAuthStateChange will reconcile on next event
+    }
+    this.setState({ hasError: false, error: null, signingOut: false });
   };
 
   render() {
@@ -55,8 +70,19 @@ export class ErrorBoundary extends Component<Props, State> {
               icon="refresh"
               onPress={this.handleReset}
               style={styles.button}
+              disabled={this.state.signingOut}
             >
               Try Again
+            </Button>
+            <Button
+              mode="text"
+              icon="logout"
+              onPress={this.handleSignOut}
+              style={styles.secondaryButton}
+              loading={this.state.signingOut}
+              disabled={this.state.signingOut}
+            >
+              Sign out and restart
             </Button>
           </ScrollView>
         </View>
@@ -101,6 +127,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 8,
+    borderRadius: 12,
+  },
+  secondaryButton: {
+    marginTop: 4,
     borderRadius: 12,
   },
 });
