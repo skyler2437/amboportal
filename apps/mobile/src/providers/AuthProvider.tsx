@@ -5,8 +5,14 @@ import { supabase } from '@/lib/supabase';
 import type { UserRole } from '@ambo/database/types';
 import type { Session } from '@supabase/supabase-js';
 
-// Max time to wait for initial auth check before unblocking the UI
-const AUTH_TIMEOUT_MS = 4000;
+// Max time to wait for initial auth check before unblocking the UI as a
+// safety net against a hung getSession(). 4s was too aggressive — on slow
+// networks getSession() can legitimately take 5–8s on cold start, and
+// timing out early flips state to {session: null, isLoading: false} which
+// causes RootNavigator to redirect to login (and a notification-deferred
+// route to be discarded). 10s gives genuine slow networks room to resolve
+// while still bailing on a true hang.
+const AUTH_TIMEOUT_MS = 10000;
 // Max time to wait for a sign-in attempt before aborting
 const SIGN_IN_TIMEOUT_MS = 20000;
 

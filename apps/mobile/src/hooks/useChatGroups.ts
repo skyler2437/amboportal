@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { handleAuthError } from '@/lib/authError';
 import { useChatReadStore } from '@/stores/chatReadStore';
 
 function generateUUID(): string {
@@ -51,6 +52,12 @@ export function useChatGroups(userId: string) {
       .eq('user_id', userId);
 
     if (pErr) {
+      // Auth-shaped error: sign out so the user lands on login instead of the
+      // inline "Try Again" state that can't recover from a stale JWT.
+      if (handleAuthError(pErr)) {
+        setLoading(false);
+        return;
+      }
       // Column might not exist yet (migration not applied) - fall back to basic query
       const { data: fallbackData, error: fallbackErr } = await supabase
         .from('chat_participants')
@@ -58,6 +65,10 @@ export function useChatGroups(userId: string) {
         .eq('user_id', userId);
 
       if (fallbackErr) {
+        if (handleAuthError(fallbackErr)) {
+          setLoading(false);
+          return;
+        }
         setError(fallbackErr.message);
         setLoading(false);
         return;
@@ -94,6 +105,10 @@ export function useChatGroups(userId: string) {
       .order('updated_at', { ascending: false });
 
     if (gErr) {
+      if (handleAuthError(gErr)) {
+        setLoading(false);
+        return;
+      }
       setError(gErr.message);
       setLoading(false);
       return;
