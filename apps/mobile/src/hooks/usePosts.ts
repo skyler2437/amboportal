@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { handleAuthError } from '@/lib/authError';
 import type { UserRole } from '@ambo/database';
 
 const PAGE_SIZE = 20;
@@ -37,7 +38,11 @@ export function usePosts() {
       .range(0, PAGE_SIZE - 1);
 
     if (err) {
-      setError(err.message);
+      // Auth-shaped error: sign out so the user lands on login instead of the
+      // inline "Try Again" state that can't recover from a stale JWT.
+      if (!handleAuthError(err)) {
+        setError(err.message);
+      }
     } else {
       const filtered = ((data || []) as Post[]).filter((p) => p.users != null);
       setPosts(filtered);
