@@ -5,6 +5,7 @@ import { PushNotificationManager } from "@/components/PushNotificationManager";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
 import { GoogleCalendarConnect } from "@/components/GoogleCalendarConnect";
 import { AvatarUpload } from "@/components/AvatarUpload";
+import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 import { SignOutButton } from "@/components/SignOutButton";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 
@@ -35,6 +36,8 @@ export default async function StudentProfilePage() {
                 <NotificationPreferences />
 
                 <GoogleCalendarConnect />
+
+                <ChangePasswordForm />
 
                 <div className="pt-6 border-t space-y-4">
                     <h2 className="text-lg font-semibold mb-4">Account Actions</h2>

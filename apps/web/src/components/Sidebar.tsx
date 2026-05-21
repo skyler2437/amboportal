@@ -7,6 +7,7 @@ import { LucideIcon, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState, useEffect } from "react";
+import { CheddarRain } from "@/components/CheddarRain";
 
 export interface SidebarItem {
     href?: string;
@@ -25,6 +26,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 export function Sidebar({ className, items, header, footer, ...props }: SidebarProps) {
     const pathname = usePathname();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [rainActive, setRainActive] = useState(false);
 
     return (
         <div
@@ -36,6 +38,7 @@ export function Sidebar({ className, items, header, footer, ...props }: SidebarP
             )}
             {...props}
         >
+            <CheddarRain isActive={rainActive} onComplete={() => setRainActive(false)} />
             {/* Toggle Button */}
             <div className="absolute -right-3 top-6 z-20">
                 <Button
@@ -54,14 +57,17 @@ export function Sidebar({ className, items, header, footer, ...props }: SidebarP
                     {/* Header / Logo */}
                     <div className={cn("flex items-center mb-6 px-2", isCollapsed ? "justify-center" : "")}>
                         {header ? header : (
-                            isCollapsed ? (
-                                <span className="font-bold text-xl">A</span>
-                            ) : (
-                                <div className="flex items-center gap-2">
-                                    {/* <div className="w-6 h-6 bg-primary rounded-full" /> Placeholder logo */}
-                                    <span className="font-bold text-xl">Ambo</span>
-                                </div>
-                            )
+                            <button
+                                type="button"
+                                onClick={() => setRainActive(true)}
+                                aria-label="Trigger cheddar rain"
+                                className={cn(
+                                    "leading-none transition-transform hover:scale-110 active:scale-95",
+                                    isCollapsed ? "text-2xl" : "text-3xl"
+                                )}
+                            >
+                                <span role="img" aria-hidden>🧀</span>
+                            </button>
                         )}
                     </div>
 
