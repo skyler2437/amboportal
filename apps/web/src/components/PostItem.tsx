@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MotionButton } from "@/components/ui/motion-button";
@@ -8,11 +8,30 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { MessageSquare, Send, Loader2, Pencil, Trash2, X, Check } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
+    MessageSquare,
+    Send,
+    Loader2,
+    Pencil,
+    Trash2,
+    X,
+    Check,
+    Heart,
+    Eye,
+    Download,
+    FileText,
+} from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FormattedText } from "@/components/FormattedText";
+import { cn } from "@/lib/utils";
 
 type Comment = {
     id: string;
@@ -27,6 +46,14 @@ type Comment = {
     };
 };
 
+type Attachment = {
+    id: string;
+    file_url: string;
+    file_name: string;
+    file_type: string;
+    file_size: number;
+};
+
 type Post = {
     id: string;
     content: string;
@@ -39,34 +66,74 @@ type Post = {
         avatar_url?: string;
     };
     comments: { count: number }[];
+    like_count?: number;
+    view_count?: number;
+    has_liked?: boolean;
+    attachments?: Attachment[];
 };
+
+type LikeRow = {
+    user_id: string;
+    created_at: string;
+    users: {
+        id: string;
+        first_name: string;
+        last_name: string;
+        avatar_url?: string;
+    };
+};
+
+type ViewRow = {
+    user_id: string;
+    viewed_at: string;
+    users: {
+        id: string;
+        first_name: string;
+        last_name: string;
+        avatar_url?: string;
+    };
+};
+
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+
+function isImage(att: Attachment) {
+    return IMAGE_TYPES.includes(att.file_type) ||
+        /\.(jpe?g|png|gif|webp)$/i.test(att.file_name);
+}
 
 export function PostItem({ post, currentUserId, currentUserRole }: { post: Post; currentUserId: string; currentUserRole: string }) {
     const [comments, setComments] = useState<Comment[]>([]);
     const [showComments, setShowComments] = useState(false);
     const [loadingComments, setLoadingComments] = useState(false);
 
-    // Post UI
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
     const [isDeleted, setIsDeleted] = useState(false);
 
-    // Comment UI
     const [newComment, setNewComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [commentCount, setCommentCount] = useState(post.comments?.[0]?.count || 0);
     const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
     const [editCommentContent, setEditCommentContent] = useState("");
 
-    // Permission Logic
+    // Likes
+    const [likeCount, setLikeCount] = useState(post.like_count ?? 0);
+    const [hasLiked, setHasLiked] = useState(post.has_liked ?? false);
+    const [likeBusy, setLikeBusy] = useState(false);
+    const [likesDialogOpen, setLikesDialogOpen] = useState(false);
+    const [likesList, setLikesList] = useState<LikeRow[] | null>(null);
+
+    // Views
+    const [viewCount] = useState(post.view_count ?? 0);
+    const [viewsDialogOpen, setViewsDialogOpen] = useState(false);
+    const [viewsList, setViewsList] = useState<ViewRow[] | null>(null);
+
     const isMyPost = currentUserId === post.user_id;
     const isSuperAdmin = currentUserRole === "superadmin";
     const isAdmin = currentUserRole === "admin";
-    const postOwnerRole = post.users.role || "student"; // Default to student if missing
-
+    const postOwnerRole = post.users.role || "student";
     const canEditPost = isMyPost || isSuperAdmin || (isAdmin && postOwnerRole === "student");
 
-    // Comment Permission Logic Helper
     const canEditComment = (comment: Comment) => {
         const isMyComment = currentUserId === comment.user_id;
         const commentOwnerRole = comment.users.role || "student";
@@ -174,9 +241,68 @@ export function PostItem({ post, currentUserId, currentUserRole }: { post: Post;
         }
     };
 
+    const toggleLike = async () => {
+        if (likeBusy) return;
+        setLikeBusy(true);
+
+        // Optimistic update
+        const prevLiked = hasLiked;
+        const prevCount = likeCount;
+        setHasLiked(!prevLiked);
+        setLikeCount(prevCount + (prevLiked ? -1 : 1));
+
+        try {
+            const res = await fetch(`/api/posts/${post.id}/like`, { method: "POST" });
+            if (!res.ok) throw new Error("failed");
+            const data = await res.json();
+            setHasLiked(!!data.liked);
+            setLikeCount(data.like_count ?? 0);
+        } catch {
+            // Rollback
+            setHasLiked(prevLiked);
+            setLikeCount(prevCount);
+            toast.error("Failed to update like");
+        }
+        setLikeBusy(false);
+    };
+
+    const openLikesDialog = async () => {
+        setLikesDialogOpen(true);
+        if (likesList === null) {
+            try {
+                const res = await fetch(`/api/posts/${post.id}/likes`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setLikesList(data.likes || []);
+                }
+            } catch (e) {
+                console.error("Failed to load likes", e);
+            }
+        }
+    };
+
+    const openViewsDialog = async () => {
+        setViewsDialogOpen(true);
+        if (viewsList === null) {
+            try {
+                const res = await fetch(`/api/posts/${post.id}/views`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setViewsList(data.views || []);
+                }
+            } catch (e) {
+                console.error("Failed to load views", e);
+            }
+        }
+    };
+
     const getInitials = (firstName?: string, lastName?: string) => {
         return `${(firstName || "?")[0]}${(lastName || "")[0] || ""}`.toUpperCase();
     };
+
+    const attachments = post.attachments || [];
+    const imageAttachments = attachments.filter(isImage);
+    const fileAttachments = attachments.filter((a) => !isImage(a));
 
     return (
         <motion.div
@@ -240,22 +366,95 @@ export function PostItem({ post, currentUserId, currentUserRole }: { post: Post;
                                     <FormattedText text={post.content} />
                                 </p>
                             )}
+
+                            {imageAttachments.length > 0 && (
+                                <div className={cn(
+                                    "mt-3 grid gap-2",
+                                    imageAttachments.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                                )}>
+                                    {imageAttachments.map((att) => (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <a key={att.id} href={att.file_url} target="_blank" rel="noopener noreferrer" className="block">
+                                            <img
+                                                src={att.file_url}
+                                                alt={att.file_name}
+                                                className="rounded-lg w-full max-h-80 object-cover border"
+                                                loading="lazy"
+                                            />
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+
+                            {fileAttachments.length > 0 && (
+                                <div className="mt-3 flex flex-col gap-2">
+                                    {fileAttachments.map((att) => (
+                                        <a
+                                            key={att.id}
+                                            href={att.file_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            download={att.file_name}
+                                            className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 hover:bg-muted/70 transition-colors text-sm"
+                                        >
+                                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                                            <span className="flex-1 truncate" title={att.file_name}>{att.file_name}</span>
+                                            <Download className="h-4 w-4 text-muted-foreground shrink-0" />
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </CardContent>
 
                 <Separator />
 
-                <CardFooter className="p-2 justify-start">
+                <CardFooter className="p-2 justify-start gap-1 flex-wrap">
+                    <MotionButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={toggleLike}
+                        disabled={likeBusy}
+                        aria-pressed={hasLiked}
+                        aria-label={hasLiked ? "Unlike post" : "Like post"}
+                        className={cn(
+                            "hover:text-foreground",
+                            hasLiked ? "text-red-500" : "text-muted-foreground"
+                        )}
+                    >
+                        <Heart className={cn("w-4 h-4 mr-2", hasLiked && "fill-current")} />
+                        {likeCount > 0 ? (
+                            <span
+                                onClick={(e) => { e.stopPropagation(); openLikesDialog(); }}
+                                className="hover:underline cursor-pointer"
+                            >
+                                {likeCount}
+                            </span>
+                        ) : (
+                            "Like"
+                        )}
+                    </MotionButton>
+
                     <MotionButton
                         variant="ghost"
                         size="sm"
                         onClick={toggleComments}
-                        className="text-muted-foreground hover:text-foreground w-full sm:w-auto justify-start"
+                        className="text-muted-foreground hover:text-foreground"
                     >
                         <MessageSquare className="w-4 h-4 mr-2" />
-                        {commentCount > 0 ? `${commentCount} Comments` : "Comment"}
+                        {commentCount > 0 ? commentCount : "Comment"}
                     </MotionButton>
+
+                    <button
+                        type="button"
+                        onClick={openViewsDialog}
+                        className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
+                        aria-label="See who viewed this post"
+                    >
+                        <Eye className="w-4 h-4" />
+                        <span>{viewCount}</span>
+                    </button>
                 </CardFooter>
 
                 <AnimatePresence>
@@ -373,6 +572,69 @@ export function PostItem({ post, currentUserId, currentUserRole }: { post: Post;
                     )}
                 </AnimatePresence>
             </Card>
+
+            <Dialog open={likesDialogOpen} onOpenChange={setLikesDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Liked by {likeCount}</DialogTitle>
+                    </DialogHeader>
+                    <div className="max-h-96 overflow-y-auto space-y-2">
+                        {likesList === null ? (
+                            <div className="text-center py-6">
+                                <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+                            </div>
+                        ) : likesList.length === 0 ? (
+                            <p className="text-sm text-muted-foreground py-4 text-center">No likes yet.</p>
+                        ) : (
+                            likesList.map((row) => (
+                                <div key={row.user_id} className="flex items-center gap-3 py-1">
+                                    <Avatar className="h-8 w-8">
+                                        {row.users?.avatar_url && <AvatarImage src={row.users.avatar_url} alt="" className="object-cover" />}
+                                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                            {getInitials(row.users?.first_name, row.users?.last_name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm">
+                                        {row.users?.first_name} {row.users?.last_name}
+                                    </span>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={viewsDialogOpen} onOpenChange={setViewsDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Seen by {viewCount}</DialogTitle>
+                    </DialogHeader>
+                    <div className="max-h-96 overflow-y-auto space-y-2">
+                        {viewsList === null ? (
+                            <div className="text-center py-6">
+                                <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+                            </div>
+                        ) : viewsList.length === 0 ? (
+                            <p className="text-sm text-muted-foreground py-4 text-center">No views yet.</p>
+                        ) : (
+                            viewsList.map((row) => (
+                                <div key={row.user_id} className="flex items-center gap-3 py-1">
+                                    <Avatar className="h-8 w-8">
+                                        {row.users?.avatar_url && <AvatarImage src={row.users.avatar_url} alt="" className="object-cover" />}
+                                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                                            {getInitials(row.users?.first_name, row.users?.last_name)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm">
+                                        {row.users?.first_name} {row.users?.last_name}
+                                    </span>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <ConfirmDialog
                 open={showDeleteConfirm}
                 onOpenChange={setShowDeleteConfirm}

@@ -2,6 +2,7 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@ambo/database/admin-client";
 import { AvatarUpload } from "@/components/AvatarUpload";
+import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 import { GoogleCalendarSetup } from "@/components/GoogleCalendarSetup";
 import { PushNotificationManager } from "@/components/PushNotificationManager";
 import { NotificationPreferences } from "@/components/NotificationPreferences";
@@ -35,6 +36,8 @@ export default async function AdminProfilePage() {
                 <PushNotificationManager />
 
                 <NotificationPreferences />
+
+                <ChangePasswordForm />
 
                 <div className="pt-6 border-t space-y-4">
                     <h2 className="text-lg font-semibold mb-4">Account Actions</h2>

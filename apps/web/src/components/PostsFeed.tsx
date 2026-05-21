@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { PostItem } from "./PostItem";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MessageSquarePlus, Plus, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
+
+type Attachment = {
+    id: string;
+    file_url: string;
+    file_name: string;
+    file_type: string;
+    file_size: number;
+};
 
 type Post = {
     id: string;
@@ -18,6 +26,10 @@ type Post = {
         avatar_url?: string;
     };
     comments: { count: number }[];
+    like_count?: number;
+    view_count?: number;
+    has_liked?: boolean;
+    attachments?: Attachment[];
 };
 
 type PaginationMeta = {
@@ -33,6 +45,13 @@ export function PostsFeed({ currentUserId, currentUserRole, basePath }: { curren
     const [loadingMore, setLoadingMore] = useState(false);
     const [fetchError, setFetchError] = useState(false);
     const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+
+    // Track which posts have been marked as viewed in this session
+    const viewedRef = useRef<Set<string>>(new Set());
+    // Track timers per post for the 1s viewport dwell requirement
+    const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const postRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
     const fetchPosts = useCallback(async (page = 1, append = false) => {
         setFetchError(false);
@@ -60,6 +79,61 @@ export function PostsFeed({ currentUserId, currentUserRole, basePath }: { curren
     useEffect(() => {
         fetchPosts();
     }, [fetchPosts]);
+
+    // Set up the IntersectionObserver once
+    useEffect(() => {
+        if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    const postId = entry.target.getAttribute("data-post-id");
+                    if (!postId) return;
+
+                    if (entry.isIntersecting) {
+                        if (viewedRef.current.has(postId)) return;
+                        if (timersRef.current.has(postId)) return;
+                        const timer = setTimeout(() => {
+                            viewedRef.current.add(postId);
+                            timersRef.current.delete(postId);
+                            fetch(`/api/posts/${postId}/view`, { method: "POST" }).catch(() => {});
+                        }, 1000);
+                        timersRef.current.set(postId, timer);
+                    } else {
+                        const timer = timersRef.current.get(postId);
+                        if (timer) {
+                            clearTimeout(timer);
+                            timersRef.current.delete(postId);
+                        }
+                    }
+                });
+            },
+            { threshold: 0.5 }
+        );
+
+        observerRef.current = observer;
+        // Observe any already-mounted post wrappers
+        postRefs.current.forEach((el) => observer.observe(el));
+
+        return () => {
+            observer.disconnect();
+            observerRef.current = null;
+            timersRef.current.forEach((t) => clearTimeout(t));
+            timersRef.current.clear();
+        };
+    }, []);
+
+    const setPostRef = useCallback((id: string) => (el: HTMLDivElement | null) => {
+        const observer = observerRef.current;
+        const prev = postRefs.current.get(id);
+        if (prev && prev !== el && observer) observer.unobserve(prev);
+        if (el) {
+            postRefs.current.set(id, el);
+            observer?.observe(el);
+        } else {
+            postRefs.current.delete(id);
+        }
+    }, []);
 
     const hasMore = pagination ? pagination.page < pagination.totalPages : false;
 
@@ -98,7 +172,9 @@ export function PostsFeed({ currentUserId, currentUserRole, basePath }: { curren
                 ) : posts.length > 0 ? (
                     <>
                         {posts.map((post) => (
-                            <PostItem key={post.id} post={post} currentUserId={currentUserId} currentUserRole={currentUserRole} />
+                            <div key={post.id} data-post-id={post.id} ref={setPostRef(post.id)}>
+                                <PostItem post={post} currentUserId={currentUserId} currentUserRole={currentUserRole} />
+                            </div>
                         ))}
                         {hasMore && (
                             <div className="text-center py-4">

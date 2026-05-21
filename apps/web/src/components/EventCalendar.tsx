@@ -5,9 +5,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Clock, MapPin, RefreshCw, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, MapPin, RefreshCw, AlertTriangle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import type { EventDetails } from "@ambo/database/types";
+import { tintForStatus } from "@/lib/eventColors";
+import { cn } from "@/lib/utils";
+
+type EventDetailsWithMyRsvp = EventDetails & {
+    my_rsvp_status?: string | null;
+    my_rsvp_option_id?: string | null;
+};
+
+const RSVP_LABEL: Record<string, string> = {
+    going: "Going",
+    maybe: "Maybe",
+    no: "Can't go",
+};
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -31,7 +44,7 @@ export function EventCalendar({
     onEventClick: (e: EventDetails) => void;
     onRefreshRef?: (fn: () => void) => void;
 }) {
-    const [events, setEvents] = useState<EventDetails[]>([]);
+    const [events, setEvents] = useState<EventDetailsWithMyRsvp[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const upcomingRef = useRef<HTMLDivElement>(null);
@@ -84,7 +97,7 @@ export function EventCalendar({
             acc[date].push(ev);
             return acc;
         },
-        {} as Record<string, EventDetails[]>
+        {} as Record<string, EventDetailsWithMyRsvp[]>
     );
 
     // Determine the next upcoming date group for auto-scroll
@@ -162,15 +175,31 @@ export function EventCalendar({
                         </h3>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {evts.map((ev) => (
-                            <motion.div
-                                key={ev.id}
-                            >
+                        {evts.map((ev) => {
+                            const tint = tintForStatus(ev.my_rsvp_status);
+                            const hasTint = !!ev.my_rsvp_status;
+                            const RsvpIcon = ev.my_rsvp_status === "going"
+                                ? CheckCircle2
+                                : ev.my_rsvp_status === "maybe"
+                                ? HelpCircle
+                                : ev.my_rsvp_status === "no"
+                                ? XCircle
+                                : null;
+                            return (
+                            <motion.div key={ev.id}>
                                 <Card
                                     onClick={() => onEventClick(ev)}
-                                    className="cursor-pointer transition-all duration-200 h-full"
+                                    className="cursor-pointer transition-all duration-200 h-full overflow-hidden relative"
+                                    style={hasTint ? { backgroundColor: tint.bg, borderColor: tint.border } : undefined}
                                 >
-                                    <CardContent className="p-4 space-y-3">
+                                    {hasTint && (
+                                        <div
+                                            aria-hidden
+                                            className="absolute left-0 top-0 bottom-0 w-1"
+                                            style={{ backgroundColor: tint.accent }}
+                                        />
+                                    )}
+                                    <CardContent className={cn("p-4 space-y-3", hasTint && "pl-5")}>
                                         <div className="flex justify-between items-start gap-2">
                                             <h4 className="font-semibold line-clamp-1" title={ev.title}>{ev.title}</h4>
                                         </div>
@@ -190,14 +219,21 @@ export function EventCalendar({
                                                 </span>
                                             </div>
                                         </div>
-                                        <p className="line-clamp-2 text-sm text-muted-foreground mt-2 h-10">
-                                            {ev.description || "\u00A0"}
-                                        </p>
-
+                                        {hasTint && ev.my_rsvp_status ? (
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: tint.accent }}>
+                                                {RsvpIcon && <RsvpIcon className="h-3.5 w-3.5" />}
+                                                <span>{RSVP_LABEL[ev.my_rsvp_status] || ev.my_rsvp_status}</span>
+                                            </div>
+                                        ) : (
+                                            <p className="line-clamp-2 text-sm text-muted-foreground mt-2 h-10">
+                                                {ev.description || "\u00A0"}
+                                            </p>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </motion.div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </motion.div >
             ))

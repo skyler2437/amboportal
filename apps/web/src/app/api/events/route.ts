@@ -19,7 +19,27 @@ export async function GET() {
     if (error) {
         return NextResponse.json({ error: "Request failed" }, { status: 400 });
     }
-    return NextResponse.json({ events: data || [] });
+
+    const { data: myRsvps } = await supabase
+        .from("event_rsvps")
+        .select("event_id, status, rsvp_option_id")
+        .eq("user_id", session.userId);
+
+    const rsvpMap = new Map<string, { status: string; rsvp_option_id: string | null }>();
+    (myRsvps || []).forEach((r) => {
+        rsvpMap.set(r.event_id, { status: r.status, rsvp_option_id: r.rsvp_option_id });
+    });
+
+    const events = (data || []).map((ev) => {
+        const mine = rsvpMap.get(ev.id);
+        return {
+            ...ev,
+            my_rsvp_status: mine?.status ?? null,
+            my_rsvp_option_id: mine?.rsvp_option_id ?? null,
+        };
+    });
+
+    return NextResponse.json({ events });
 }
 
 export async function POST(req: Request) {

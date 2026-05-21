@@ -33,10 +33,17 @@ export async function GET(req: NextRequest) {
         .eq("event_id", eventId)
         .order("sort_order", { ascending: true });
 
+    const { data: attachments } = await supabase
+        .from("event_attachments")
+        .select("id, file_url, file_name, file_type, file_size, created_at")
+        .eq("event_id", eventId)
+        .order("created_at", { ascending: true });
+
     return NextResponse.json({
         comments: comments || [],
         rsvps: rsvps || [],
         rsvp_options: rsvpOptions || [],
+        attachments: attachments || [],
     });
 }
 
