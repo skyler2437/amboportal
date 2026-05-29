@@ -413,7 +413,7 @@ export function EventModal({
                 </div>
             </div>
 
-            <ScrollArea className="flex-1 p-6">
+            <ScrollArea className="flex-1 min-h-0 p-6">
                 <div className="space-y-6 pb-20">
                     {isEditing ? (
                         <Textarea
@@ -806,7 +806,7 @@ export function EventModal({
         return (
             <>
                 <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-                    <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden [&>button]:hidden">
+                    <DialogContent className="sm:max-w-2xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden [&>button]:hidden">
                         {Content}
                     </DialogContent>
                 </Dialog>
