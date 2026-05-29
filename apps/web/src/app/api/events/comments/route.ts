@@ -59,25 +59,26 @@ export async function POST(req: Request) {
     }
 
     const supabase = createAdminClient();
-    const { error } = await supabase.from("event_comments").insert({
-        event_id,
-        user_id: session.userId,
-        content: sanitizeText(content),
-    });
-
-    if (error) {
-        return NextResponse.json({ error: "Request failed" }, { status: 400 });
-    }
-
-    // Return updated comments
-    const { data } = await supabase
+    const { data: inserted, error: insertError } = await supabase
         .from("event_comments")
+        .insert({
+            event_id,
+            user_id: session.userId,
+            content: sanitizeText(content),
+        })
         .select("*, users(first_name, last_name, role, avatar_url)")
-        .eq("event_id", event_id)
-        .order("created_at", { ascending: true });
+        .single();
+
+    if (insertError || !inserted) {
+        console.error("event_comments insert failed", insertError);
+        return NextResponse.json(
+            { error: insertError?.message || "Failed to post comment" },
+            { status: 400 }
+        );
+    }
 
     // Notifications are now handled by the Supabase Database Webhook
     // dispatcher at /api/webhooks/notifications
 
-    return NextResponse.json({ comments: data || [] });
+    return NextResponse.json({ comment: inserted });
 }

@@ -185,10 +185,15 @@ export function EventModal({
 
             if (res.ok) {
                 const data = await res.json();
-                setComments(data.comments || []);
+                if (data.comment) {
+                    setComments((prev) => [...prev, data.comment]);
+                } else if (Array.isArray(data.comments)) {
+                    setComments(data.comments);
+                }
                 setNewComment("");
             } else {
-                toast.error("Failed to post comment");
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || "Failed to post comment");
             }
         } catch (e) {
             console.error("Failed to post comment", e);
