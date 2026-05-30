@@ -1,6 +1,7 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Button, Icon } from 'react-native-paper';
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 
 interface Props {
@@ -22,6 +23,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    // Forward to Sentry so render-time / lifecycle errors are visible in dashboards.
+    // The componentStack context lets Sentry render the React tree where the throw happened.
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info.componentStack ?? '' } },
+    });
     if (__DEV__) {
       console.error('[ErrorBoundary] Uncaught error:', error, info.componentStack);
     }
