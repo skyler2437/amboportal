@@ -11,7 +11,7 @@ import { ErrorState } from '@/components/ErrorState';
 
 export default function AdminPostsFeed() {
   const router = useRouter();
-  const { posts, loading, error, hasMore, refetch, fetchMore } = usePosts();
+  const { posts, loading, error, hasMore, refetch, fetchMore, toggleLike } = usePosts();
   const [refreshing, setRefreshing] = useState(false);
   const initialLoadDone = useRef(false);
 
@@ -47,6 +47,10 @@ export default function AdminPostsFeed() {
             createdAt={item.created_at}
             author={item.users}
             commentCount={item.comments?.[0]?.count || 0}
+            likeCount={item.like_count}
+            viewCount={item.view_count}
+            liked={item.liked}
+            onToggleLike={() => { toggleLike(item.id).catch(() => {}); }}
             onPress={() => router.push(`/(admin)/posts/${item.id}`)}
           />
         )}

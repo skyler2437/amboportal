@@ -14,6 +14,10 @@ interface PostCardProps {
     role: UserRole;
   };
   commentCount: number;
+  likeCount: number;
+  viewCount: number;
+  liked: boolean;
+  onToggleLike: () => void;
   onPress: () => void;
 }
 
@@ -31,7 +35,7 @@ function formatTimeAgo(dateStr: string): string {
   return date.toLocaleDateString();
 }
 
-export function PostCard({ content, createdAt, author, commentCount, onPress }: PostCardProps) {
+export function PostCard({ content, createdAt, author, commentCount, likeCount, viewCount, liked, onToggleLike, onPress }: PostCardProps) {
   const initials = `${author.first_name?.[0] || ''}${author.last_name?.[0] || ''}`;
 
   return (
@@ -55,22 +59,36 @@ export function PostCard({ content, createdAt, author, commentCount, onPress }: 
         {content}
       </Text>
       <View style={styles.footer}>
-        <Text variant="bodySmall" style={styles.commentCount}>
-          {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
-        </Text>
-        <IconButton
-          icon="share-variant-outline"
-          size={18}
-          iconColor="#9ca3af"
-          accessibilityLabel="Share post"
-          style={styles.shareButton}
-          onPress={(e) => {
-            e.stopPropagation?.();
-            Share.share({
-              message: `${author.first_name} ${author.last_name}: ${content.substring(0, 200)}${content.length > 200 ? '...' : ''}`,
-            });
-          }}
-        />
+        <View style={styles.footerLeft}>
+          <IconButton
+            icon={liked ? 'heart' : 'heart-outline'}
+            size={18}
+            iconColor={liked ? '#ef4444' : '#9ca3af'}
+            accessibilityLabel={liked ? 'Unlike post' : 'Like post'}
+            style={styles.iconBtn}
+            onPress={(e) => { e.stopPropagation?.(); onToggleLike(); }}
+          />
+          {likeCount > 0 && <Text variant="bodySmall" style={styles.metaText}>{likeCount}</Text>}
+          <Text variant="bodySmall" style={styles.commentCount}>
+            {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
+          </Text>
+        </View>
+        <View style={styles.footerRight}>
+          <Text variant="bodySmall" style={styles.metaText}>👁 {viewCount}</Text>
+          <IconButton
+            icon="share-variant-outline"
+            size={18}
+            iconColor="#9ca3af"
+            accessibilityLabel="Share post"
+            style={styles.iconBtn}
+            onPress={(e) => {
+              e.stopPropagation?.();
+              Share.share({
+                message: `${author.first_name} ${author.last_name}: ${content.substring(0, 200)}${content.length > 200 ? '...' : ''}`,
+              });
+            }}
+          />
+        </View>
       </View>
     </Pressable>
   );
@@ -101,6 +119,10 @@ const styles = StyleSheet.create({
   timestamp: { color: '#9ca3af', fontSize: 12 },
   content: { marginTop: 10, lineHeight: 20 },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
+  footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  footerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  iconBtn: { margin: 0 },
+  metaText: { color: '#6b7280' },
   commentCount: { color: '#6b7280', fontWeight: '500' },
   shareButton: { margin: 0 },
 });
