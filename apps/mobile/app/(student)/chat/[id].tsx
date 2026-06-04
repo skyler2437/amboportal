@@ -51,6 +51,7 @@ export default function StudentMessageThread() {
     typingUsers,
     sendTyping,
     stopTyping,
+    toggleMessageLike,
   } = useChatMessages(id || '');
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
@@ -211,6 +212,9 @@ export default function StudentMessageThread() {
             ? () => retryMessage(msg.id, userId)
             : undefined
         }
+        likeCount={msg.like_count}
+        liked={msg.liked}
+        onToggleLike={() => toggleMessageLike(msg.id)}
       />
     );
   };
