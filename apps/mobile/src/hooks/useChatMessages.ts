@@ -12,6 +12,8 @@ export interface ChatMessage {
   content: string;
   created_at: string;
   status?: MessageStatus;
+  like_count?: number;
+  liked?: boolean;
   users: {
     first_name: string;
     last_name: string;
@@ -22,6 +24,29 @@ export interface ChatMessage {
 export interface TypingUser {
   userId: string;
   firstName: string;
+}
+
+async function decorateMessageLikes(rows: ChatMessage[]): Promise<ChatMessage[]> {
+  const ids = rows.map((m) => m.id).filter((id) => !id.startsWith('optimistic-'));
+  if (ids.length === 0) {
+    return rows.map((m) => ({ ...m, like_count: m.like_count ?? 0, liked: m.liked ?? false }));
+  }
+
+  const { data: userData } = await supabase.auth.getUser();
+  const uid = userData.user?.id;
+
+  const { data: likeRows } = await supabase
+    .from('chat_message_likes')
+    .select('message_id, user_id')
+    .in('message_id', ids);
+
+  const counts = new Map<string, number>();
+  const mine = new Set<string>();
+  for (const r of (likeRows || []) as any[]) {
+    counts.set(r.message_id, (counts.get(r.message_id) ?? 0) + 1);
+    if (uid && r.user_id === uid) mine.add(r.message_id);
+  }
+  return rows.map((m) => ({ ...m, like_count: counts.get(m.id) ?? 0, liked: mine.has(m.id) }));
 }
 
 export function useChatMessages(groupId: string) {
@@ -56,7 +81,8 @@ export function useChatMessages(groupId: string) {
       const filtered = ((data || []) as ChatMessage[]).filter((m) => m.users != null);
       // Reverse so oldest-first for display
       filtered.reverse();
-      setMessages(filtered);
+      const decorated = await decorateMessageLikes(filtered);
+      setMessages(decorated);
       setHasOlderMessages(filtered.length >= PAGE_SIZE);
     }
     setLoading(false);
@@ -79,8 +105,9 @@ export function useChatMessages(groupId: string) {
     if (!err && data) {
       const filtered = ((data || []) as ChatMessage[]).filter((m) => m.users != null);
       filtered.reverse();
-      if (filtered.length < PAGE_SIZE) setHasOlderMessages(false);
-      setMessages((prev) => [...filtered, ...prev]);
+      const decorated = await decorateMessageLikes(filtered);
+      if (decorated.length < PAGE_SIZE) setHasOlderMessages(false);
+      setMessages((prev) => [...decorated, ...prev]);
     }
     setLoadingOlder(false);
   }, [groupId, loadingOlder, hasOlderMessages, messages]);
@@ -167,6 +194,29 @@ export function useChatMessages(groupId: string) {
         }
         setTypingUsers(typers);
       })
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chat_message_likes' },
+        async (payload) => {
+          const row = (payload.new ?? payload.old) as { message_id?: string; user_id?: string } | null;
+          const messageId = row?.message_id;
+          if (!messageId) return;
+          const { data: userData } = await supabase.auth.getUser();
+          const uid = userData.user?.id;
+          // Our own toggle is already applied optimistically — skip self events
+          // to avoid double counting.
+          if (row?.user_id && uid && row.user_id === uid) return;
+          const delta = payload.eventType === 'INSERT' ? 1 : payload.eventType === 'DELETE' ? -1 : 0;
+          if (delta === 0) return;
+          setMessages((prev) =>
+            prev.some((m) => m.id === messageId)
+              ? prev.map((m) =>
+                  m.id === messageId ? { ...m, like_count: Math.max(0, (m.like_count ?? 0) + delta) } : m
+                )
+              : prev
+          );
+        }
+      )
       .subscribe();
 
     channelRef.current = channel;
@@ -283,8 +333,49 @@ export function useChatMessages(groupId: string) {
     }
   };
 
+  const toggleMessageLike = async (messageId: string) => {
+    if (messageId.startsWith('optimistic-')) return;
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id;
+    if (!uid) return;
+
+    let nowLiked = false;
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m.id !== messageId) return m;
+        nowLiked = !m.liked;
+        return { ...m, liked: nowLiked, like_count: (m.like_count ?? 0) + (nowLiked ? 1 : -1) };
+      })
+    );
+
+    try {
+      if (nowLiked) {
+        const { error: err } = await supabase
+          .from('chat_message_likes')
+          .insert({ message_id: messageId, user_id: uid });
+        if (err) throw err;
+      } else {
+        const { error: err } = await supabase
+          .from('chat_message_likes')
+          .delete()
+          .eq('message_id', messageId)
+          .eq('user_id', uid);
+        if (err) throw err;
+      }
+    } catch {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, liked: !nowLiked, like_count: (m.like_count ?? 0) + (nowLiked ? -1 : 1) }
+            : m
+        )
+      );
+    }
+  };
+
   return {
     messages,
+    toggleMessageLike,
     loading,
     loadingOlder,
     hasOlderMessages,
