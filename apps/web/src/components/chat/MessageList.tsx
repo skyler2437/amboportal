@@ -111,9 +111,13 @@ export function MessageList({ groupId, currentUserId, currentUserFirstName = "",
                 "postgres_changes",
                 { event: "*", schema: "public", table: "chat_message_likes" },
                 (payload) => {
-                    const row = (payload.new ?? payload.old) as { message_id?: string } | null;
+                    const row = (payload.new ?? payload.old) as { message_id?: string; user_id?: string } | null;
                     const messageId = row?.message_id;
                     if (!messageId) return;
+                    // Skip our own like events — toggleLike already applied them
+                    // optimistically and reconciled with the POST response. Without
+                    // this, the current user's own like double-counts.
+                    if (row.user_id && row.user_id === currentUserId) return;
                     setMessages((prev) => {
                         if (!prev.some((m) => m.id === messageId)) return prev;
                         const delta = payload.eventType === "INSERT" ? 1 : payload.eventType === "DELETE" ? -1 : 0;
