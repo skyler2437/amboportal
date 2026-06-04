@@ -373,9 +373,34 @@ export function useChatMessages(groupId: string) {
     }
   };
 
+  // Keep a ref of the latest messages so refreshLikes can read them without
+  // being recreated on every message change.
+  const messagesRef = useRef<ChatMessage[]>([]);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Re-sync like_count/liked for the loaded messages from the server. Called on
+  // screen focus to reconcile realtime delta drift (e.g. like events missed
+  // while the app was backgrounded). Does NOT refetch message bodies or change
+  // order — it only updates the like fields on messages already in state.
+  const refreshLikes = useCallback(async () => {
+    const current = messagesRef.current;
+    if (current.length === 0) return;
+    const decorated = await decorateMessageLikes(current);
+    const byId = new Map(decorated.map((m) => [m.id, m] as const));
+    setMessages((prev) =>
+      prev.map((m) => {
+        const d = byId.get(m.id);
+        return d ? { ...m, like_count: d.like_count, liked: d.liked } : m;
+      })
+    );
+  }, []);
+
   return {
     messages,
     toggleMessageLike,
+    refreshLikes,
     loading,
     loadingOlder,
     hasOlderMessages,

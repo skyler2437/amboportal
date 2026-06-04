@@ -3,6 +3,7 @@ import { View, FlatList, StyleSheet, Platform, Pressable, ActivityIndicator } fr
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '@/providers/AuthProvider';
 import { useChatMessages, ChatMessage } from '@/hooks/useChatMessages';
 import { MessageBubble, DateSeparator, TypingIndicator } from '@/components/MessageBubble';
@@ -52,8 +53,13 @@ export default function StudentMessageThread() {
     sendTyping,
     stopTyping,
     toggleMessageLike,
+    refreshLikes,
   } = useChatMessages(id || '');
   const flatListRef = useRef<FlatList>(null);
+
+  // Reconcile like counts from the server when the screen regains focus
+  // (realtime deltas can drift if events are missed while backgrounded).
+  useFocusEffect(useCallback(() => { refreshLikes(); }, [refreshLikes]));
   const insets = useSafeAreaInsets();
   const [groupName, setGroupName] = useState('Messages');
   const [userFirstName, setUserFirstName] = useState('');
