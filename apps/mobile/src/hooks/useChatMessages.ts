@@ -32,8 +32,8 @@ async function decorateMessageLikes(rows: ChatMessage[]): Promise<ChatMessage[]>
     return rows.map((m) => ({ ...m, like_count: m.like_count ?? 0, liked: m.liked ?? false }));
   }
 
-  const { data: userData } = await supabase.auth.getUser();
-  const uid = userData.user?.id;
+  const { data: sessionData } = await supabase.auth.getSession();
+  const uid = sessionData.session?.user?.id;
 
   const { data: likeRows } = await supabase
     .from('chat_message_likes')
@@ -201,8 +201,8 @@ export function useChatMessages(groupId: string) {
           const row = (payload.new ?? payload.old) as { message_id?: string; user_id?: string } | null;
           const messageId = row?.message_id;
           if (!messageId) return;
-          const { data: userData } = await supabase.auth.getUser();
-          const uid = userData.user?.id;
+          const { data: sessionData } = await supabase.auth.getSession();
+          const uid = sessionData.session?.user?.id;
           // Our own toggle is already applied optimistically — skip self events
           // to avoid double counting.
           if (row?.user_id && uid && row.user_id === uid) return;
@@ -335,8 +335,8 @@ export function useChatMessages(groupId: string) {
 
   const toggleMessageLike = async (messageId: string) => {
     if (messageId.startsWith('optimistic-')) return;
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user?.id;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const uid = sessionData.session?.user?.id;
     if (!uid) return;
 
     let nowLiked = false;

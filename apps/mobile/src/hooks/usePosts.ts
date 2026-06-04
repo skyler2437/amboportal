@@ -36,8 +36,8 @@ async function decoratePosts(rows: any[]): Promise<Post[]> {
   const ids = posts.map((p) => p.id);
   if (ids.length === 0) return posts;
 
-  const { data: userData } = await supabase.auth.getUser();
-  const uid = userData.user?.id;
+  const { data: sessionData } = await supabase.auth.getSession();
+  const uid = sessionData.session?.user?.id;
   if (!uid) return posts;
 
   const { data: likedRows } = await supabase
@@ -129,8 +129,8 @@ export function usePosts() {
   };
 
   const toggleLike = async (postId: string) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user?.id;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const uid = sessionData.session?.user?.id;
     if (!uid) return;
 
     let nowLiked = false;

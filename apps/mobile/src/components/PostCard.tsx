@@ -124,5 +124,4 @@ const styles = StyleSheet.create({
   iconBtn: { margin: 0 },
   metaText: { color: '#6b7280' },
   commentCount: { color: '#6b7280', fontWeight: '500' },
-  shareButton: { margin: 0 },
 });
