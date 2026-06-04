@@ -226,10 +226,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Safe fallback returned by useAuth() when no AuthProvider is an ancestor.
+//
+// react-native-screens (RN 0.83+) renders a screen's subtree in a detached
+// pass that is hosted OUTSIDE our provider tree. Calling useAuth() during that
+// pass previously threw "useAuth must be used within an AuthProvider" and
+// crashed the app on the way into the student/admin dashboards and the welcome
+// screen (any screen that reads auth). Returning a "still loading" value lets
+// every screen fall into its loading / no-session branch during that throwaway
+// pass, while the real in-tree render supplies the true auth state.
+//
+// isLoading:true is deliberate — redirect effects (RootNavigator, index.tsx)
+// all guard on `if (isLoading) return`, so they will not fire with a spurious
+// null session during the detached pass. The signIn/out helpers are only ever
+// invoked from user-event handlers on the real render, so these throwing stubs
+// should never run in practice.
+const DEFAULT_AUTH: AuthContextType = {
+  session: null,
+  userRole: null,
+  isLoading: true,
+  signIn: async () => {
+    throw new Error('useAuth: AuthProvider is not mounted');
+  },
+  signInWithApple: async () => {
+    throw new Error('useAuth: AuthProvider is not mounted');
+  },
+  signOut: async () => {
+    throw new Error('useAuth: AuthProvider is not mounted');
+  },
+  refreshRole: async () => {
+    throw new Error('useAuth: AuthProvider is not mounted');
+  },
+};
+
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    if (__DEV__) {
+      console.log(
+        '[useAuth] No AuthContext (react-native-screens detached render) — using loading fallback'
+      );
+    }
+    return DEFAULT_AUTH;
   }
   return context;
 }

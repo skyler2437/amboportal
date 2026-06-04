@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Pressable,
   TextInput as RNTextInput,
 } from 'react-native';
 import {
@@ -15,6 +16,7 @@ import {
   IconButton,
   Divider,
   Avatar,
+  Icon,
 } from 'react-native-paper';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +25,8 @@ import { usePosts } from '@/hooks/usePosts';
 import { useComments, Comment } from '@/hooks/useComments';
 import { RoleBadge } from '@/components/RoleBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { UserListDialog, DialogUser } from '@/components/UserListDialog';
+import { supabase } from '@/lib/supabase';
 import type { UserRole } from '@ambo/database';
 
 function canModify(
@@ -60,7 +64,7 @@ export default function StudentPostDetail() {
   const currentRole = userRole || 'student';
   const insets = useSafeAreaInsets();
 
-  const { posts, loading: postsLoading, editPost, deletePost } = usePosts();
+  const { posts, loading: postsLoading, editPost, deletePost, toggleLike } = usePosts();
   const {
     comments,
     loading: commentsLoading,
@@ -84,6 +88,33 @@ export default function StudentPostDetail() {
   // Comment edit state
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editCommentText, setEditCommentText] = useState('');
+
+  const [likesOpen, setLikesOpen] = useState(false);
+  const [likers, setLikers] = useState<DialogUser[] | null>(null);
+  const [viewsOpen, setViewsOpen] = useState(false);
+  const [viewers, setViewers] = useState<DialogUser[] | null>(null);
+
+  const openLikers = async () => {
+    setLikesOpen(true);
+    setLikers(null);
+    const { data } = await supabase
+      .from('post_likes')
+      .select('users(id, first_name, last_name, avatar_url)')
+      .eq('post_id', id)
+      .order('created_at', { ascending: false });
+    setLikers(((data as any[]) || []).map((r) => r.users).filter(Boolean));
+  };
+
+  const openViewers = async () => {
+    setViewsOpen(true);
+    setViewers(null);
+    const { data } = await supabase
+      .from('post_views')
+      .select('users(id, first_name, last_name, avatar_url)')
+      .eq('post_id', id)
+      .order('viewed_at', { ascending: false });
+    setViewers(((data as any[]) || []).map((r) => r.users).filter(Boolean));
+  };
 
   if (postsLoading && !post) return <LoadingScreen />;
 
@@ -273,6 +304,24 @@ export default function StudentPostDetail() {
             </Text>
           )}
 
+          <View style={styles.engagementRow}>
+            <IconButton
+              icon={post.liked ? 'heart' : 'heart-outline'}
+              size={20}
+              iconColor={post.liked ? '#ef4444' : '#6b7280'}
+              onPress={() => toggleLike(post.id).catch(() => {})}
+              accessibilityLabel={post.liked ? 'Unlike post' : 'Like post'}
+              style={{ margin: 0 }}
+            />
+            <Text variant="bodySmall" onPress={openLikers} style={styles.engagementText}>
+              {post.like_count} {post.like_count === 1 ? 'like' : 'likes'}
+            </Text>
+            <Pressable onPress={openViewers} style={styles.engagementViews}>
+              <Icon source="eye-outline" size={16} color="#6b7280" />
+              <Text variant="bodySmall" style={styles.engagementText}>{post.view_count} seen</Text>
+            </Pressable>
+          </View>
+
           {/* Comments section */}
           <Divider style={styles.divider} />
           <Text variant="titleMedium" style={styles.sectionTitle}>
@@ -402,6 +451,8 @@ export default function StudentPostDetail() {
           />
         </View>
       </KeyboardAvoidingView>
+      <UserListDialog visible={likesOpen} title={`Liked by ${post.like_count}`} users={likers} onDismiss={() => setLikesOpen(false)} />
+      <UserListDialog visible={viewsOpen} title={`Seen by ${post.view_count}`} users={viewers} onDismiss={() => setViewsOpen(false)} />
     </>
   );
 }
@@ -458,4 +509,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#e5e7eb',
   },
   commentTextInput: { flex: 1, backgroundColor: '#fff', maxHeight: 100 },
+  engagementRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  engagementText: { color: '#6b7280' },
+  engagementViews: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 16 },
 });

@@ -11,9 +11,12 @@ interface MessageBubbleProps {
   isOwn: boolean;
   status?: MessageStatus;
   onRetry?: () => void;
+  likeCount?: number;
+  liked?: boolean;
+  onToggleLike?: () => void;
 }
 
-export function MessageBubble({ content, createdAt, senderName, senderAvatar, isOwn, status, onRetry }: MessageBubbleProps) {
+export function MessageBubble({ content, createdAt, senderName, senderAvatar, isOwn, status, onRetry, likeCount = 0, liked = false, onToggleLike }: MessageBubbleProps) {
   const time = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const initials = senderName
     .split(' ')
@@ -23,6 +26,17 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
 
   const isFailed = status === 'failed';
   const isSending = status === 'sending';
+
+  const lastTap = React.useRef(0);
+  const handlePress = () => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      onToggleLike?.();
+      lastTap.current = 0;
+    } else {
+      lastTap.current = now;
+    }
+  };
 
   return (
     <View
@@ -44,11 +58,18 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
         {!isOwn && (
           <Text variant="labelSmall" style={styles.senderName}>{senderName}</Text>
         )}
-        <View style={[styles.bubble, isOwn ? styles.ownBubble : styles.otherBubble, isFailed && styles.failedBubble]}>
-          <Text variant="bodyMedium" style={isOwn ? styles.ownText : styles.otherText}>
-            {content}
-          </Text>
-        </View>
+        <Pressable onPress={handlePress} accessibilityRole="button" accessibilityLabel="Double tap to like message">
+          <View style={[styles.bubble, isOwn ? styles.ownBubble : styles.otherBubble, isFailed && styles.failedBubble]}>
+            <Text variant="bodyMedium" style={isOwn ? styles.ownText : styles.otherText}>
+              {content}
+            </Text>
+          </View>
+          {likeCount > 0 && (
+            <View style={[styles.likeBadge, isOwn ? styles.likeBadgeOwn : styles.likeBadgeOther]}>
+              <Text style={styles.likeBadgeText}>{liked ? '❤️' : '🤍'} {likeCount}</Text>
+            </View>
+          )}
+        </Pressable>
         <View style={[styles.metaRow, isOwn ? styles.ownMeta : styles.otherMeta]}>
           {isFailed ? (
             <Pressable onPress={onRetry} hitSlop={8}>
@@ -232,4 +253,19 @@ const styles = StyleSheet.create({
   dot1: { opacity: 0.4 },
   dot2: { opacity: 0.6 },
   dot3: { opacity: 0.9 },
+  likeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: '#fff',
+    borderColor: '#e5e7eb',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    marginTop: -6,
+  },
+  likeBadgeOwn: { alignSelf: 'flex-end' },
+  likeBadgeOther: { alignSelf: 'flex-start' },
+  likeBadgeText: { fontSize: 11 },
 });
