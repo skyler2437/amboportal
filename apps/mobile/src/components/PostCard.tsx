@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable, Share } from 'react-native';
-import { Avatar, Text, IconButton } from 'react-native-paper';
+import { Avatar, Text, IconButton, Icon } from 'react-native-paper';
 import type { UserRole } from '@ambo/database';
 
 interface PostCardProps {
@@ -74,7 +74,8 @@ export function PostCard({ content, createdAt, author, commentCount, likeCount, 
           </Text>
         </View>
         <View style={styles.footerRight}>
-          <Text variant="bodySmall" style={styles.metaText}>👁 {viewCount}</Text>
+          <Icon source="eye-outline" size={14} color="#6b7280" />
+          <Text variant="bodySmall" style={styles.metaText}>{viewCount}</Text>
           <IconButton
             icon="share-variant-outline"
             size={18}

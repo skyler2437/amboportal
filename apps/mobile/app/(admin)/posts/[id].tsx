@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Pressable,
   TextInput as RNTextInput,
 } from 'react-native';
 import {
@@ -15,6 +16,7 @@ import {
   IconButton,
   Divider,
   Avatar,
+  Icon,
 } from 'react-native-paper';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -314,9 +316,10 @@ export default function AdminPostDetail() {
             <Text variant="bodySmall" onPress={openLikers} style={styles.engagementText}>
               {post.like_count} {post.like_count === 1 ? 'like' : 'likes'}
             </Text>
-            <Text variant="bodySmall" onPress={openViewers} style={[styles.engagementText, { marginLeft: 16 }]}>
-              👁 {post.view_count} seen
-            </Text>
+            <Pressable onPress={openViewers} style={styles.engagementViews}>
+              <Icon source="eye-outline" size={16} color="#6b7280" />
+              <Text variant="bodySmall" style={styles.engagementText}>{post.view_count} seen</Text>
+            </Pressable>
           </View>
 
           {/* Comments section */}
@@ -508,4 +511,5 @@ const styles = StyleSheet.create({
   commentTextInput: { flex: 1, backgroundColor: '#fff', maxHeight: 100 },
   engagementRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   engagementText: { color: '#6b7280' },
+  engagementViews: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 16 },
 });
