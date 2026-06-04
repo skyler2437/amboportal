@@ -4,6 +4,7 @@ import { FAB } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { usePosts } from '@/hooks/usePosts';
+import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
 import { PostListSkeleton } from '@/components/SkeletonLoader';
 import { EmptyState } from '@/components/EmptyState';
@@ -14,6 +15,23 @@ export default function StudentPostsFeed() {
   const { posts, loading, error, hasMore, refetch, fetchMore, toggleLike } = usePosts();
   const [refreshing, setRefreshing] = useState(false);
   const initialLoadDone = useRef(false);
+
+  const viewedRef = useRef<Set<string>>(new Set());
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50, minimumViewTime: 1000 }).current;
+  const onViewableItemsChanged = useRef(async ({ viewableItems }: { viewableItems: { key?: string; item?: any }[] }) => {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id;
+    if (!uid) return;
+    for (const v of viewableItems) {
+      const postId = v.item?.id;
+      if (!postId || viewedRef.current.has(postId)) continue;
+      viewedRef.current.add(postId);
+      supabase
+        .from('post_views')
+        .upsert({ post_id: postId, user_id: uid }, { onConflict: 'post_id,user_id', ignoreDuplicates: true })
+        .then(() => {});
+    }
+  }).current;
 
   if (!loading && !initialLoadDone.current) {
     initialLoadDone.current = true;
@@ -65,6 +83,8 @@ export default function StudentPostsFeed() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
         onEndReached={hasMore ? fetchMore : undefined}
         onEndReachedThreshold={0.5}
+        viewabilityConfig={viewabilityConfig}
+        onViewableItemsChanged={onViewableItemsChanged}
       />
       <FAB
         icon="plus"
