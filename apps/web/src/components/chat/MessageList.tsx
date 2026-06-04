@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ type Message = {
     sender_id: string;
     content: string;
     created_at: string;
+    like_count?: number;
+    liked?: boolean;
     sender?: {
         first_name: string;
         last_name: string;
@@ -103,6 +105,25 @@ export function MessageList({ groupId, currentUserId, currentUserFirstName = "",
                     }
 
                     scrollToBottom();
+                }
+            )
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "chat_message_likes" },
+                (payload) => {
+                    const row = (payload.new ?? payload.old) as { message_id?: string } | null;
+                    const messageId = row?.message_id;
+                    if (!messageId) return;
+                    setMessages((prev) => {
+                        if (!prev.some((m) => m.id === messageId)) return prev;
+                        const delta = payload.eventType === "INSERT" ? 1 : payload.eventType === "DELETE" ? -1 : 0;
+                        if (delta === 0) return prev;
+                        return prev.map((m) =>
+                            m.id === messageId
+                                ? { ...m, like_count: Math.max(0, (m.like_count ?? 0) + delta) }
+                                : m
+                        );
+                    });
                 }
             )
             .subscribe();
@@ -196,6 +217,35 @@ export function MessageList({ groupId, currentUserId, currentUserFirstName = "",
         document.execCommand("insertText", false, text);
     };
 
+    const toggleLike = useCallback(async (messageId: string) => {
+        setMessages((prev) =>
+            prev.map((m) =>
+                m.id === messageId
+                    ? { ...m, liked: !m.liked, like_count: (m.like_count ?? 0) + (m.liked ? -1 : 1) }
+                    : m
+            )
+        );
+        try {
+            const res = await fetch(`/api/chat/messages/${messageId}/like`, { method: "POST" });
+            if (!res.ok) throw new Error("like failed");
+            const data = await res.json();
+            setMessages((prev) =>
+                prev.map((m) =>
+                    m.id === messageId ? { ...m, liked: !!data.liked, like_count: data.like_count ?? 0 } : m
+                )
+            );
+        } catch {
+            setMessages((prev) =>
+                prev.map((m) =>
+                    m.id === messageId
+                        ? { ...m, liked: !m.liked, like_count: (m.like_count ?? 0) + (m.liked ? 1 : -1) }
+                        : m
+                )
+            );
+            toast.error("Failed to update like");
+        }
+    }, []);
+
     return (
         <div className="flex flex-col h-full">
             {/* Messages area - native scroll for best mobile keyboard behavior */}
@@ -257,6 +307,19 @@ export function MessageList({ groupId, currentUserId, currentUserFirstName = "",
                                                     minute: "2-digit",
                                                 })}
                                             </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleLike(msg.id)}
+                                                className={cn(
+                                                    "mt-0.5 px-3 flex items-center gap-1 text-[11px] transition-colors",
+                                                    msg.liked ? "text-red-500" : "text-muted-foreground hover:text-foreground"
+                                                )}
+                                                aria-pressed={!!msg.liked}
+                                                aria-label={msg.liked ? "Unlike message" : "Like message"}
+                                            >
+                                                <Heart className={cn("w-3.5 h-3.5", msg.liked && "fill-current")} />
+                                                {(msg.like_count ?? 0) > 0 && <span>{msg.like_count}</span>}
+                                            </button>
                                         </div>
                                         {isMe && (
                                             <Avatar className="h-7 w-7 mt-1 ml-2 shrink-0">
