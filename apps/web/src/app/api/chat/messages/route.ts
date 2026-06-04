@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
             .from("chat_messages")
             .select(`
                 *,
-                sender:users!chat_messages_sender_id_fkey(first_name, last_name, avatar_url)
+                sender:users!chat_messages_sender_id_fkey(first_name, last_name, avatar_url),
+                chat_message_likes(user_id)
             `)
             .eq("group_id", groupId)
             .order("created_at", { ascending: true });
@@ -44,7 +45,18 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Internal server error" }, { status: 500 });
         }
 
-        return NextResponse.json({ messages: messages || [] });
+        // Flatten likes into like_count + liked (for the current user).
+        const shaped = (messages ?? []).map((m: any) => {
+            const likes = Array.isArray(m.chat_message_likes) ? m.chat_message_likes : [];
+            return {
+                ...m,
+                like_count: likes.length,
+                liked: likes.some((l: any) => l.user_id === session.userId),
+                chat_message_likes: undefined,
+            };
+        });
+
+        return NextResponse.json({ messages: shaped });
     } catch (error) {
         console.error("Unexpected error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
