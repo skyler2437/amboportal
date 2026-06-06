@@ -12,7 +12,11 @@ export default function AdminLayout() {
   // without destroying the navigation tree (which causes ErrorBoundary crash)
   if (!session) return <Slot />;
 
-  if (userRole !== 'admin' && userRole !== 'superadmin') {
+  // Only redirect when the role is definitively known and not an admin.
+  // While `userRole` is transiently null (still resolving, or a brief fetch
+  // error), stay put instead of redirecting — redirecting on the null flicker
+  // bounces the navigator and triggers a "Maximum update depth exceeded" loop.
+  if (userRole && userRole !== 'admin' && userRole !== 'superadmin') {
     return <Redirect href="/" />;
   }
 

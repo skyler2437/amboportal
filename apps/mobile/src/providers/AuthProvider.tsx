@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '@/lib/supabase';
@@ -219,11 +219,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  return (
-    <AuthContext.Provider value={{ ...state, signIn, signInWithApple, signOut, refreshRole }}>
-      {children}
-    </AuthContext.Provider>
+  // Memoize the context value so it only changes when auth state changes —
+  // not on every render. A fresh value object would re-render every useAuth()
+  // consumer (the whole navigation tree) on each parent render.
+  const value = useMemo<AuthContextType>(
+    () => ({ ...state, signIn, signInWithApple, signOut, refreshRole }),
+    // The helper functions are stable closures over module singletons; only
+    // `state` carries render-to-render meaning.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // Safe fallback returned by useAuth() when no AuthProvider is an ancestor.
