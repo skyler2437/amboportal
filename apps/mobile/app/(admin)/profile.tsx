@@ -12,6 +12,7 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { supabase } from '@/lib/supabase';
 import Constants from 'expo-constants';
 import { ChangePasswordCard } from '@/components/ChangePasswordCard';
+import { openExternalLink } from '@/lib/openExternalLink';
 
 export default function AdminProfile() {
   const { session, signOut } = useAuth();
@@ -443,8 +444,8 @@ export default function AdminProfile() {
           <Pressable
             style={styles.supportRow}
             onPress={() => {
-              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://ambo-portal.vercel.app';
-              Linking.openURL(`${webUrl}/privacy`);
+              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://amboportal.vercel.app';
+              openExternalLink(`${webUrl}/privacy`);
             }}
           >
             <MaterialCommunityIcons name="shield-lock-outline" size={20} color="#6b7280" />
@@ -453,8 +454,8 @@ export default function AdminProfile() {
           <Pressable
             style={styles.supportRow}
             onPress={() => {
-              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://ambo-portal.vercel.app';
-              Linking.openURL(`${webUrl}/terms`);
+              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://amboportal.vercel.app';
+              openExternalLink(`${webUrl}/terms`);
             }}
           >
             <MaterialCommunityIcons name="file-document-outline" size={20} color="#6b7280" />
