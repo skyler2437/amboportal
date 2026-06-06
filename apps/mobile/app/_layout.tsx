@@ -30,7 +30,8 @@ useChatReadStore.getState().hydrate();
 function RootNavigator() {
   const { session, userRole, isLoading } = useAuth();
   const router = useRouter();
-  const segments = useSegments();
+  // Cast to string[] so we can index past [0] (typed-routes returns tuples).
+  const segments = useSegments() as string[];
   // Remember the last destination we redirected to. Keyed on the *target*
   // route rather than a boolean flag so we never re-issue the same replace
   // while the segments catch up — and so a transient change in the `session`
