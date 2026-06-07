@@ -19,7 +19,10 @@ export function FormattedText({
 }) {
   return (
     <Text style={style} numberOfLines={numberOfLines}>
-      {parseInlineFormatting(children)}
+      {/* `as any`: react-native is hoisted against @types/react@18 while this
+          app source resolves @types/react@19, so the ReactNode types don't line
+          up. Contained workaround for that monorepo type-dup, not a real error. */}
+      {parseInlineFormatting(children) as any}
     </Text>
   );
 }

@@ -30,45 +30,49 @@ useChatReadStore.getState().hydrate();
 function RootNavigator() {
   const { session, userRole, isLoading } = useAuth();
   const router = useRouter();
-  const segments = useSegments();
-  const hasNavigated = useRef(false);
+  // Cast to string[] so we can index past [0] (typed-routes returns tuples).
+  const segments = useSegments() as string[];
+  // Remember the last destination we redirected to. Keyed on the *target*
+  // route rather than a boolean flag so we never re-issue the same replace
+  // while the segments catch up — and so a transient change in the `session`
+  // object reference (a fresh object is produced on every role refetch) can't
+  // retrigger navigation. This prevents the redirect ping-pong that remounts
+  // the navigator in a loop ("Maximum update depth exceeded").
+  const lastTargetRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Reset the navigation flag when auth state changes
-    hasNavigated.current = false;
-  }, [session, userRole]);
-
-  useEffect(() => {
-    if (isLoading || hasNavigated.current) return;
+    if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
     const inAdminGroup = segments[0] === '(admin)';
     const inStudentGroup = segments[0] === '(student)';
 
+    // Resolve where the user *should* be, given the current auth state.
+    let target: string | null = null;
     if (!session) {
-      if (!inAuthGroup) {
-        hasNavigated.current = true;
-        router.replace('/(auth)/login');
-      }
+      if (!inAuthGroup) target = '/(auth)/login';
     } else if (userRole === 'admin' || userRole === 'superadmin') {
-      if (!inAdminGroup) {
-        hasNavigated.current = true;
-        router.replace('/(admin)');
-      }
+      if (!inAdminGroup) target = '/(admin)';
     } else if (userRole === 'basic' || userRole === 'applicant') {
       // Route to welcome screen; if already in auth group on welcome, skip
       const onWelcome = inAuthGroup && segments[1] === 'welcome';
-      if (!onWelcome) {
-        hasNavigated.current = true;
-        router.replace('/(auth)/welcome');
-      }
+      if (!onWelcome) target = '/(auth)/welcome';
     } else if (userRole === 'student') {
-      if (!inStudentGroup) {
-        hasNavigated.current = true;
-        router.replace('/(student)');
-      }
+      if (!inStudentGroup) target = '/(student)';
     }
-  }, [session, userRole, isLoading, segments]);
+    // userRole === null while a session exists means the role is still
+    // resolving (or a transient fetch error). Deliberately do NOT redirect in
+    // that window — wait for a definitive role so we don't bounce the user
+    // between login/dashboard and remount the navigation tree in a loop.
+
+    if (!target) {
+      lastTargetRef.current = null;
+      return;
+    }
+    if (lastTargetRef.current === target) return;
+    lastTargetRef.current = target;
+    router.replace(target as Parameters<typeof router.replace>[0]);
+  }, [session, userRole, isLoading, segments, router]);
 
   return (
     <>

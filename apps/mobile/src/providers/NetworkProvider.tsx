@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import * as Network from 'expo-network';
 import { supabase } from '@/lib/supabase';
 import { getQueue, removeMutation, type QueuedMutation } from '@/lib/offline-queue';
@@ -93,11 +93,15 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isOffline]);
 
-  return (
-    <NetworkContext.Provider value={{ isConnected, isInternetReachable, isOffline, refresh }}>
-      {children}
-    </NetworkContext.Provider>
+  // Memoize so the context value only changes when network state changes,
+  // rather than producing a fresh object on every render that re-renders all
+  // useNetwork() consumers.
+  const value = useMemo<NetworkState>(
+    () => ({ isConnected, isInternetReachable, isOffline, refresh }),
+    [isConnected, isInternetReachable, isOffline, refresh]
   );
+
+  return <NetworkContext.Provider value={value}>{children}</NetworkContext.Provider>;
 }
 
 export function useNetwork() {

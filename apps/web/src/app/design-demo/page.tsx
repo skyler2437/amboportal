@@ -190,7 +190,7 @@ export default function DesignDemoPage() {
                         <div className="mx-auto w-full max-w-md">
                             <DrawerHeader>
                                 <DrawerTitle>Create New Task</DrawerTitle>
-                                <DrawerDescription>Add a new item to your team's agenda.</DrawerDescription>
+                                <DrawerDescription>Add a new item to your team&apos;s agenda.</DrawerDescription>
                             </DrawerHeader>
 
                             <div className="p-4 space-y-4">
