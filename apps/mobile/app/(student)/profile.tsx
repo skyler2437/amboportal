@@ -14,6 +14,7 @@ import Constants from 'expo-constants';
 import { hapticSuccess, hapticError, hapticWarning } from '@/lib/haptics';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
 import { ChangePasswordCard } from '@/components/ChangePasswordCard';
+import { openExternalLink } from '@/lib/openExternalLink';
 
 export default function StudentProfile() {
   const { session, signOut } = useAuth();
@@ -473,8 +474,8 @@ export default function StudentProfile() {
           <Pressable
             style={styles.supportRow}
             onPress={() => {
-              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://ambo-portal.vercel.app';
-              Linking.openURL(`${webUrl}/privacy`);
+              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://amboportal.vercel.app';
+              openExternalLink(`${webUrl}/privacy`);
             }}
           >
             <MaterialCommunityIcons name="shield-lock-outline" size={20} color="#6b7280" />
@@ -483,8 +484,8 @@ export default function StudentProfile() {
           <Pressable
             style={styles.supportRow}
             onPress={() => {
-              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://ambo-portal.vercel.app';
-              Linking.openURL(`${webUrl}/terms`);
+              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://amboportal.vercel.app';
+              openExternalLink(`${webUrl}/terms`);
             }}
           >
             <MaterialCommunityIcons name="file-document-outline" size={20} color="#6b7280" />

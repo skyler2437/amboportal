@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { NextRequest } from "next/server";
 
 // Hoist mock variables so they're available inside vi.mock factories
 const { mockSupabaseClient } = vi.hoisted(() => ({
@@ -53,7 +54,7 @@ describe("API Route Protection", () => {
 
   describe("GET /api/admin/users", () => {
     it("returns 403 Forbidden without an admin session", async () => {
-      const res = await GET();
+      const res = await GET(new NextRequest("http://localhost:3000/api/admin/users"));
       const body = await res.json();
 
       expect(res.status).toBe(403);

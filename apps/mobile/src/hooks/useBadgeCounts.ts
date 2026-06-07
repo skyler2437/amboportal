@@ -59,7 +59,23 @@ export function useBadgeCounts(userId: string, role: 'admin' | 'student') {
       // Silently fail if last_read_at column doesn't exist
     }
 
-    setServerUnreadGroupIds(unreadGroupIds);
+    // Only push a new Set when the contents actually changed. Allocating a
+    // fresh Set on every fetch forces a re-render even when nothing moved,
+    // which — combined with the realtime sub and 15s interval — adds needless
+    // re-render pressure to the navigator that mounts this hook.
+    setServerUnreadGroupIds((prev) => {
+      if (prev.size === unreadGroupIds.size) {
+        let identical = true;
+        for (const id of unreadGroupIds) {
+          if (!prev.has(id)) {
+            identical = false;
+            break;
+          }
+        }
+        if (identical) return prev;
+      }
+      return unreadGroupIds;
+    });
 
     // Prune optimistic readGroups for groups the server now considers read.
     // This prevents the optimistic set from growing unbounded and keeps
@@ -97,11 +113,13 @@ export function useBadgeCounts(userId: string, role: 'admin' | 'student') {
         { event: 'INSERT', schema: 'public', table: 'chat_messages' },
         (payload) => {
           const newMsg = payload.new as any;
-          // Refetch if message is from someone else
-          if (newMsg.sender_id !== userId) {
-            removeReadGroup(newMsg.group_id);
-            fetchCounts();
-          }
+          // Ignore our own messages and inserts for groups we don't belong to.
+          // postgres_changes can't filter on `group_id IN (...)`, so without
+          // this guard every chat message app-wide triggers a full refetch.
+          if (newMsg.sender_id === userId) return;
+          if (!groupIdsRef.current.includes(newMsg.group_id)) return;
+          removeReadGroup(newMsg.group_id);
+          fetchCounts();
         }
       )
       .on(
