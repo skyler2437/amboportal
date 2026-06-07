@@ -1,6 +1,7 @@
 import { Tabs, Redirect, Slot } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { useBadgeCounts } from '@/hooks/useBadgeCounts';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { LayoutDashboard, Calendar, MessageSquare, MessageCircle, UserCircle } from 'lucide-react-native';
 
 export default function AdminLayout() {
@@ -12,11 +13,17 @@ export default function AdminLayout() {
   // without destroying the navigation tree (which causes ErrorBoundary crash)
   if (!session) return <Slot />;
 
-  // Only redirect when the role is definitively known and not an admin.
-  // While `userRole` is transiently null (still resolving, or a brief fetch
-  // error), stay put instead of redirecting — redirecting on the null flicker
-  // bounces the navigator and triggers a "Maximum update depth exceeded" loop.
-  if (userRole && userRole !== 'admin' && userRole !== 'superadmin') {
+  // Role not resolved yet (still loading, or a transient/failed fetch). Don't
+  // mount the protected tab tree for an unknown role, and don't redirect —
+  // redirecting on the null flicker bounces the navigator and triggers a
+  // "Maximum update depth exceeded" loop. Show a loading state until the role
+  // is definitively known.
+  if (!userRole) {
+    return <LoadingScreen />;
+  }
+
+  // Definitively the wrong role → send them to their correct home.
+  if (userRole !== 'admin' && userRole !== 'superadmin') {
     return <Redirect href="/" />;
   }
 
