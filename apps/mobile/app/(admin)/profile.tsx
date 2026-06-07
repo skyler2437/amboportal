@@ -377,7 +377,7 @@ export default function AdminProfile() {
           <Divider />
           <View style={styles.prefRow}>
             <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="calendar-comment" size={20} color="#6b7280" />
+              <MaterialCommunityIcons name="calendar-text-outline" size={20} color="#6b7280" />
               <Text variant="bodyMedium">Event Comments</Text>
             </View>
             <Switch

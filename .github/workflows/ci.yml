@@ -24,6 +24,19 @@ jobs:
       - run: npm run lint --prefix apps/web
       - run: npx tsc --noEmit --project apps/web/tsconfig.json
 
+  mobile-lint-typecheck:
+    name: Mobile Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --prefix apps/mobile
+      - run: npx tsc --noEmit --project apps/mobile/tsconfig.json
+
   test:
     name: Tests
     runs-on: ubuntu-latest

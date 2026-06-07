@@ -199,8 +199,8 @@ export default function AdminEventDetail() {
       setEvent({
         ...event,
         title: editTitle.trim(),
-        description: editDescription.trim() || null,
-        uniform: editUniform.trim() || null,
+        description: editDescription.trim(),
+        uniform: editUniform.trim() || undefined,
         start_time: editStartDate.toISOString(),
         end_time: editEndDate.toISOString(),
       });
