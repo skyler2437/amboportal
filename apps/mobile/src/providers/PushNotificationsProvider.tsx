@@ -263,46 +263,56 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
       return;
     }
 
-    // Create default channel on Android
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'Default',
-        importance: Notifications.AndroidImportance.DEFAULT,
-      });
-    }
+    try {
+      // Create default channel on Android
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'Default',
+          importance: Notifications.AndroidImportance.DEFAULT,
+        });
+      }
 
-    // Request permissions
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+      // Request permissions
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
 
-    if (finalStatus !== 'granted') {
-      if (__DEV__) console.log('[Push] Permission not granted');
-      return;
-    }
+      if (finalStatus !== 'granted') {
+        if (__DEV__) console.log('[Push] Permission not granted');
+        return;
+      }
 
-    // Get Expo push token
-    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
-    const token = tokenData.data;
-    currentTokenRef.current = token;
+      // Get Expo push token
+      const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+      const token = tokenData.data;
+      currentTokenRef.current = token;
 
-    const payload: TokenPayload = {
-      token,
-      platform: Platform.OS,
-      device_name: Device.deviceName || `${Platform.OS} device`,
-    };
+      const payload: TokenPayload = {
+        token,
+        platform: Platform.OS,
+        device_name: Device.deviceName || `${Platform.OS} device`,
+      };
 
-    const synced = await syncTokenToServer(payload);
-    if (!synced) {
-      // Persist for retry
-      await AsyncStorage.setItem(PENDING_TOKEN_KEY, JSON.stringify(payload));
-      if (__DEV__) console.log('[Push] Token sync failed, persisted for retry');
-    } else {
-      await AsyncStorage.removeItem(PENDING_TOKEN_KEY);
+      const synced = await syncTokenToServer(payload);
+      if (!synced) {
+        // Persist for retry
+        await AsyncStorage.setItem(PENDING_TOKEN_KEY, JSON.stringify(payload));
+        if (__DEV__) console.log('[Push] Token sync failed, persisted for retry');
+      } else {
+        await AsyncStorage.removeItem(PENDING_TOKEN_KEY);
+      }
+    } catch (err) {
+      // Fetching the Expo token hits the network and can fail transiently
+      // (device offline, or app backgrounded mid-launch). That's expected, so
+      // swallow it rather than letting it surface as an unhandled promise
+      // rejection (AMBOPORTAL-MOBILE-5). Clear the guard so a later session
+      // change or relaunch can retry registration.
+      registeredRef.current = false;
+      if (__DEV__) console.log('[Push] Push token registration failed (will retry):', err);
     }
   }, []);
 
