@@ -107,13 +107,46 @@ self.addEventListener("push", function (event) {
 self.addEventListener("notificationclick", function (event) {
     event.notification.close();
 
+    const targetUrl = (event.notification.data && event.notification.data.url) || "/";
+
     event.waitUntil(
         (async () => {
-            await logToServer("info", "Notification Clicked", { url: event.notification.data.url });
+            await logToServer("info", "Notification Clicked", { url: targetUrl });
 
-            // Open the URL
-            if (clients.openWindow && event.notification.data.url) {
-                await clients.openWindow(event.notification.data.url);
+            const absoluteUrl = new URL(targetUrl, self.location.origin).href;
+
+            // Prefer reusing an already-open app window. This also covers the iOS
+            // cold-launch case: tapping the notification opens the PWA at its
+            // start_url (/login → dashboard) first, so by the time this handler
+            // runs there is usually a window we can refocus and redirect to the
+            // deep link. Plain openWindow() doesn't reliably override that
+            // launch navigation on iOS, which is why taps stranded the user on
+            // the dashboard instead of the chat thread.
+            const allClients = await self.clients.matchAll({
+                type: "window",
+                includeUncontrolled: true,
+            });
+
+            for (const client of allClients) {
+                if ("focus" in client) {
+                    await client.focus();
+                    if ("navigate" in client && client.url !== absoluteUrl) {
+                        try {
+                            await client.navigate(absoluteUrl);
+                        } catch (err) {
+                            await logToServer("error", "client.navigate failed", {
+                                error: err.toString(),
+                                url: absoluteUrl,
+                            });
+                        }
+                    }
+                    return;
+                }
+            }
+
+            // No open window — open a fresh one at the deep link.
+            if (self.clients.openWindow) {
+                await self.clients.openWindow(absoluteUrl);
             }
         })()
     );
