@@ -106,27 +106,41 @@ async function handleChatMessage(record: Record<string, unknown>) {
 
     if (error || !participants) return;
 
-    const recipients = participants.filter((p) => p.user_id !== senderId);
+    const recipientIds = participants
+        .map((p) => p.user_id as string)
+        .filter((id) => id !== senderId);
 
-    // Get sender name for the notification
-    const { data: sender } = await supabase
-        .from("users")
-        .select("first_name")
-        .eq("id", senderId)
-        .single();
+    if (recipientIds.length === 0) return;
+
+    // Get the sender's name and each recipient's role in parallel. The role
+    // determines which side of the app the deep link points at, so an admin
+    // tapping the notification lands on /admin/chat rather than /student/chat
+    // (which middleware would bounce them out of).
+    const [{ data: sender }, { data: recipients }] = await Promise.all([
+        supabase.from("users").select("first_name").eq("id", senderId).single(),
+        supabase.from("users").select("id, role").in("id", recipientIds),
+    ]);
+
+    if (!recipients || recipients.length === 0) return;
 
     const senderName = sender?.first_name || "Someone";
     const truncatedBody =
         content.length > 50 ? `${content.substring(0, 50)}...` : content;
 
-    const promises = recipients.map((r) =>
-        sendNotificationToUser(r.user_id, {
+    const promises = recipients.map((r) => {
+        const isAdmin = r.role === "admin" || r.role === "superadmin";
+        // Include the group id so the tap opens the actual thread. Web reads
+        // the active thread from the `?group=` query param (ChatLayout); the
+        // mobile app deep-links to the [id] route inside the chat stack.
+        const webBase = isAdmin ? "/admin" : "/student";
+        const mobileBase = isAdmin ? "/(admin)" : "/(student)";
+        return sendNotificationToUser(r.id, {
             title: `${senderName}`,
             body: truncatedBody,
-            url: "/student/chat",
-            mobilePath: "/(student)/chat",
-        })
-    );
+            url: `${webBase}/chat?group=${groupId}`,
+            mobilePath: `${mobileBase}/chat/${groupId}`,
+        });
+    });
 
     await Promise.allSettled(promises);
 }
