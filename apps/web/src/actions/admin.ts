@@ -26,7 +26,25 @@ export async function getApplications() {
         throw new Error("Failed to fetch applications");
     }
 
-    return data as ApplicationData[];
+    // The transcripts bucket is private: replace stored object paths (or
+    // legacy public URLs) with short-lived signed URLs for the review UI.
+    const applications = await Promise.all(
+        (data as ApplicationData[]).map(async (app) => {
+            if (!app.transcript_url) return app;
+            const objectName = app.transcript_url.split("/").pop();
+            if (!objectName) return { ...app, transcript_url: undefined };
+            const { data: signed, error: signError } = await supabase.storage
+                .from("transcripts")
+                .createSignedUrl(objectName, 60 * 60); // 1 hour
+            if (signError || !signed?.signedUrl) {
+                console.error("Error signing transcript URL:", signError);
+                return { ...app, transcript_url: undefined };
+            }
+            return { ...app, transcript_url: signed.signedUrl };
+        })
+    );
+
+    return applications;
 }
 
 export async function updateApplicationStatus(id: string, status: string) {
