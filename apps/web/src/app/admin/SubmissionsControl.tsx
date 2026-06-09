@@ -7,6 +7,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { SERVICE_TYPES } from "@ambo/database/types";
 import { toast } from "sonner";
+import { fetchAllPages } from "@/lib/fetch-all-pages";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,11 +82,13 @@ export function SubmissionsControl() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchSubmissions = async () => {
-    const res = await fetch("/api/admin/submissions?limit=100");
-    if (res.ok) {
-      const json = await res.json();
-      // Support both paginated { data: [...] } and legacy flat array responses
-      setRows(json.data || json);
+    try {
+      // Fetch every page — a single capped page hides older submissions and
+      // makes the status counts and search silently wrong.
+      const all = await fetchAllPages<SubRow>("/api/admin/submissions");
+      setRows(all);
+    } catch {
+      toast.error("Failed to load submissions");
     }
     setLoading(false);
   };

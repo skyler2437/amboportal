@@ -315,6 +315,13 @@ export function EventModal({
         new Date(d).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     const formatDate = (d: string) =>
         new Date(d).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+    // datetime-local inputs deal in local wall-clock time; shift by the zone
+    // offset before formatting (a bare toISOString() displays UTC, which then
+    // shifts the event time on save).
+    const toDatetimeLocal = (iso: string) => {
+        const d = new Date(iso);
+        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    };
 
     const going = rsvps.filter((r) => r.status === "going");
     const maybe = rsvps.filter((r) => r.status === "maybe");
@@ -357,12 +364,12 @@ export function EventModal({
                             <div className="grid grid-cols-2 gap-2">
                                 <Input
                                     type="datetime-local"
-                                    value={editForm.start_time ? new Date(editForm.start_time).toISOString().slice(0, 16) : ""}
+                                    value={editForm.start_time ? toDatetimeLocal(editForm.start_time) : ""}
                                     onChange={e => setEditForm({ ...editForm, start_time: new Date(e.target.value).toISOString() })}
                                 />
                                 <Input
                                     type="datetime-local"
-                                    value={editForm.end_time ? new Date(editForm.end_time).toISOString().slice(0, 16) : ""}
+                                    value={editForm.end_time ? toDatetimeLocal(editForm.end_time) : ""}
                                     onChange={e => setEditForm({ ...editForm, end_time: new Date(e.target.value).toISOString() })}
                                 />
                             </div>

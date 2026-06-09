@@ -239,10 +239,13 @@ export function MessageList({ groupId, currentUserId, currentUserFirstName = "",
                 )
             );
         } catch {
+            // Revert the optimistic update: m.liked is the already-toggled
+            // value here, so a message showing liked must lose the +1 it
+            // gained (and vice versa).
             setMessages((prev) =>
                 prev.map((m) =>
                     m.id === messageId
-                        ? { ...m, liked: !m.liked, like_count: (m.like_count ?? 0) + (m.liked ? 1 : -1) }
+                        ? { ...m, liked: !m.liked, like_count: (m.like_count ?? 0) + (m.liked ? -1 : 1) }
                         : m
                 )
             );

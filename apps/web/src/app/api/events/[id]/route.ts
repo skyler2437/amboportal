@@ -82,25 +82,56 @@ export async function PUT(
     }
 
     // ── Update custom RSVP options if provided ────────────
-    if (body.rsvp_options !== undefined) {
-        // Delete existing options
-        await supabase
+    // Diff against the existing options instead of delete-and-reinsert:
+    // event_rsvps.rsvp_option_id is ON DELETE SET NULL, so rewriting rows
+    // with fresh ids would silently wipe every student's option choice on
+    // any event edit. Options that keep their label keep their id (and the
+    // RSVPs pointing at it); a renamed label counts as remove + add.
+    if (body.rsvp_options !== undefined && Array.isArray(body.rsvp_options)) {
+        const incoming: string[] = [];
+        const seen = new Set<string>();
+        for (const raw of body.rsvp_options) {
+            if (typeof raw !== "string") continue;
+            const label = raw.trim();
+            if (!label || seen.has(label)) continue;
+            seen.add(label);
+            incoming.push(label);
+        }
+
+        const { data: existingOptions } = await supabase
             .from("event_rsvp_options")
-            .delete()
+            .select("id, label, sort_order")
             .eq("event_id", params.id);
 
-        // Insert new options
-        if (Array.isArray(body.rsvp_options) && body.rsvp_options.length > 0) {
-            const optionRows = body.rsvp_options
-                .filter((label: string) => label.trim())
-                .map((label: string, idx: number) => ({
-                    event_id: params.id,
-                    label: label.trim(),
-                    sort_order: idx,
-                }));
-            if (optionRows.length > 0) {
-                await supabase.from("event_rsvp_options").insert(optionRows);
+        const existingByLabel = new Map(
+            (existingOptions ?? []).map((o) => [o.label as string, o])
+        );
+
+        const removedIds = (existingOptions ?? [])
+            .filter((o) => !seen.has(o.label as string))
+            .map((o) => o.id);
+        if (removedIds.length > 0) {
+            await supabase
+                .from("event_rsvp_options")
+                .delete()
+                .in("id", removedIds);
+        }
+
+        const newRows: { event_id: string; label: string; sort_order: number }[] = [];
+        for (let idx = 0; idx < incoming.length; idx++) {
+            const label = incoming[idx];
+            const existing = existingByLabel.get(label);
+            if (!existing) {
+                newRows.push({ event_id: params.id, label, sort_order: idx });
+            } else if (existing.sort_order !== idx) {
+                await supabase
+                    .from("event_rsvp_options")
+                    .update({ sort_order: idx })
+                    .eq("id", existing.id);
             }
+        }
+        if (newRows.length > 0) {
+            await supabase.from("event_rsvp_options").insert(newRows);
         }
     }
 

@@ -6,6 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { toast } from "sonner";
+import { fetchAllPages } from "@/lib/fetch-all-pages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -77,11 +78,13 @@ export function UserControl() {
       setMyRole(session.user?.role || "student");
     }
 
-    const res = await fetch("/api/admin/users?limit=100");
-    if (res.ok) {
-      const json = await res.json();
-      // Support both paginated { data: [...] } and legacy flat array responses
-      setRows(json.data || json);
+    try {
+      // Fetch every page — a single capped page hides users past the 100th
+      // alphabetically from the table and the search.
+      const all = await fetchAllPages<UserRow>("/api/admin/users");
+      setRows(all);
+    } catch {
+      toast.error("Failed to load users");
     }
     setLoading(false);
   };
