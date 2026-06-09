@@ -1,11 +1,20 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { getSession } from "@/lib/session";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+async function requireAdminSession() {
+    const session = await getSession();
+    if (!session || !["admin", "superadmin"].includes(session.role)) {
+        throw new Error("Forbidden: admin access required");
+    }
+    return session;
+}
 
 export type ApplicantData = {
     firstName: string;
@@ -15,6 +24,7 @@ export type ApplicantData = {
 };
 
 export async function uploadApplicants(applicants: ApplicantData[]) {
+    await requireAdminSession();
     if (!supabaseUrl || !supabaseServiceKey) {
         return { success: false, error: "Supabase credentials missing" };
     }
@@ -80,6 +90,7 @@ export async function uploadApplicants(applicants: ApplicantData[]) {
 }
 
 export async function getApplicants() {
+    await requireAdminSession();
     if (!supabaseUrl || !supabaseServiceKey) return [];
 
     const { data, error } = await supabase.from("applicants").select("*");

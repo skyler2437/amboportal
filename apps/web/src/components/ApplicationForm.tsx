@@ -168,7 +168,7 @@ export default function ApplicationForm({ userId, userData, initialData, resumeS
             if (currentStepKey === "contact") {
                 // Guest flow: phone lookup on first step
                 setIsLoading(true);
-                const existing = await getApplicationByPhone(resumeData.phone_number);
+                const { application: existing, exists } = await getApplicationByPhone(resumeData.phone_number);
                 setIsLoading(false);
 
                 if (existing) {
@@ -178,10 +178,17 @@ export default function ApplicationForm({ userId, userData, initialData, resumeS
                         setIsSaving(false);
                         return;
                     }
+                } else if (exists) {
+                    // An application exists for this phone but this browser
+                    // doesn't hold its application token.
+                    setStepError(
+                        "An application with this phone number already exists. Continue on the device where you started it, or contact the Ambassador Coordinator."
+                    );
+                    setIsSaving(false);
+                    return;
                 } else {
                     await saveApplicationStep({
                         phone_number: resumeData.phone_number,
-                        status: 'draft',
                         current_step: 2
                     });
                 }
@@ -256,8 +263,8 @@ export default function ApplicationForm({ userId, userData, initialData, resumeS
             toast.error("File is too large. Max 5MB.");
             return;
         }
-        if (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) {
-            toast.error("Only PDF, JPG, and PNG files are allowed.");
+        if (file.type !== 'application/pdf') {
+            toast.error("Only PDF files are allowed.");
             return;
         }
 
@@ -267,9 +274,10 @@ export default function ApplicationForm({ userId, userData, initialData, resumeS
             formData.append("file", file);
             formData.append("phone", resumeData.phone_number);
 
-            const { publicUrl } = await uploadTranscript(formData);
-            handleChange("transcript_url", publicUrl);
-            await saveApplicationStep({ phone_number: resumeData.phone_number, transcript_url: publicUrl });
+            // uploadTranscript persists transcript_url server-side; the local
+            // state only needs a truthy value for the "uploaded" indicator.
+            const { path } = await uploadTranscript(formData);
+            handleChange("transcript_url", path);
         } catch (error) {
             console.error(error);
             toast.error("Failed to upload file");
@@ -435,9 +443,9 @@ export default function ApplicationForm({ userId, userData, initialData, resumeS
                                             <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md text-sm font-medium transition-colors w-fit border shadow-sm">
                                                 {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span>Upload File</span>
-                                                <input type="file" className="hidden" accept=".pdf,.png,.jpg,.jpeg" onChange={handleFileUpload} />
+                                                <input type="file" className="hidden" accept=".pdf,application/pdf" onChange={handleFileUpload} />
                                             </label>
-                                            <span className="text-xs text-muted-foreground">PDF, JPG, PNG (Max 5MB)</span>
+                                            <span className="text-xs text-muted-foreground">PDF (Max 5MB)</span>
                                         </div>
                                     )}
                                 </div>
