@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import { Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '@/lib/supabase';
+import { unregisterCurrentPushToken } from '@/lib/push-token-manager';
 import type { UserRole } from '@ambo/database/types';
 import type { Session } from '@supabase/supabase-js';
 
@@ -208,6 +209,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signOut() {
+    // Unregister the device push token while the access token is still
+    // valid — after signOut() the server delete can no longer authenticate
+    // and the device would keep receiving this user's notifications.
+    await unregisterCurrentPushToken();
     await supabase.auth.signOut();
     setState({ session: null, userRole: null, isLoading: false });
   }
