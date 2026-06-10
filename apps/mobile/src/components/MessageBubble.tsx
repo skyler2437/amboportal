@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   ownBubble: {
-    backgroundColor: '#111827',
+    backgroundColor: '#005EFF',
     borderBottomRightRadius: 4,
     alignSelf: 'flex-end',
   },

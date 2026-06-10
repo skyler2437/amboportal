@@ -21,7 +21,6 @@ export function BiometricLockScreen({ onUnlock }: BiometricLockScreenProps) {
         mode="contained"
         onPress={onUnlock}
         style={styles.button}
-        buttonColor="#111827"
         accessibilityLabel="Unlock with biometrics"
       >
         Unlock

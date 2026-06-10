@@ -288,7 +288,6 @@ export default function ApplyScreen() {
               icon={() =>
                 submitting ? null : <Check size={18} color="#fff" />
               }
-              buttonColor="#111827"
               style={styles.nextButton}
             >
               Submit
@@ -303,7 +302,6 @@ export default function ApplyScreen() {
                 saving ? null : <ChevronRight size={18} color="#fff" />
               }
               contentStyle={{ flexDirection: 'row-reverse' }}
-              buttonColor="#111827"
               style={styles.nextButton}
             >
               Next

@@ -31,7 +31,7 @@ export default function StudentLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: '#111827',
+        tabBarActiveTintColor: '#005EFF',
         tabBarInactiveTintColor: '#9ca3af',
         tabBarStyle: {
           backgroundColor: '#fff',
@@ -77,7 +77,7 @@ export default function StudentLayout() {
             <MessageCircle size={size} color={color} />
           ),
           tabBarBadge: unreadChats > 0 ? unreadChats : undefined,
-          tabBarBadgeStyle: { backgroundColor: '#111827', fontSize: 10 },
+          tabBarBadgeStyle: { backgroundColor: '#005EFF', fontSize: 10 },
         }}
       />
       <Tabs.Screen

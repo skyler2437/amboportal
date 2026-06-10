@@ -44,7 +44,7 @@ export default function AdminDashboard() {
   if (!hasLoadedOnce.current) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#111827" />
+        <ActivityIndicator size="large" />
       </View>
     );
   }

@@ -81,7 +81,7 @@ export default function DesignDemoPage() {
                             <h1 className="text-2xl font-bold text-gray-900">My Tasks</h1>
                             <p className="text-gray-500 text-sm">3 pending tasks today</p>
                         </div>
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                        <div className="w-10 h-10 bg-brand-light rounded-full flex items-center justify-center text-brand font-bold">
                             SJ
                         </div>
                     </div>
