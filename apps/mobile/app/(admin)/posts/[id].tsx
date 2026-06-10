@@ -313,7 +313,7 @@ export default function AdminPostDetail() {
               accessibilityLabel={post.liked ? 'Unlike post' : 'Like post'}
               style={{ margin: 0 }}
             />
-            <Text variant="bodySmall" onPress={openLikers} style={styles.engagementText}>
+            <Text variant="bodySmall" onPress={openLikers} style={[styles.engagementText, styles.likeCountTight]}>
               {post.like_count} {post.like_count === 1 ? 'like' : 'likes'}
             </Text>
             <Pressable onPress={openViewers} style={styles.engagementViews}>
@@ -511,5 +511,7 @@ const styles = StyleSheet.create({
   commentTextInput: { flex: 1, backgroundColor: '#fff', maxHeight: 100 },
   engagementRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   engagementText: { color: '#6b7280' },
+  // Cancels part of the IconButton's internal padding so the count hugs the heart
+  likeCountTight: { marginLeft: -4 },
   engagementViews: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 16 },
 });

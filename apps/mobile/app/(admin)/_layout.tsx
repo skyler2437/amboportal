@@ -40,9 +40,10 @@ export default function AdminLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{
           title: 'Dashboard',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <LayoutDashboard size={size} color={color} />
           ),
@@ -86,6 +87,7 @@ export default function AdminLayout() {
         name="profile"
         options={{
           title: 'Profile',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <UserCircle size={size} color={color} />
           ),
