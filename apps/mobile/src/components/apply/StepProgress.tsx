@@ -14,7 +14,7 @@ export default function StepProgress({ currentStep, totalSteps }: StepProgressPr
 
   return (
     <View style={styles.container}>
-      <ProgressBar progress={progress} color="#111827" style={styles.bar} />
+      <ProgressBar progress={progress} style={styles.bar} />
       <Text variant="titleMedium" style={styles.label}>
         {STEP_LABELS[currentStep] ?? ''}
       </Text>

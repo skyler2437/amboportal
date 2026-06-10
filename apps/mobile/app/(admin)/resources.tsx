@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#111827',
+    backgroundColor: '#005EFF',
   },
   dialogContent: { gap: 12 },
   filePreview: {

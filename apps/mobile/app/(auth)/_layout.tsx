@@ -1,15 +1,15 @@
 import { Stack } from 'expo-router';
+import { stackScreenOptions } from '@/lib/navigation';
 
 export default function AuthLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerShown: false, ...stackScreenOptions }}>
       <Stack.Screen name="login" />
       <Stack.Screen
         name="register"
         options={{
           headerShown: true,
           title: 'Create Account',
-          headerBackTitle: 'Login',
         }}
       />
       <Stack.Screen
@@ -17,7 +17,6 @@ export default function AuthLayout() {
         options={{
           headerShown: true,
           title: 'Forgot Password',
-          headerBackTitle: 'Back',
         }}
       />
       <Stack.Screen
@@ -31,7 +30,6 @@ export default function AuthLayout() {
         options={{
           headerShown: true,
           title: 'Apply',
-          headerBackTitle: 'Back',
         }}
       />
     </Stack>

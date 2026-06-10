@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { Avatar, Text } from 'react-native-paper';
+import { Avatar, Icon, Text } from 'react-native-paper';
 import type { MessageStatus } from '@/hooks/useChatMessages';
 
 interface MessageBubbleProps {
@@ -66,7 +66,12 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
           </View>
           {likeCount > 0 && (
             <View style={[styles.likeBadge, isOwn ? styles.likeBadgeOwn : styles.likeBadgeOther]}>
-              <Text style={styles.likeBadgeText}>{liked ? '❤️' : '🤍'} {likeCount}</Text>
+              <Icon
+                source={liked ? 'heart' : 'heart-outline'}
+                size={12}
+                color={liked ? '#ef4444' : '#9ca3af'}
+              />
+              <Text style={styles.likeBadgeText}>{likeCount}</Text>
             </View>
           )}
         </Pressable>
@@ -159,7 +164,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   ownBubble: {
-    backgroundColor: '#111827',
+    backgroundColor: '#005EFF',
     borderBottomRightRadius: 4,
     alignSelf: 'flex-end',
   },
@@ -257,6 +262,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
+    gap: 3,
     backgroundColor: '#fff',
     borderColor: '#e5e7eb',
     borderWidth: 1,
@@ -267,5 +273,5 @@ const styles = StyleSheet.create({
   },
   likeBadgeOwn: { alignSelf: 'flex-end' },
   likeBadgeOther: { alignSelf: 'flex-start' },
-  likeBadgeText: { fontSize: 11 },
+  likeBadgeText: { fontSize: 11, color: '#6b7280', fontWeight: '600' },
 });

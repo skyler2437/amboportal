@@ -154,7 +154,6 @@ export function EventDateTimePicker({
         <Switch
           value={allDay}
           onValueChange={handleAllDayChange}
-          color="#111827"
         />
       </View>
 
@@ -292,8 +291,8 @@ const styles = StyleSheet.create({
     borderColor: '#e2e5ea',
   },
   pillActive: {
-    backgroundColor: '#111827',
-    borderColor: '#111827',
+    backgroundColor: '#005EFF',
+    borderColor: '#005EFF',
   },
   pillText: {
     fontSize: 15,

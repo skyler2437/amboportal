@@ -8,10 +8,12 @@ import { sendNotificationToUser } from "@/lib/notifications";
  * Called hourly by Vercel Cron.
  */
 export async function POST(req: Request) {
-    // Verify cron secret (Vercel sets this header automatically for cron jobs)
+    // Verify cron secret (Vercel sets this header automatically for cron
+    // jobs). Fail closed: this route is on a public middleware path, so a
+    // missing CRON_SECRET must not leave it anonymously triggerable.
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

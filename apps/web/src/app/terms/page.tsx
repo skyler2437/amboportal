@@ -87,7 +87,7 @@ export default function TermsOfServicePage() {
             You may delete your account at any time from the Profile screen. Administrators reserve
             the right to suspend or terminate accounts that violate these terms. Upon termination,
             your data will be permanently deleted in accordance with our{" "}
-            <a href="/privacy" className="text-blue-600 underline">
+            <a href="/privacy" className="text-brand underline">
               Privacy Policy
             </a>
             .
@@ -124,7 +124,7 @@ export default function TermsOfServicePage() {
           <h2 className="text-xl font-semibold mt-6 mb-2">12. Contact Us</h2>
           <p>
             If you have questions about these terms, contact us at{" "}
-            <a href="mailto:support@127makes.com" className="text-blue-600 underline">
+            <a href="mailto:support@127makes.com" className="text-brand underline">
               support@127makes.com
             </a>
             .

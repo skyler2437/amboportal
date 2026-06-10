@@ -17,7 +17,7 @@ export default function SupportPage() {
           <h2 className="text-xl font-semibold mt-6 mb-2">Contact Us</h2>
           <p>
             For questions, bug reports, or general support, reach out to us at{" "}
-            <a href="mailto:support@127makes.com" className="text-blue-600 underline">
+            <a href="mailto:support@127makes.com" className="text-brand underline">
               support@127makes.com
             </a>
             . We aim to respond within 48 hours.
@@ -57,7 +57,7 @@ export default function SupportPage() {
           <h2 className="text-xl font-semibold mt-6 mb-2">Report a Bug</h2>
           <p>
             If you encounter a bug, please email{" "}
-            <a href="mailto:support@127makes.com" className="text-blue-600 underline">
+            <a href="mailto:support@127makes.com" className="text-brand underline">
               support@127makes.com
             </a>{" "}
             with a description of the issue, the device you&apos;re using, and any screenshots

@@ -37,10 +37,11 @@ export async function POST(req: Request) {
         console.error("Failed to sync RSVP to GCal:", e);
     }
 
-    // Return updated list
+    // Return updated list. rsvp_option_id must be included — the modal keys
+    // the selected custom option and per-option attendee lists on it.
     const { data } = await supabase
         .from("event_rsvps")
-        .select("status, user_id, users(first_name, last_name)")
+        .select("status, user_id, rsvp_option_id, users(first_name, last_name)")
         .eq("event_id", event_id);
 
     return NextResponse.json({ rsvps: data || [] });

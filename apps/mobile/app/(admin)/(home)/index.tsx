@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text, ActivityIndicator } from 'react-native-paper';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { supabase } from '@/lib/supabase';
+import { CheddarRain } from '@/components/CheddarRain';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function AdminDashboard() {
   const [applicationCount, setApplicationCount] = useState(0);
   const [submissionCount, setSubmissionCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [cheddarActive, setCheddarActive] = useState(false);
   const hasLoadedOnce = useRef(false);
 
   const fetchStats = async () => {
@@ -44,14 +46,30 @@ export default function AdminDashboard() {
   if (!hasLoadedOnce.current) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#111827" />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.container}
+    <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              onPress={() => setCheddarActive(true)}
+              disabled={cheddarActive}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Make it rain cheddar"
+            >
+              <Text style={styles.cheddarEmoji}>🧀</Text>
+            </Pressable>
+          ),
+        }}
+      />
+      <ScrollView
+      style={styles.flex}
       contentContainerStyle={styles.content}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
@@ -102,13 +120,17 @@ export default function AdminDashboard() {
           </Card>
         </Pressable>
       </View>
-    </ScrollView>
+      </ScrollView>
+      <CheddarRain isActive={cheddarActive} onComplete={() => setCheddarActive(false)} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },
   container: { flex: 1, backgroundColor: '#fff' },
+  flex: { flex: 1 },
+  cheddarEmoji: { fontSize: 20, marginRight: 4 },
   content: { padding: 16, paddingBottom: 32 },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   statCard: { width: '47%', backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, overflow: 'hidden' },

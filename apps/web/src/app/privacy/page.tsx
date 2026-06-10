@@ -111,7 +111,7 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-xl font-semibold mt-6 mb-2">10. Contact Us</h2>
           <p>
             If you have questions about this privacy policy or your data, contact us at{" "}
-            <a href="mailto:support@127makes.com" className="text-blue-600 underline">
+            <a href="mailto:support@127makes.com" className="text-brand underline">
               support@127makes.com
             </a>
             .

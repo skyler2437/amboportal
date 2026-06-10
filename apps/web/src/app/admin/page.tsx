@@ -51,7 +51,7 @@ export default async function AdminPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+              <div className="p-2 rounded-lg bg-brand-light text-brand">
                 <Users className="h-5 w-5" />
               </div>
               <div>

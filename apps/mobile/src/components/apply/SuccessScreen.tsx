@@ -36,7 +36,6 @@ export default function SuccessScreen() {
         mode="contained"
         onPress={() => router.replace('/(auth)/login')}
         style={styles.button}
-        buttonColor="#111827"
       >
         Back to Login
       </Button>

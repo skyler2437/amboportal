@@ -21,7 +21,7 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.1</string>
+	<string>1.2.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -41,7 +41,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>17</string>
+	<string>18</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSMinimumSystemVersion</key>
@@ -54,6 +54,21 @@
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<!-- Expo dev-server tunnel (ngrok). Physical devices load the dev
+			     bundle over plain HTTP from *.exp.direct; without this ATS
+			     blocks the request (NSAllowsLocalNetworking does not cover
+			     public hostnames or cellular-tethering addresses). Dev-only
+			     surface; production traffic is unaffected. -->
+			<key>exp.direct</key>
+			<dict>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
 	</dict>
 	<key>NSBonjourServices</key>
 	<array>

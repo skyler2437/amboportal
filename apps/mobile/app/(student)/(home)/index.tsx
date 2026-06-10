@@ -1,8 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text, Button, Chip, Divider } from 'react-native-paper';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from 'expo-router';
+import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/providers/AuthProvider';
 import { useSubmissions } from '@/hooks/useSubmissions';
@@ -12,6 +11,7 @@ import { DashboardSkeleton } from '@/components/SkeletonLoader';
 import { hapticMedium } from '@/lib/haptics';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { CheddarRain } from '@/components/CheddarRain';
 import type { SubmissionStatus } from '@ambo/database';
 
 const FILTERS: SubmissionStatus[] = ['Approved', 'Pending', 'Denied'];
@@ -29,6 +29,7 @@ export default function StudentDashboard() {
   const [activeFilters, setActiveFilters] = useState<Set<SubmissionStatus>>(new Set(FILTERS));
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [cheddarActive, setCheddarActive] = useState(false);
   const initialLoadDone = useRef(false);
   const router = useRouter();
 
@@ -94,8 +95,24 @@ export default function StudentDashboard() {
   if (error && submissions.length === 0) return <ErrorState message={error} onRetry={refetch} />;
 
   return (
-    <FlatList
-      style={styles.container}
+    <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              onPress={() => setCheddarActive(true)}
+              disabled={cheddarActive}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Make it rain cheddar"
+            >
+              <Text style={styles.cheddarEmoji}>🧀</Text>
+            </Pressable>
+          ),
+        }}
+      />
+      <FlatList
+      style={styles.flex}
       contentContainerStyle={styles.content}
       data={filtered}
       keyExtractor={(item) => item.id}
@@ -234,12 +251,16 @@ export default function StudentDashboard() {
       ListEmptyComponent={
         <EmptyState icon="file-document-outline" title="No submissions yet" subtitle="Tap 'Log New Activity' to submit your first service hours." />
       }
-    />
+      />
+      <CheddarRain isActive={cheddarActive} onComplete={() => setCheddarActive(false)} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  flex: { flex: 1 },
+  cheddarEmoji: { fontSize: 20, marginRight: 4 },
   content: { padding: 16, paddingBottom: 32 },
   header: { gap: 16, marginBottom: 8 },
   statsRow: { flexDirection: 'row', gap: 12 },

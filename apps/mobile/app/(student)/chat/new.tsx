@@ -76,7 +76,7 @@ export default function StudentNewChat() {
 
     return (
       <Pressable style={styles.userRow} onPress={() => toggleUser(item.id)}>
-        <Checkbox status={isSelected ? 'checked' : 'unchecked'} onPress={() => toggleUser(item.id)} color="#111827" uncheckedColor="#9ca3af" />
+        <Checkbox status={isSelected ? 'checked' : 'unchecked'} onPress={() => toggleUser(item.id)} uncheckedColor="#9ca3af" />
         {item.avatar_url ? (
           <Avatar.Image size={36} source={{ uri: item.avatar_url }} />
         ) : (

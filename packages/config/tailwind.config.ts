@@ -17,11 +17,20 @@ const sharedConfig: Partial<Config> = {
           tertiary: "#f5f5f5",
         },
         border: "hsl(var(--border))",
+        // Brand blue (#005EFF, matches the app icon). Literal rgb so Tailwind
+        // opacity modifiers (bg-brand/10) work; keep in sync with --brand in
+        // apps/web globals.css.
+        brand: {
+          DEFAULT: "rgb(0 94 255 / <alpha-value>)",
+          hover: "var(--brand-hover)",
+          light: "var(--brand-light)",
+          subtle: "var(--brand-subtle)",
+        },
         accent: {
           DEFAULT: "hsl(var(--accent))",
-          hover: "#2563eb",
-          light: "#eff6ff",
-          subtle: "rgba(59, 130, 246, 0.08)",
+          hover: "var(--brand-hover)",
+          light: "var(--brand-light)",
+          subtle: "var(--brand-subtle)",
           foreground: "hsl(var(--accent-foreground))",
         },
         background: "hsl(var(--background))",

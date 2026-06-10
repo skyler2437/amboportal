@@ -360,7 +360,6 @@ export default function StudentProfile() {
             <Switch
               value={prefs.chat_messages}
               onValueChange={(v) => updatePref('chat_messages', v)}
-              color="#111827"
             />
           </View>
           <Divider />
@@ -372,7 +371,6 @@ export default function StudentProfile() {
             <Switch
               value={prefs.new_posts}
               onValueChange={(v) => updatePref('new_posts', v)}
-              color="#111827"
             />
           </View>
           <Divider />
@@ -384,7 +382,6 @@ export default function StudentProfile() {
             <Switch
               value={prefs.post_comments}
               onValueChange={(v) => updatePref('post_comments', v)}
-              color="#111827"
             />
           </View>
           <Divider />
@@ -396,7 +393,6 @@ export default function StudentProfile() {
             <Switch
               value={prefs.event_comments}
               onValueChange={(v) => updatePref('event_comments', v)}
-              color="#111827"
             />
           </View>
           <Divider />
@@ -408,7 +404,6 @@ export default function StudentProfile() {
             <Switch
               value={prefs.event_reminders}
               onValueChange={(v) => updatePref('event_reminders', v)}
-              color="#111827"
             />
           </View>
         </Card.Content>

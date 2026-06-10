@@ -62,7 +62,9 @@ npm run lint         # ESLint
 npm run db:seed      # Seed database (tsx supabase/seed.ts)
 ```
 
-There is no test suite configured.
+Web unit tests live in `apps/web/tests/unit` and run with `npm test`
+(vitest) from `apps/web`. CI (`.github/workflows/ci.yml`) runs lint,
+typecheck, tests, and build for both apps.
 
 ## Project Structure
 
@@ -307,8 +309,8 @@ Migrations live in `supabase/migrations/` as SQL files. They are applied manuall
 
 ## Important Notes
 
-- Build uses `--no-lint` flag (`next build --no-lint`)
-- No test suite exists - be careful with refactors
+- Build uses `--no-lint` flag (`next build --no-lint`); CI runs `next lint` separately
+- Run `npm test` in `apps/web` after changes — CI enforces lint, typecheck, and tests
 - Shadcn/ui components are in `components/ui/` and configured via `components.json` (new-york style, RSC enabled)
 - The app is a PWA with a service worker (`public/sw.js`) and manifest
 - Mobile-first design with bottom navigation for student views

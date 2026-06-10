@@ -1,14 +1,32 @@
 import { createAdminClient } from "@ambo/database/admin-client";
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
+import { canAccessApplication } from "@/lib/application-auth";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  const rateKey = getRateLimitKey(request, "applications-upload");
+  const { allowed, resetIn } = await checkRateLimit(rateKey, {
+    maxRequests: 10,
+    windowSeconds: 900,
+  });
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(resetIn) } }
+    );
+  }
+
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
   const phone = formData.get("phone") as string | null;
 
   if (!file || !phone) {
     return NextResponse.json({ error: "File and phone number are required" }, { status: 400 });
+  }
+
+  if (!(await canAccessApplication(phone))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
   // Validate file size (max 5MB)
@@ -29,7 +47,9 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createAdminClient();
-  const fileName = `${phone}_transcript_${uuidv4()}.pdf`;
+  // The storage key must come from server-controlled values only.
+  const safePhone = phone.replace(/\D/g, "");
+  const fileName = `${safePhone}_transcript_${uuidv4()}.pdf`;
 
   const { error } = await supabase.storage
     .from("transcripts")
@@ -40,9 +60,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to upload transcript" }, { status: 500 });
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("transcripts").getPublicUrl(fileName);
+  // The bucket is private: store the object path; admin review mints
+  // short-lived signed URLs from it.
+  const { error: saveError } = await supabase
+    .from("applications")
+    .upsert(
+      {
+        phone_number: phone,
+        transcript_url: fileName,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "phone_number" }
+    );
 
-  return NextResponse.json({ publicUrl });
+  if (saveError) {
+    console.error("Error saving transcript path:", saveError);
+    return NextResponse.json({ error: "Failed to save transcript" }, { status: 500 });
+  }
+
+  return NextResponse.json({ path: fileName });
 }

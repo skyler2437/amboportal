@@ -5,8 +5,9 @@ export const theme: MD3Theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#111827',
-    primaryContainer: '#f3f4f6',
+    // Brand blue — matches the app icon and web --brand (#005EFF)
+    primary: '#005EFF',
+    primaryContainer: '#EBF2FF',
     secondary: '#6366f1',
     secondaryContainer: '#eef2ff',
     error: '#ef4444',
@@ -27,7 +28,7 @@ export const statusColors = {
 } as const;
 
 export const roleColors = {
-  admin: { bg: '#eff6ff', text: '#3b82f6' },
+  admin: { bg: '#EBF2FF', text: '#005EFF' },
   superadmin: { bg: '#f5f3ff', text: '#7c3aed' },
   student: { bg: '#f0fdf4', text: '#22c55e' },
   basic: { bg: '#f5f5f5', text: '#6b7280' },

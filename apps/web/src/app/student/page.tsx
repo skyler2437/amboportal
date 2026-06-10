@@ -47,7 +47,7 @@ export default async function StudentDashboard() {
       label: "Approved Hours",
       value: totalHours.toFixed(1),
       icon: Clock,
-      color: "text-blue-600",
+      color: "text-brand",
     },
     {
       label: "Approved Credits",

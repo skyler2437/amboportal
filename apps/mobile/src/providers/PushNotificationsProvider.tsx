@@ -6,7 +6,13 @@ import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuth } from './AuthProvider';
-import { supabase } from '@/lib/supabase';
+import {
+  setCurrentPushToken,
+  syncTokenToServer,
+  deleteTokenFromServer,
+  getCurrentPushToken,
+  type TokenPayload,
+} from '@/lib/push-token-manager';
 import type { UserRole } from '@ambo/database/types';
 
 const PENDING_TOKEN_KEY = 'ambo_pending_push_token';
@@ -29,6 +35,16 @@ function mapWebUrlToMobileRoute(url: string, role: UserRole | null): string {
   return base;
 }
 
+// The web sender hardcodes a group in mobilePath (chat notifications carry
+// "/(student)/chat" for every participant, admins included), so rewrite the
+// group segment for THIS user's role. The admin and student groups expose
+// mirrored chat/posts/events trees, so the remapped route always exists.
+function remapMobilePathForRole(mobilePath: string, role: UserRole | null): string {
+  const group = groupForRole(role);
+  if (!group) return mobilePath;
+  return mobilePath.replace(/^\/\((student|admin)\)/, `/${group}`);
+}
+
 function getProjectId(): string | null {
   if (process.env.EXPO_PUBLIC_EAS_PROJECT_ID) {
     return process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
@@ -42,76 +58,10 @@ function getProjectId(): string | null {
   return null;
 }
 
-async function getApiBaseUrl(): Promise<string> {
-  // Use EXPO_PUBLIC env var or derive from Supabase URL
-  if (process.env.EXPO_PUBLIC_API_BASE_URL) {
-    return process.env.EXPO_PUBLIC_API_BASE_URL;
-  }
-  if (process.env.EXPO_PUBLIC_WEB_URL) {
-    return process.env.EXPO_PUBLIC_WEB_URL;
-  }
-  if (__DEV__) return 'http://localhost:3000';
-  throw new Error('EXPO_PUBLIC_WEB_URL must be set for production builds');
-}
-
-async function getAccessToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token ?? null;
-}
-
-interface TokenPayload {
-  token: string;
-  platform: string;
-  device_name: string;
-}
-
-async function syncTokenToServer(payload: TokenPayload): Promise<boolean> {
-  const accessToken = await getAccessToken();
-  if (!accessToken) return false;
-
-  const baseUrl = await getApiBaseUrl();
-
-  try {
-    const res = await fetch(`${baseUrl}/api/mobile/push-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(payload),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-async function deleteTokenFromServer(token: string): Promise<boolean> {
-  const accessToken = await getAccessToken();
-  if (!accessToken) return false;
-
-  const baseUrl = await getApiBaseUrl();
-
-  try {
-    const res = await fetch(`${baseUrl}/api/mobile/push-token`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({ token }),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
 export function PushNotificationsProvider({ children }: { children: React.ReactNode }) {
   const { session, userRole, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
-  const currentTokenRef = useRef<string | null>(null);
   const registeredRef = useRef(false);
   // Holds a notification target that arrived before navigation settled. We
   // store the raw payload (not a resolved route) because the user's role is
@@ -202,7 +152,7 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
 
     // Resolve the concrete route now that the role is known.
     const route = target.mobilePath
-      ? target.mobilePath
+      ? remapMobilePathForRole(target.mobilePath, userRoleRef.current)
       : target.url
         ? mapWebUrlToMobileRoute(target.url, userRoleRef.current)
         : null;
@@ -216,10 +166,15 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
   const handleNotificationResponse = useCallback(
     (response: Notifications.NotificationResponse) => {
       const data = response.notification.request.content.data as
-        | { mobilePath?: string; url?: string }
+        | Record<string, unknown>
         | undefined;
-      if (!data?.mobilePath && !data?.url) return;
-      pendingTargetRef.current = { mobilePath: data.mobilePath, url: data.url };
+      // Payload data is attacker-/sender-controlled: only stage real strings
+      // so a malformed value can't reach the route mappers.
+      const mobilePath =
+        typeof data?.mobilePath === 'string' ? data.mobilePath : undefined;
+      const url = typeof data?.url === 'string' ? data.url : undefined;
+      if (!mobilePath && !url) return;
+      pendingTargetRef.current = { mobilePath, url };
       flushPendingRoute();
     },
     [flushPendingRoute]
@@ -282,6 +237,9 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
       }
 
       if (finalStatus !== 'granted') {
+        // Clear the guard so granting permission later (e.g. from the
+        // Profile screen) lets the next session event retry registration.
+        registeredRef.current = false;
         if (__DEV__) console.log('[Push] Permission not granted');
         return;
       }
@@ -289,7 +247,7 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
       // Get Expo push token
       const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
       const token = tokenData.data;
-      currentTokenRef.current = token;
+      setCurrentPushToken(token);
 
       const payload: TokenPayload = {
         token,
@@ -337,12 +295,16 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
   // React to session changes
   useEffect(() => {
     if (!session) {
-      // On logout, best-effort delete token
-      if (currentTokenRef.current) {
-        deleteTokenFromServer(currentTokenRef.current).catch(() => {
+      // Fallback only: AuthProvider.signOut already unregisters the token
+      // while its access token is still valid. This path covers sessions
+      // that end without an explicit sign-out (e.g. expiry), where the
+      // server delete can no longer authenticate anyway.
+      const token = getCurrentPushToken();
+      if (token) {
+        deleteTokenFromServer(token).catch(() => {
           // Don't block logout
         });
-        currentTokenRef.current = null;
+        setCurrentPushToken(null);
       }
       registeredRef.current = false;
       return;
@@ -361,7 +323,7 @@ export function PushNotificationsProvider({ children }: { children: React.ReactN
 
     const subscription = Notifications.addPushTokenListener(async (newToken) => {
       const token = newToken.data as string;
-      currentTokenRef.current = token;
+      setCurrentPushToken(token);
 
       const payload: TokenPayload = {
         token,

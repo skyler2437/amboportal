@@ -60,15 +60,17 @@ export function PostCard({ content, createdAt, author, commentCount, likeCount, 
       </Text>
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          <IconButton
-            icon={liked ? 'heart' : 'heart-outline'}
-            size={18}
-            iconColor={liked ? '#ef4444' : '#9ca3af'}
-            accessibilityLabel={liked ? 'Unlike post' : 'Like post'}
-            style={styles.iconBtn}
-            onPress={(e) => { e.stopPropagation?.(); onToggleLike(); }}
-          />
-          {likeCount > 0 && <Text variant="bodySmall" style={styles.metaText}>{likeCount}</Text>}
+          <View style={styles.likeGroup}>
+            <IconButton
+              icon={liked ? 'heart' : 'heart-outline'}
+              size={18}
+              iconColor={liked ? '#ef4444' : '#9ca3af'}
+              accessibilityLabel={liked ? 'Unlike post' : 'Like post'}
+              style={styles.iconBtn}
+              onPress={(e) => { e.stopPropagation?.(); onToggleLike(); }}
+            />
+            {likeCount > 0 && <Text variant="bodySmall" style={styles.likeCountText}>{likeCount}</Text>}
+          </View>
           <Text variant="bodySmall" style={styles.commentCount}>
             {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
           </Text>
@@ -120,7 +122,12 @@ const styles = StyleSheet.create({
   timestamp: { color: '#9ca3af', fontSize: 12 },
   content: { marginTop: 10, lineHeight: 20 },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
-  footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  // The IconButton renders the 18px heart in a 34px touch target (8px of
+  // internal padding per side); the negative margin pulls the count back
+  // against the glyph so it reads as one unit, separate from the comments.
+  likeGroup: { flexDirection: 'row', alignItems: 'center' },
+  likeCountText: { color: '#6b7280', marginLeft: -6 },
   footerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconBtn: { margin: 0 },
   metaText: { color: '#6b7280' },

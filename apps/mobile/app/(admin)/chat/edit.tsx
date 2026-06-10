@@ -176,7 +176,7 @@ export default function AdminChatEdit() {
             <MaterialCommunityIcons
               name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'}
               size={24}
-              color={selected ? '#111827' : '#9ca3af'}
+              color={selected ? '#005EFF' : '#9ca3af'}
             />
             {user.avatar_url ? (
               <Avatar.Image size={40} source={{ uri: user.avatar_url }} />
