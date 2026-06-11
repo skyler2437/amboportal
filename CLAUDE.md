@@ -52,6 +52,13 @@ The mobile app is an Expo SDK 55 dev client at `apps/mobile/`. To run it in the 
 
 **Important:** Always run Metro from `apps/mobile/`, not the monorepo root.
 
+## EAS Builds & App Store Submission (Mobile App)
+
+- Run all EAS commands from `apps/mobile/` (npm scripts there: `build:prod:ios`, `submit:ios`, etc.). The project's EAS config is `apps/mobile/eas.json`, which includes the iOS submit profile (ascAppId) needed for `eas submit --non-interactive`.
+- Do NOT create an `eas.json` or `app.json` at the monorepo root. EAS uses the repo root as the upload root, and a root config shadows the real one with different behavior (this happened once and was removed in June 2026).
+- Versioning is `appVersionSource: local`: the marketing version and build number come from the native files (Info.plist + pbxproj) and are bumped manually per release.
+- EAS Build uploads the entire monorepo **including untracked files**. Any stray untracked folder under `apps/*` becomes an npm workspace member and breaks the remote `npm ci` with "Missing: <name> from lock file". Ensure `git status` is clean before building.
+
 ## Commands
 
 ```bash
