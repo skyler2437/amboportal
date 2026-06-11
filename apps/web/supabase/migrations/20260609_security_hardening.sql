@@ -37,6 +37,9 @@ DROP POLICY IF EXISTS "Public Access to Transcripts" ON storage.objects;
 DROP POLICY IF EXISTS "Upload Transcripts" ON storage.objects;
 
 -- 4. Lock down debug_logs ---------------------------------------------------
-DROP POLICY IF EXISTS "Allow anon insert for debugging" ON public.debug_logs;
-DROP POLICY IF EXISTS "Allow admins to view logs" ON public.debug_logs;
+-- Policy names must match what 20260212_create_debug_logs.sql actually
+-- created ("Allow anon insert" / "Allow admins view"); the REVOKE is what
+-- ultimately cuts off access, leaving debug_logs service-role-only.
+DROP POLICY IF EXISTS "Allow anon insert" ON public.debug_logs;
+DROP POLICY IF EXISTS "Allow admins view" ON public.debug_logs;
 REVOKE ALL ON public.debug_logs FROM anon, authenticated;
