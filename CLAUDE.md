@@ -2,10 +2,9 @@
 
 ## Git Workflow
 
-- **Branching model:** `develop` → `main`
-- Work directly on the `develop` branch. Do NOT create feature branches.
-- If on `main`, switch to `develop` first: `git checkout develop`.
-- Do NOT push directly to `main`. Changes reach `main` via PRs from `develop`.
+- **Single branch:** `main` is the only branch, locally and on GitHub. There is no `develop` branch.
+- Work directly on `main` and push to `main`. Do NOT create feature branches unless explicitly asked.
+- (Claude Code web/cloud sessions run on an isolated `claude/*` branch; their PRs target `main` and the branch is deleted after merge.)
 
 ## Scope of Changes
 
