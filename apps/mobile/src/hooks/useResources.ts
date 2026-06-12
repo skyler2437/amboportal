@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { File } from 'expo-file-system';
 import { supabase } from '@/lib/supabase';
 
 export interface Resource {
@@ -49,12 +50,13 @@ export function useResources() {
   ) => {
     // Upload file to storage
     const filePath = `${Date.now()}_${fileName}`;
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
+    // Read the file's real bytes. In React Native, fetch(uri).blob() yields an
+    // empty/opaque blob that supabase-js uploads as a 0-byte file.
+    const bytes = await new File(fileUri).bytes();
 
     const { error: uploadErr } = await supabase.storage
       .from('resources')
-      .upload(filePath, blob, { contentType: fileType });
+      .upload(filePath, bytes, { contentType: fileType });
     if (uploadErr) throw uploadErr;
 
     // Get public URL
