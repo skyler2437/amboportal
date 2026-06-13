@@ -57,11 +57,9 @@ export default function NewPost() {
       <Stack.Screen
         options={{
           headerTitle: '',
-          headerLeft: () => (
-            <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Cancel">
-              <Text style={styles.cancel}>Cancel</Text>
-            </Pressable>
-          ),
+          headerBackTitle: '',
+          headerStyle: { backgroundColor: '#fff' },
+          headerShadowVisible: false,
           headerRight: () => (
             <Pressable
               onPress={handlePost}
@@ -99,7 +97,6 @@ export default function NewPost() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  cancel: { color: '#005EFF', fontSize: 16 },
   postBtn: { backgroundColor: '#005EFF', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 6 },
   postBtnDisabled: { opacity: 0.4 },
   postBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
