@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Alert, Pressable, TextInput } from 'react-native';
+import { View, StyleSheet, Alert, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Avatar } from 'react-native-paper';
 import { Stack, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePosts } from '@/hooks/usePosts';
 import { supabase } from '@/lib/supabase';
@@ -13,6 +14,7 @@ export default function NewPost() {
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { createPost } = usePosts();
+  const insets = useSafeAreaInsets();
 
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<PickedAsset[]>([]);
@@ -47,7 +49,11 @@ export default function NewPost() {
   const initials = `${me?.first_name?.[0] || ''}${me?.last_name?.[0] || ''}`.toUpperCase();
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 44 : 0}
+    >
       <Stack.Screen
         options={{
           headerTitle: '',
@@ -87,7 +93,7 @@ export default function NewPost() {
       </View>
 
       <PostAttachmentBar attachments={attachments} onChange={setAttachments} />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
