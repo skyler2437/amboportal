@@ -31,7 +31,7 @@ export default function AdminSubmissions() {
           <Card elevation={0} style={styles.cardInner}>
             <Card.Content>
               <View style={styles.cardHeader}>
-                <Text variant="bodyMedium" style={styles.studentName}>
+                <Text variant="titleMedium" style={styles.studentName}>
                   {item.users ? `${item.users.first_name} ${item.users.last_name}` : 'Unknown'}
                 </Text>
                 <StatusBadge status={item.status} />
@@ -59,11 +59,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   content: { padding: 16, paddingBottom: 32 },
   emptyContent: { flex: 1, padding: 16 },
-  card: { marginBottom: 8 },
+  card: { marginBottom: 12 },
   cardPressed: { opacity: 0.7 },
-  cardInner: { backgroundColor: '#fff' },
+  cardInner: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  studentName: { fontWeight: '600', flex: 1, marginRight: 8 },
+  studentName: { fontWeight: '700', flex: 1, marginRight: 8 },
   serviceType: { color: '#6b7280', marginBottom: 6 },
   cardDetails: { flexDirection: 'row', gap: 16 },
   detailText: { color: '#9ca3af' },
