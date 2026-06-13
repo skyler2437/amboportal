@@ -78,8 +78,8 @@ export default function AdminDashboard() {
           <Card elevation={0} style={styles.cardInner}>
             <Card.Content style={styles.statContent}>
               <MaterialCommunityIcons name="file-clock-outline" size={22} color={pendingCount > 0 ? '#f59e0b' : '#9ca3af'} />
+              <Text variant="titleMedium" style={styles.statLabel}>Pending Reviews</Text>
               <Text variant="headlineMedium" style={styles.statValue}>{pendingCount}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Pending Reviews</Text>
             </Card.Content>
           </Card>
         </Pressable>
@@ -87,8 +87,8 @@ export default function AdminDashboard() {
           <Card elevation={0} style={styles.cardInner}>
             <Card.Content style={styles.statContent}>
               <MaterialCommunityIcons name="account-group-outline" size={22} color="#111827" />
+              <Text variant="titleMedium" style={styles.statLabel}>Users</Text>
               <Text variant="headlineMedium" style={styles.statValue}>{userCount}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Users</Text>
             </Card.Content>
           </Card>
         </Pressable>
@@ -96,8 +96,8 @@ export default function AdminDashboard() {
           <Card elevation={0} style={styles.cardInner}>
             <Card.Content style={styles.statContent}>
               <MaterialCommunityIcons name="clipboard-text-outline" size={22} color={applicationCount > 0 ? '#3b82f6' : '#9ca3af'} />
+              <Text variant="titleMedium" style={styles.statLabel}>Applications</Text>
               <Text variant="headlineMedium" style={styles.statValue}>{applicationCount}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Applications</Text>
             </Card.Content>
           </Card>
         </Pressable>
@@ -105,8 +105,8 @@ export default function AdminDashboard() {
           <Card elevation={0} style={styles.cardInner}>
             <Card.Content style={styles.statContent}>
               <MaterialCommunityIcons name="file-document-outline" size={22} color="#111827" />
+              <Text variant="titleMedium" style={styles.statLabel}>Submissions</Text>
               <Text variant="headlineMedium" style={styles.statValue}>{submissionCount}</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Submissions</Text>
             </Card.Content>
           </Card>
         </Pressable>
@@ -114,8 +114,8 @@ export default function AdminDashboard() {
           <Card elevation={0} style={styles.cardInner}>
             <Card.Content style={styles.statContent}>
               <MaterialCommunityIcons name="folder-outline" size={22} color="#16a34a" />
+              <Text variant="titleMedium" style={styles.statLabel}>Resources</Text>
               <Text variant="headlineMedium" style={styles.statValue}>&mdash;</Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Resources</Text>
             </Card.Content>
           </Card>
         </Pressable>
@@ -132,12 +132,12 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   cheddarEmoji: { fontSize: 20, marginRight: 4 },
   content: { padding: 16, paddingBottom: 32 },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  statCard: { width: '47%', backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, overflow: 'hidden' },
+  statsGrid: { gap: 12 },
+  statCard: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, overflow: 'hidden' },
   cardInner: { backgroundColor: 'transparent' },
   pendingCard: { backgroundColor: '#fffbeb' },
   applicationCard: { backgroundColor: '#eff6ff' },
-  statContent: { alignItems: 'center', gap: 4, paddingVertical: 16 },
+  statContent: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16 },
   statValue: { fontWeight: '700' },
-  statLabel: { color: '#6b7280', textAlign: 'center' },
+  statLabel: { flex: 1, color: '#111827', fontWeight: '500' },
 });
