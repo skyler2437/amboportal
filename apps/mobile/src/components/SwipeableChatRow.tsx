@@ -24,12 +24,22 @@ export function SwipeableChatRow({ starred, onToggleStar, children }: Props) {
   const toggleRef = useRef(onToggleStar);
   toggleRef.current = onToggleStar;
 
+  // A left drag where horizontal movement dominates. Kept low so we claim the
+  // gesture before the FlatList commits to a vertical scroll.
+  const isHorizontalLeft = (dx: number, dy: number) =>
+    dx < 0 && Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(dy);
+
   const pan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) =>
-        g.dx < 0 && Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
+      // Claim in both the bubble and capture phases so the row wins over the
+      // parent FlatList's vertical scroll. Vertical drags (dy dominant) fail
+      // the check and stay with the list.
+      onMoveShouldSetPanResponder: (_, g) => isHorizontalLeft(g.dx, g.dy),
+      onMoveShouldSetPanResponderCapture: (_, g) => isHorizontalLeft(g.dx, g.dy),
+      // Once we own the gesture, don't hand it back to the scroll view.
+      onPanResponderTerminationRequest: () => false,
       onPanResponderMove: (_, g) => {
-        if (g.dx < 0) translateX.setValue(Math.max(g.dx, -ACTION_WIDTH));
+        translateX.setValue(Math.max(Math.min(g.dx, 0), -ACTION_WIDTH));
       },
       onPanResponderRelease: (_, g) => {
         if (g.dx <= -TRIGGER) toggleRef.current();
