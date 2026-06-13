@@ -50,7 +50,7 @@ export function useChatGroups(userId: string) {
 
     const { data: pData, error: pErr } = await supabase
       .from('chat_participants')
-      .select('group_id, last_read_at')
+      .select('group_id, last_read_at, deleted_at')
       .eq('user_id', userId);
 
     if (pErr) {
@@ -91,11 +91,14 @@ export function useChatGroups(userId: string) {
       return;
     }
 
-    // Build a map of group_id -> last_read_at for unread detection (O(1) lookup)
+    // Build a map of group_id -> last_read_at for unread detection (O(1) lookup),
+    // plus group_id -> deleted_at for per-user soft-delete (hidden) detection.
     const lastReadMap = new Map<string, string | null>();
+    const deletedAtMap = new Map<string, string | null>();
     if (hasLastReadAt) {
       for (const p of participantData || []) {
         lastReadMap.set(p.group_id, p.last_read_at ?? null);
+        deletedAtMap.set(p.group_id, (p as any).deleted_at ?? null);
       }
     }
 
@@ -160,6 +163,13 @@ export function useChatGroups(userId: string) {
 
       const lastMessage = lastMessageMap.get(group.id);
 
+      // Per-user soft delete: a chat the user deleted stays hidden until a newer
+      // message arrives (so deleting never silently buries new activity).
+      const deletedAt = deletedAtMap.get(group.id);
+      const hidden =
+        !!deletedAt && (!lastMessage || new Date(lastMessage.created_at) <= new Date(deletedAt));
+      if (hidden) return null;
+
       // Determine unread status (only if last_read_at column exists)
       // Own messages should never trigger unread indicators
       let hasUnread = false;
@@ -175,7 +185,7 @@ export function useChatGroups(userId: string) {
       }
 
       return { ...group, participants, lastMessage: lastMessage || undefined, hasUnread, starred: starredSet.has(group.id) };
-    });
+    }).filter((g): g is ChatGroupWithMeta => g !== null);
 
     // Starred first, then by most-recent activity
     result.sort(compareGroups);
@@ -289,5 +299,23 @@ export function useChatGroups(userId: string) {
     [userId],
   );
 
-  return { groups, loading, error, refetch: fetchGroups, createGroup, toggleStar };
+  // Per-user soft delete: hide the chat from this user's list by stamping their
+  // own chat_participants row. Optimistically removes it; reverts on failure.
+  const deleteChat = useCallback(
+    async (groupId: string) => {
+      setGroups((prev) => prev.filter((g) => g.id !== groupId));
+      const { error: delErr } = await supabase
+        .from('chat_participants')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('group_id', groupId)
+        .eq('user_id', userId);
+      if (delErr) {
+        console.warn('[useChatGroups] deleteChat failed', delErr.message);
+        fetchGroups();
+      }
+    },
+    [userId, fetchGroups],
+  );
+
+  return { groups, loading, error, refetch: fetchGroups, createGroup, toggleStar, deleteChat };
 }

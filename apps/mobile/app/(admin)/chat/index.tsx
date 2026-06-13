@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, Pressable } from 'react-native';
+import { View, FlatList, StyleSheet, RefreshControl, Pressable, Alert } from 'react-native';
 import { Avatar, Text, FAB } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
@@ -34,9 +34,20 @@ export default function AdminChatList() {
   const router = useRouter();
   const { session } = useAuth();
   const userId = session?.user?.id || '';
-  const { groups, loading, error, refetch, toggleStar } = useChatGroups(userId);
+  const { groups, loading, error, refetch, toggleStar, deleteChat } = useChatGroups(userId);
   const clearReadGroups = useChatReadStore((s) => s.clearReadGroups);
   const [refreshing, setRefreshing] = useState(false);
+
+  const confirmDelete = (groupId: string, name: string) => {
+    Alert.alert(
+      'Delete chat',
+      `Remove "${name}" from your chats? It will come back if there's a new message.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteChat(groupId) },
+      ],
+    );
+  };
   const initialLoadDone = useRef(false);
 
   // Track when initial load completes
@@ -75,7 +86,11 @@ export default function AdminChatList() {
     const hasUnread = item.hasUnread === true;
 
     return (
-      <SwipeableChatRow starred={!!item.starred} onToggleStar={() => toggleStar(item.id, !item.starred)}>
+      <SwipeableChatRow
+        starred={!!item.starred}
+        onToggleStar={() => toggleStar(item.id, !item.starred)}
+        onDelete={() => confirmDelete(item.id, displayName)}
+      >
         <Pressable style={styles.groupRow} onPress={() => router.push(`/(admin)/chat/${item.id}`)} accessibilityLabel={`Chat with ${displayName}${item.starred ? ', starred' : ''}${hasUnread ? ', unread messages' : ''}`} accessibilityRole="button">
           {avatarUrl ? (
             <Avatar.Image size={44} source={{ uri: avatarUrl }} />
