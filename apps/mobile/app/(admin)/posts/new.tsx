@@ -3,6 +3,7 @@ import { View, StyleSheet, Alert, Pressable, TextInput, KeyboardAvoidingView, Pl
 import { Text, Avatar } from 'react-native-paper';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronLeft } from 'lucide-react-native';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePosts } from '@/hooks/usePosts';
 import { supabase } from '@/lib/supabase';
@@ -52,28 +53,23 @@ export default function NewPost() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 44 : 0}
+      keyboardVerticalOffset={0}
     >
-      <Stack.Screen
-        options={{
-          headerTitle: '',
-          headerBackTitle: '',
-          headerStyle: { backgroundColor: '#fff' },
-          headerShadowVisible: false,
-          headerRight: () => (
-            <Pressable
-              onPress={handlePost}
-              disabled={!canPost}
-              accessibilityLabel="Post"
-              style={!canPost && styles.postBtnDisabled}
-            >
-              <View style={styles.postBtn}>
-                <Text style={styles.postBtnText}>Post</Text>
-              </View>
-            </Pressable>
-          ),
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Go back" style={styles.backBtn}>
+          <ChevronLeft size={28} color="#005EFF" />
+        </Pressable>
+        <Pressable
+          onPress={handlePost}
+          disabled={!canPost}
+          accessibilityLabel="Post"
+          style={[styles.postBtn, !canPost && styles.postBtnDisabled]}
+        >
+          <Text style={styles.postBtnText}>Post</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.body}>
         {me?.avatar_url ? (
@@ -99,6 +95,15 @@ export default function NewPost() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    backgroundColor: '#fff',
+  },
+  backBtn: { padding: 4 },
   postBtn: { backgroundColor: '#005EFF', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 6 },
   postBtnDisabled: { opacity: 0.4 },
   postBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
