@@ -123,9 +123,9 @@ export function usePosts() {
     if (err) throw err;
     const postId = inserted.id as string;
 
-    for (const asset of attachments) {
+    for (const [i, asset] of attachments.entries()) {
       const bytes = await new File(asset.uri).bytes();
-      const path = `${postId}/${Date.now()}_${sanitizeFileName(asset.name)}`;
+      const path = `${postId}/${Date.now()}_${i}_${sanitizeFileName(asset.name)}`;
       const { error: upErr } = await supabase.storage
         .from('post-attachments')
         .upload(path, bytes, { contentType: asset.mimeType || 'application/octet-stream' });

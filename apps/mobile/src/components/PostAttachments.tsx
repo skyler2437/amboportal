@@ -42,7 +42,7 @@ export function PostAttachments({ attachments, variant = 'full' }: PostAttachmen
           {images.map((img) => (
             <Pressable
               key={img.id}
-              onPress={() => Linking.openURL(img.file_url)}
+              onPress={() => Linking.openURL(img.file_url).catch(() => {})}
               style={images.length === 1 ? styles.singleImagePress : styles.gridImagePress}
             >
               <Image
@@ -55,7 +55,7 @@ export function PostAttachments({ attachments, variant = 'full' }: PostAttachmen
         </View>
       )}
       {files.map((file) => (
-        <Pressable key={file.id} onPress={() => Linking.openURL(file.file_url)} style={styles.fileRow}>
+        <Pressable key={file.id} onPress={() => Linking.openURL(file.file_url).catch(() => {})} style={styles.fileRow}>
           <FileText size={18} color="#6b7280" />
           <Text variant="bodyMedium" style={styles.fileName} numberOfLines={1}>
             {file.file_name}
