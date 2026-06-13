@@ -136,16 +136,22 @@ export default function EventDetail() {
   };
 
   const handleCreateAttendeeChat = async () => {
-    const attendeeIds = Array.from(
-      new Set(rsvps.filter((r) => r.status === 'going' || r.status === 'maybe').map((r) => r.user_id)),
-    );
-    if (attendeeIds.length === 0) {
+    const rsvpIds = rsvps
+      .filter((r) => r.status === 'going' || r.status === 'maybe')
+      .map((r) => r.user_id);
+    if (rsvpIds.length === 0) {
       Alert.alert('No attendees yet', "No one has RSVP'd going or maybe to this event.");
       return;
     }
+    // Include the event organizer so the chat always has an admin present —
+    // mobile doesn't otherwise enforce the "student-created groups need an
+    // admin" rule, and the organizer belongs in their own event's chat.
+    const participantIds = Array.from(
+      new Set([...rsvpIds, ...(event.created_by ? [event.created_by] : [])]),
+    );
     setCreatingChat(true);
     try {
-      const groupId = await createChatGroup(userId, event.title, attendeeIds);
+      const groupId = await createChatGroup(userId, event.title, participantIds);
       router.push(`/(student)/chat/${groupId}`);
     } catch (err: any) {
       Alert.alert('Error', err.message || 'Failed to create chat');
