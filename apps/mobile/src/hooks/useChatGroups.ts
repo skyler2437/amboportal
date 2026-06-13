@@ -50,7 +50,7 @@ export function useChatGroups(userId: string) {
 
     const { data: pData, error: pErr } = await supabase
       .from('chat_participants')
-      .select('group_id, last_read_at, deleted_at')
+      .select('group_id, last_read_at')
       .eq('user_id', userId);
 
     if (pErr) {
@@ -91,14 +91,11 @@ export function useChatGroups(userId: string) {
       return;
     }
 
-    // Build a map of group_id -> last_read_at for unread detection (O(1) lookup),
-    // plus group_id -> deleted_at for per-user soft-delete (hidden) detection.
+    // Build a map of group_id -> last_read_at for unread detection (O(1) lookup)
     const lastReadMap = new Map<string, string | null>();
-    const deletedAtMap = new Map<string, string | null>();
     if (hasLastReadAt) {
       for (const p of participantData || []) {
         lastReadMap.set(p.group_id, p.last_read_at ?? null);
-        deletedAtMap.set(p.group_id, (p as any).deleted_at ?? null);
       }
     }
 
@@ -145,6 +142,19 @@ export function useChatGroups(userId: string) {
       console.warn('[useChatGroups] chat_stars fetch failed (is the 20260613 migration applied?)', starErr.message);
     }
     const starredSet = new Set<string>((starData || []).map((s: any) => s.group_id));
+
+    // Per-user soft delete. Fetched separately (not folded into the primary
+    // participant query) so a missing deleted_at column degrades on its own —
+    // it must not take unread detection down with it. Empty map → nothing hidden.
+    const { data: delData, error: delErr } = await supabase
+      .from('chat_participants')
+      .select('group_id, deleted_at')
+      .eq('user_id', userId);
+    if (delErr) {
+      console.warn('[useChatGroups] deleted_at fetch failed (is the soft-delete migration applied?)', delErr.message);
+    }
+    const deletedAtMap = new Map<string, string | null>();
+    for (const d of (delData || []) as any[]) deletedAtMap.set(d.group_id, d.deleted_at ?? null);
 
     // Build map of group_id -> latest message (O(n) dedup)
     const lastMessageMap = new Map<string, { content: string; created_at: string; sender_id: string }>();

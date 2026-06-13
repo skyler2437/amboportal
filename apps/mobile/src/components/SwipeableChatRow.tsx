@@ -5,6 +5,9 @@ import { Star, StarOff, Trash2 } from 'lucide-react-native';
 const STAR_W = 76;
 const DELETE_W = 76;
 const OPEN_WIDTH = STAR_W + DELETE_W;
+// Minimum horizontal travel (px) before we treat a drag as a swipe — high
+// enough that taps and vertical scrolls aren't mistaken for swipes.
+const SWIPE_MIN = 10;
 // Drag at least this far (px) on release to settle the row open.
 const SNAP = 60;
 
@@ -18,16 +21,23 @@ interface Props {
 /**
  * Wraps a chat-list row with a left-swipe that reveals tappable Star/Unstar and
  * Delete actions (iOS-Mail style). Built on PanResponder + Animated — no native
- * gesture-handler dependency. Horizontal drags are claimed early (capture phase)
- * and held so they win over the FlatList's vertical scroll; vertical drags pass
- * through. Tapping the row (or swiping back) while open just closes it.
+ * gesture-handler dependency.
+ *
+ * The action buttons live INSIDE the animated row (positioned just off its right
+ * edge) so they translate with it and are unambiguously on top — taps land on
+ * them, not on the row beneath. Only a clear horizontal-left drag (or any
+ * horizontal drag while already open, to swipe closed) is claimed, and once
+ * claimed it's held, so the gesture wins over the FlatList's vertical scroll
+ * while taps and vertical scrolls still pass through.
  */
 export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: Props) {
   const translateX = useRef(new Animated.Value(0)).current;
   const restOffset = useRef(0); // 0 = closed, -OPEN_WIDTH = open
   const [open, setOpen] = useState(false);
 
-  // Keep the latest callbacks so the once-created PanResponder never goes stale.
+  // Keep latest values readable from the once-created PanResponder.
+  const openRef = useRef(open);
+  openRef.current = open;
   const toggleRef = useRef(onToggleStar);
   toggleRef.current = onToggleStar;
   const deleteRef = useRef(onDelete);
@@ -43,10 +53,16 @@ export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: 
     }).start();
   };
 
+  const shouldClaim = (dx: number, dy: number) => {
+    const horizontal = Math.abs(dx) > SWIPE_MIN && Math.abs(dx) > Math.abs(dy) * 1.2;
+    // Claim left drags (to open) always; claim right drags only when open (to close).
+    return horizontal && (dx < 0 || openRef.current);
+  };
+
   const pan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 6 && Math.abs(g.dx) > Math.abs(g.dy),
-      onMoveShouldSetPanResponderCapture: (_, g) => Math.abs(g.dx) > 6 && Math.abs(g.dx) > Math.abs(g.dy),
+      onMoveShouldSetPanResponder: (_, g) => shouldClaim(g.dx, g.dy),
+      onMoveShouldSetPanResponderCapture: (_, g) => shouldClaim(g.dx, g.dy),
       // Once we own the gesture, don't hand it back to the scroll view.
       onPanResponderTerminationRequest: () => false,
       onPanResponderMove: (_, g) => {
@@ -71,39 +87,41 @@ export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: 
   };
 
   // Cast: this app pins @types/react 19 while react-native's types resolve to
-  // @types/react 18, so the children's ReactNode shape isn't assignable to
-  // Animated.View's children type. Behaviour is unaffected.
-  const inner: any = (
-    <>
-      {children}
-      {open && (
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => settle(false)} accessibilityLabel="Close actions" />
-      )}
-    </>
-  );
+  // @types/react 18, so the children's ReactNode shape isn't assignable to a
+  // typed RN element's children. Behaviour is unaffected.
+  const childrenNode: any = children;
 
   return (
     <View style={styles.container}>
-      <View style={styles.actions}>
-        <Pressable
-          style={[styles.action, styles.starAction]}
-          onPress={handleStar}
-          accessibilityLabel={starred ? 'Unstar chat' : 'Star chat'}
-        >
-          {starred ? <StarOff size={20} color="#fff" /> : <Star size={20} color="#fff" fill="#fff" />}
-          <Text style={styles.actionText}>{starred ? 'Unstar' : 'Star'}</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.action, styles.deleteAction]}
-          onPress={handleDelete}
-          accessibilityLabel="Delete chat"
-        >
-          <Trash2 size={20} color="#fff" />
-          <Text style={styles.actionText}>Delete</Text>
-        </Pressable>
-      </View>
       <Animated.View style={[styles.row, { transform: [{ translateX }] }]} {...pan.panHandlers}>
-        {inner}
+        <View style={styles.rowContent}>{childrenNode}</View>
+
+        {/* Closes the row when tapped; covers the row content only, never the
+            actions (which sit off the right edge), so action taps still land. */}
+        {open && (
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => settle(false)} accessibilityLabel="Close actions" />
+        )}
+
+        {/* Just off the right edge; slides into view as the row translates left.
+            Rendered last → on top, so its buttons receive taps. */}
+        <View style={styles.actions}>
+          <Pressable
+            style={[styles.action, styles.starAction]}
+            onPress={handleStar}
+            accessibilityLabel={starred ? 'Unstar chat' : 'Star chat'}
+          >
+            {starred ? <StarOff size={20} color="#fff" /> : <Star size={20} color="#fff" fill="#fff" />}
+            <Text style={styles.actionText}>{starred ? 'Unstar' : 'Star'}</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.action, styles.deleteAction]}
+            onPress={handleDelete}
+            accessibilityLabel="Delete chat"
+          >
+            <Trash2 size={20} color="#fff" />
+            <Text style={styles.actionText}>Delete</Text>
+          </Pressable>
+        </View>
       </Animated.View>
     </View>
   );
@@ -111,10 +129,18 @@ export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: 
 
 const styles = StyleSheet.create({
   container: { backgroundColor: '#fff', overflow: 'hidden' },
-  actions: { position: 'absolute', right: 0, top: 0, bottom: 0, width: OPEN_WIDTH, flexDirection: 'row' },
+  row: { backgroundColor: '#fff' },
+  rowContent: { backgroundColor: '#fff' },
+  actions: {
+    position: 'absolute',
+    left: '100%',
+    top: 0,
+    bottom: 0,
+    width: OPEN_WIDTH,
+    flexDirection: 'row',
+  },
   action: { width: STAR_W, alignItems: 'center', justifyContent: 'center', gap: 2 },
   starAction: { backgroundColor: '#f59e0b' },
   deleteAction: { backgroundColor: '#ef4444', width: DELETE_W },
   actionText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  row: { backgroundColor: '#fff' },
 });
