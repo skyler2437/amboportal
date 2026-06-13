@@ -132,11 +132,15 @@ export function useChatGroups(userId: string) {
       .limit(groupIds.length * 3); // Fetch a small multiple to ensure coverage
 
     // Fetch this user's starred group ids. Degrades gracefully if the
-    // chat_stars table/policy isn't applied yet (data is null → no stars).
-    const { data: starData } = await supabase
+    // chat_stars table/policy isn't applied yet (data is null → no stars);
+    // we log the error so a missing migration is visible while debugging.
+    const { data: starData, error: starErr } = await supabase
       .from('chat_stars')
       .select('group_id')
       .eq('user_id', userId);
+    if (starErr) {
+      console.warn('[useChatGroups] chat_stars fetch failed (is the 20260613 migration applied?)', starErr.message);
+    }
     const starredSet = new Set<string>((starData || []).map((s: any) => s.group_id));
 
     // Build map of group_id -> latest message (O(n) dedup)

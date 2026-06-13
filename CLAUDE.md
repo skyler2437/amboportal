@@ -152,6 +152,7 @@ Routes follow REST conventions at `src/app/api/`:
 | `chat_groups` | id, name, created_by |
 | `chat_participants` | group_id, user_id |
 | `chat_messages` | group_id, sender_id, content |
+| `chat_stars` | user_id, group_id (per-user starred/pinned chats; mobile-only swipe-to-star) |
 | `resources` | id, title, file_url, uploaded_by |
 | `push_subscriptions` | user_id, endpoint, p256dh, auth |
 

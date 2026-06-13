@@ -76,7 +76,7 @@ export default function AdminChatList() {
 
     return (
       <SwipeableChatRow starred={!!item.starred} onToggleStar={() => toggleStar(item.id, !item.starred)}>
-        <Pressable style={styles.groupRow} onPress={() => router.push(`/(admin)/chat/${item.id}`)} accessibilityLabel={`Chat${item.starred ? ', starred' : ''}${hasUnread ? ', unread messages' : ''}`} accessibilityRole="button">
+        <Pressable style={styles.groupRow} onPress={() => router.push(`/(admin)/chat/${item.id}`)} accessibilityLabel={`Chat with ${displayName}${item.starred ? ', starred' : ''}${hasUnread ? ', unread messages' : ''}`} accessibilityRole="button">
           {avatarUrl ? (
             <Avatar.Image size={44} source={{ uri: avatarUrl }} />
           ) : (
