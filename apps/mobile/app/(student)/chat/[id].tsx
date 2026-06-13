@@ -231,6 +231,16 @@ export default function StudentMessageThread() {
     <>
       <Stack.Screen options={{
         title: groupName,
+        // Explicit back button: the native one only appears when this screen
+        // has a prior entry in the chat stack, which it doesn't when opened
+        // cross-tab (e.g. from an event). Falls back to the chat list.
+        headerLeft: () => (
+          <IconButton
+            icon="chevron-left"
+            accessibilityLabel="Back"
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/(student)/chat'))}
+          />
+        ),
         headerRight: () => (
           <IconButton icon="dots-vertical" accessibilityLabel="Chat settings" onPress={() => router.push({ pathname: '/(student)/chat/edit', params: { id } })} />
         ),
