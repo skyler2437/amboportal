@@ -25,6 +25,7 @@ import { usePosts } from '@/hooks/usePosts';
 import { useComments, Comment } from '@/hooks/useComments';
 import { RoleBadge } from '@/components/RoleBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { PostAttachments } from '@/components/PostAttachments';
 import { UserListDialog, DialogUser } from '@/components/UserListDialog';
 import { supabase } from '@/lib/supabase';
 import type { UserRole } from '@ambo/database';
@@ -299,9 +300,12 @@ export default function AdminPostDetail() {
               </View>
             </View>
           ) : (
-            <Text variant="bodyMedium" style={styles.content}>
-              {post.content}
-            </Text>
+            <>
+              <Text variant="bodyMedium" style={styles.content}>
+                {post.content}
+              </Text>
+              <PostAttachments attachments={post.attachments} variant="full" />
+            </>
           )}
 
           <View style={styles.engagementRow}>
