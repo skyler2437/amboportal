@@ -278,23 +278,21 @@ export default function AdminEventDetail() {
         >
           {/* Admin Actions */}
           <View style={styles.adminActions}>
-            <Button
+            <IconButton
+              icon={editing ? 'close' : 'pencil'}
               mode="outlined"
-              icon="pencil"
+              size={20}
               onPress={() => setEditing(!editing)}
-              compact
-            >
-              {editing ? 'Cancel Edit' : 'Edit'}
-            </Button>
-            <Button
-              mode="outlined"
+              accessibilityLabel={editing ? 'Cancel editing' : 'Edit event'}
+            />
+            <IconButton
               icon="delete"
-              textColor="#ef4444"
+              mode="outlined"
+              size={20}
+              iconColor="#ef4444"
               onPress={handleDelete}
-              compact
-            >
-              Delete
-            </Button>
+              accessibilityLabel="Delete event"
+            />
             <IconButton
               icon="bell-ring-outline"
               mode="outlined"
