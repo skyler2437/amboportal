@@ -24,6 +24,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/providers/AuthProvider';
 import { useEventDetail } from '@/hooks/useEventDetail';
 import { supabase } from '@/lib/supabase';
+import { createChatGroup } from '@/lib/chat';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EventDateTimePicker } from '@/components/EventDateTimePicker';
 import type { EventDetails, RSVPStatus } from '@ambo/database';
@@ -109,6 +110,7 @@ export default function AdminEventDetail() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sendingReminder, setSendingReminder] = useState(false);
+  const [creatingChat, setCreatingChat] = useState(false);
 
   // Edit form state
   const [editTitle, setEditTitle] = useState('');
@@ -238,6 +240,25 @@ export default function AdminEventDetail() {
     ]);
   };
 
+  const handleCreateAttendeeChat = async () => {
+    const attendeeIds = Array.from(
+      new Set(rsvps.filter((r) => r.status === 'going' || r.status === 'maybe').map((r) => r.user_id)),
+    );
+    if (attendeeIds.length === 0) {
+      Alert.alert('No attendees yet', "No one has RSVP'd going or maybe to this event.");
+      return;
+    }
+    setCreatingChat(true);
+    try {
+      const groupId = await createChatGroup(userId, event.title, attendeeIds);
+      router.push(`/(admin)/chat/${groupId}`);
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to create chat');
+    } finally {
+      setCreatingChat(false);
+    }
+  };
+
   const handleSendReminder = async () => {
     setSendingReminder(true);
     try {
@@ -293,6 +314,16 @@ export default function AdminEventDetail() {
               onPress={handleDelete}
               accessibilityLabel="Delete event"
             />
+            <View style={styles.actionSpacer} />
+            <IconButton
+              icon="chat-plus-outline"
+              mode="outlined"
+              size={20}
+              onPress={handleCreateAttendeeChat}
+              loading={creatingChat}
+              disabled={creatingChat}
+              accessibilityLabel="Create chat with attendees"
+            />
             <IconButton
               icon="bell-ring-outline"
               mode="outlined"
@@ -300,7 +331,6 @@ export default function AdminEventDetail() {
               onPress={handleSendReminder}
               loading={sendingReminder}
               disabled={sendingReminder}
-              style={styles.reminderButton}
             />
           </View>
 
@@ -561,7 +591,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   content: { padding: 16, paddingBottom: 16 },
   adminActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
-  reminderButton: { marginLeft: 'auto' },
+  actionSpacer: { flex: 1 },
   editSection: { gap: 12, marginBottom: 8 },
   editInput: { backgroundColor: '#fff' },
   saveButton: { borderRadius: 12, marginTop: 4 },

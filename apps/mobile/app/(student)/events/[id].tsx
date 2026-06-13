@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  Alert,
 } from 'react-native';
 import {
   Text,
@@ -15,11 +16,12 @@ import {
   Divider,
   Avatar,
 } from 'react-native-paper';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/providers/AuthProvider';
 import { useEventDetail } from '@/hooks/useEventDetail';
 import { supabase } from '@/lib/supabase';
+import { createChatGroup } from '@/lib/chat';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import type { EventDetails, RSVPStatus } from '@ambo/database';
 
@@ -95,10 +97,12 @@ export default function EventDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useAuth();
   const userId = session?.user?.id || '';
+  const router = useRouter();
   const [event, setEvent] = useState<EventDetails | null>(null);
   const [eventLoading, setEventLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
   const [posting, setPosting] = useState(false);
+  const [creatingChat, setCreatingChat] = useState(false);
 
   const { comments, rsvps, rsvpOptions, myRsvp, myRsvpOptionId, loading, updateRsvp, postComment } = useEventDetail(id, userId);
 
@@ -131,6 +135,25 @@ export default function EventDetail() {
     setPosting(false);
   };
 
+  const handleCreateAttendeeChat = async () => {
+    const attendeeIds = Array.from(
+      new Set(rsvps.filter((r) => r.status === 'going' || r.status === 'maybe').map((r) => r.user_id)),
+    );
+    if (attendeeIds.length === 0) {
+      Alert.alert('No attendees yet', "No one has RSVP'd going or maybe to this event.");
+      return;
+    }
+    setCreatingChat(true);
+    try {
+      const groupId = await createChatGroup(userId, event.title, attendeeIds);
+      router.push(`/(student)/chat/${groupId}`);
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to create chat');
+    } finally {
+      setCreatingChat(false);
+    }
+  };
+
   // Attendees grouped
   const goingAttendees = rsvps.filter((r) => r.status === 'going' && r.users);
   const maybeAttendees = rsvps.filter((r) => r.status === 'maybe' && r.users);
@@ -145,6 +168,19 @@ export default function EventDetail() {
         keyboardVerticalOffset={100}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          {/* Actions */}
+          <View style={styles.actionRow}>
+            <IconButton
+              icon="chat-plus-outline"
+              mode="outlined"
+              size={20}
+              onPress={handleCreateAttendeeChat}
+              loading={creatingChat}
+              disabled={creatingChat}
+              accessibilityLabel="Create chat with attendees"
+            />
+          </View>
+
           {/* Event Info */}
           <Text variant="headlineSmall" style={styles.title}>{event.title}</Text>
 
@@ -349,6 +385,7 @@ export default function EventDetail() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   content: { padding: 16, paddingBottom: 32 },
+  actionRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 4 },
   title: { fontWeight: '700', marginBottom: 12 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 },
   uniformCard: { backgroundColor: '#eff6ff', marginTop: 12 },

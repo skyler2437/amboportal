@@ -2,14 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { handleAuthError } from '@/lib/authError';
 import { useChatReadStore } from '@/stores/chatReadStore';
-
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
+import { createChatGroup } from '@/lib/chat';
 
 export interface ChatGroup {
   id: string;
@@ -241,21 +234,7 @@ export function useChatGroups(userId: string) {
   }, [userId, fetchGroups]);
 
   const createGroup = async (name: string | null, participantIds: string[]) => {
-    const groupId = generateUUID();
-
-    const { error: err } = await supabase
-      .from('chat_groups')
-      .insert({ id: groupId, name, created_by: userId });
-    if (err) throw err;
-
-    const rows = participantIds.map((uid) => ({ group_id: groupId, user_id: uid }));
-    if (!participantIds.includes(userId)) {
-      rows.push({ group_id: groupId, user_id: userId });
-    }
-
-    const { error: pErr } = await supabase.from('chat_participants').insert(rows);
-    if (pErr) throw pErr;
-
+    const groupId = await createChatGroup(userId, name, participantIds);
     await fetchGroups();
     return groupId;
   };
