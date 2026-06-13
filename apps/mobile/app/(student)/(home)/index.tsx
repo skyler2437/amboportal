@@ -28,6 +28,7 @@ export default function StudentDashboard() {
   const { submissions, loading, error, refetch } = useSubmissions(userId);
   const [activeFilters, setActiveFilters] = useState<Set<SubmissionStatus>>(new Set(FILTERS));
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+  const [resourceCount, setResourceCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [cheddarActive, setCheddarActive] = useState(false);
   const initialLoadDone = useRef(false);
@@ -47,31 +48,39 @@ export default function StudentDashboard() {
     setUpcomingEvents((data as UpcomingEvent[]) || []);
   }, []);
 
+  const fetchResourceCount = useCallback(async () => {
+    const { count } = await supabase
+      .from('resources')
+      .select('id', { count: 'exact', head: true });
+    setResourceCount(count || 0);
+  }, []);
+
   useEffect(() => {
     fetchUpcoming();
-  }, [fetchUpcoming]);
+    fetchResourceCount();
+  }, [fetchUpcoming, fetchResourceCount]);
 
   // Silent refetch when screen regains focus (e.g. after submitting activity)
   useFocusEffect(useCallback(() => {
     if (initialLoadDone.current) {
       refetch();
       fetchUpcoming();
+      fetchResourceCount();
     }
-  }, [refetch, fetchUpcoming]));
+  }, [refetch, fetchUpcoming, fetchResourceCount]));
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), fetchUpcoming()]);
+    await Promise.all([refetch(), fetchUpcoming(), fetchResourceCount()]);
     hapticMedium();
     setRefreshing(false);
-  }, [refetch, fetchUpcoming]);
+  }, [refetch, fetchUpcoming, fetchResourceCount]);
 
   const stats = useMemo(() => {
     const approved = submissions.filter((s) => s.status === 'Approved');
     const totalHours = approved.reduce((sum, s) => sum + (Number(s.hours) || 0), 0);
     const totalCredits = approved.reduce((sum, s) => sum + (Number(s.credits) || 0), 0);
-    const pending = submissions.filter((s) => s.status === 'Pending').length;
-    return { totalHours, totalCredits, pending };
+    return { totalHours, totalCredits, totalSubmissions: submissions.length };
   }, [submissions]);
 
   const filtered = useMemo(
@@ -120,27 +129,27 @@ export default function StudentDashboard() {
       ListHeaderComponent={
         <View style={styles.header}>
           {/* Stats */}
-          <View style={styles.statsRow}>
+          <View style={styles.statsGrid}>
             <View style={styles.statCard}>
-              <Text variant="headlineMedium" style={styles.statValue}>
-                {stats.totalHours.toFixed(1)}
-              </Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Approved{'\n'}Hours</Text>
+              <MaterialCommunityIcons name="clock-outline" size={22} color="#2563eb" />
+              <Text variant="titleMedium" style={styles.statLabel}>Approved Hours</Text>
+              <Text variant="headlineMedium" style={styles.statValue}>{stats.totalHours.toFixed(1)}</Text>
             </View>
             <View style={styles.statCard}>
-              <Text variant="headlineMedium" style={styles.statValue}>
-                {stats.totalCredits.toFixed(1)}
-              </Text>
-              <Text variant="bodySmall" style={styles.statLabel}>Credits</Text>
+              <MaterialCommunityIcons name="medal-outline" size={22} color="#2563eb" />
+              <Text variant="titleMedium" style={styles.statLabel}>Credits</Text>
+              <Text variant="headlineMedium" style={styles.statValue}>{stats.totalCredits.toFixed(1)}</Text>
             </View>
-            {stats.pending > 0 && (
-              <View style={[styles.statCard, styles.pendingCard]}>
-                <Text variant="headlineMedium" style={styles.statValue}>
-                  {stats.pending}
-                </Text>
-                <Text variant="bodySmall" style={styles.statLabel}>Pending</Text>
-              </View>
-            )}
+            <View style={styles.statCard}>
+              <MaterialCommunityIcons name="file-document-outline" size={22} color="#111827" />
+              <Text variant="titleMedium" style={styles.statLabel}>Submissions</Text>
+              <Text variant="headlineMedium" style={styles.statValue}>{stats.totalSubmissions}</Text>
+            </View>
+            <Pressable style={styles.statCard} onPress={() => router.push('/(student)/resources')}>
+              <MaterialCommunityIcons name="folder-outline" size={22} color="#16a34a" />
+              <Text variant="titleMedium" style={styles.statLabel}>Resources</Text>
+              <Text variant="headlineMedium" style={styles.statValue}>{resourceCount}</Text>
+            </Pressable>
           </View>
 
           {/* Quick Action */}
@@ -263,11 +272,10 @@ const styles = StyleSheet.create({
   cheddarEmoji: { fontSize: 20, marginRight: 4 },
   content: { padding: 16, paddingBottom: 32 },
   header: { gap: 16, marginBottom: 8 },
-  statsRow: { flexDirection: 'row', gap: 12 },
-  statCard: { flex: 1, backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 16, overflow: 'hidden' },
-  pendingCard: { backgroundColor: '#fffbeb', borderColor: '#fde68a' },
+  statsGrid: { gap: 12 },
+  statCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, paddingVertical: 16, paddingHorizontal: 16, overflow: 'hidden' },
   statValue: { fontWeight: '700' },
-  statLabel: { color: '#6b7280' },
+  statLabel: { flex: 1, color: '#111827', fontWeight: '500' },
   actionButton: { borderRadius: 12 },
   divider: { marginVertical: 4 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
