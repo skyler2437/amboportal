@@ -65,9 +65,11 @@ export default function NewPost() {
               onPress={handlePost}
               disabled={!canPost}
               accessibilityLabel="Post"
-              style={[styles.postBtn, !canPost && styles.postBtnDisabled]}
+              style={!canPost && styles.postBtnDisabled}
             >
-              <Text style={styles.postBtnText}>Post</Text>
+              <View style={styles.postBtn}>
+                <Text style={styles.postBtnText}>Post</Text>
+              </View>
             </Pressable>
           ),
         }}
