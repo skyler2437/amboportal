@@ -16,6 +16,15 @@ export interface ChatGroupWithMeta extends ChatGroup {
   participants: { user_id: string; users: { first_name: string; last_name: string; avatar_url?: string } }[];
   lastMessage?: { content: string; created_at: string; sender_id?: string };
   hasUnread?: boolean;
+  starred?: boolean;
+}
+
+// Starred chats float to the top; within each tier, most-recent activity wins.
+function compareGroups(a: ChatGroupWithMeta, b: ChatGroupWithMeta): number {
+  if (!!a.starred !== !!b.starred) return a.starred ? -1 : 1;
+  const aTime = a.lastMessage?.created_at || a.updated_at || a.created_at;
+  const bTime = b.lastMessage?.created_at || b.updated_at || b.created_at;
+  return new Date(bTime).getTime() - new Date(aTime).getTime();
 }
 
 export function useChatGroups(userId: string) {
@@ -122,6 +131,14 @@ export function useChatGroups(userId: string) {
       .order('created_at', { ascending: false })
       .limit(groupIds.length * 3); // Fetch a small multiple to ensure coverage
 
+    // Fetch this user's starred group ids. Degrades gracefully if the
+    // chat_stars table/policy isn't applied yet (data is null → no stars).
+    const { data: starData } = await supabase
+      .from('chat_stars')
+      .select('group_id')
+      .eq('user_id', userId);
+    const starredSet = new Set<string>((starData || []).map((s: any) => s.group_id));
+
     // Build map of group_id -> latest message (O(n) dedup)
     const lastMessageMap = new Map<string, { content: string; created_at: string; sender_id: string }>();
     if (recentMessages) {
@@ -153,15 +170,11 @@ export function useChatGroups(userId: string) {
         hasUnread = false;
       }
 
-      return { ...group, participants, lastMessage: lastMessage || undefined, hasUnread };
+      return { ...group, participants, lastMessage: lastMessage || undefined, hasUnread, starred: starredSet.has(group.id) };
     });
 
-    // Sort by last message time or group updated_at
-    result.sort((a, b) => {
-      const aTime = a.lastMessage?.created_at || a.updated_at || a.created_at;
-      const bTime = b.lastMessage?.created_at || b.updated_at || b.created_at;
-      return new Date(bTime).getTime() - new Date(aTime).getTime();
-    });
+    // Starred first, then by most-recent activity
+    result.sort(compareGroups);
 
     setGroups(result);
     hasLoadedOnce.current = true;
@@ -215,12 +228,8 @@ export function useChatGroups(userId: string) {
 
             updated[idx] = group;
 
-            // Re-sort so most recent message bubbles to top
-            updated.sort((a, b) => {
-              const aTime = a.lastMessage?.created_at || a.updated_at || a.created_at;
-              const bTime = b.lastMessage?.created_at || b.updated_at || b.created_at;
-              return new Date(bTime).getTime() - new Date(aTime).getTime();
-            });
+            // Re-sort: starred first, then most recent message bubbles to top
+            updated.sort(compareGroups);
 
             return updated;
           });
@@ -239,5 +248,42 @@ export function useChatGroups(userId: string) {
     return groupId;
   };
 
-  return { groups, loading, error, refetch: fetchGroups, createGroup };
+  // Star/unstar a chat. Optimistically re-sorts, then persists; reverts on
+  // failure (e.g. the chat_stars migration hasn't been applied yet).
+  const toggleStar = useCallback(
+    async (groupId: string, starred: boolean) => {
+      setGroups((prev) => {
+        const updated = prev.map((g) => (g.id === groupId ? { ...g, starred } : g));
+        updated.sort(compareGroups);
+        return updated;
+      });
+
+      try {
+        if (starred) {
+          const { error: insErr } = await supabase
+            .from('chat_stars')
+            .insert({ user_id: userId, group_id: groupId });
+          // 23505 = already starred; treat as success
+          if (insErr && insErr.code !== '23505') throw insErr;
+        } else {
+          const { error: delErr } = await supabase
+            .from('chat_stars')
+            .delete()
+            .eq('user_id', userId)
+            .eq('group_id', groupId);
+          if (delErr) throw delErr;
+        }
+      } catch (e) {
+        setGroups((prev) => {
+          const reverted = prev.map((g) => (g.id === groupId ? { ...g, starred: !starred } : g));
+          reverted.sort(compareGroups);
+          return reverted;
+        });
+        console.warn('[useChatGroups] toggleStar failed', e);
+      }
+    },
+    [userId],
+  );
+
+  return { groups, loading, error, refetch: fetchGroups, createGroup, toggleStar };
 }

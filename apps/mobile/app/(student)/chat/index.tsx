@@ -3,8 +3,10 @@ import { View, FlatList, StyleSheet, RefreshControl, Pressable } from 'react-nat
 import { Avatar, Text, FAB } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
+import { Star } from 'lucide-react-native';
 import { useChatGroups, ChatGroupWithMeta } from '@/hooks/useChatGroups';
 import { useChatReadStore } from '@/stores/chatReadStore';
+import { SwipeableChatRow } from '@/components/SwipeableChatRow';
 import { ChatListSkeleton } from '@/components/SkeletonLoader';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
@@ -32,7 +34,7 @@ export default function StudentChatList() {
   const router = useRouter();
   const { session } = useAuth();
   const userId = session?.user?.id || '';
-  const { groups, loading, error, refetch } = useChatGroups(userId);
+  const { groups, loading, error, refetch, toggleStar } = useChatGroups(userId);
   const clearReadGroups = useChatReadStore((s) => s.clearReadGroups);
 
   // Refetch on focus — don't clear optimistic readGroups here.
@@ -55,29 +57,32 @@ export default function StudentChatList() {
     const hasUnread = item.hasUnread === true;
 
     return (
-      <Pressable style={styles.groupRow} onPress={() => router.push(`/(student)/chat/${item.id}`)} accessibilityLabel={`Chat with ${displayName}${hasUnread ? ', unread messages' : ''}`} accessibilityRole="button">
-        {avatarUrl ? (
-          <Avatar.Image size={44} source={{ uri: avatarUrl }} />
-        ) : (
-          <Avatar.Text size={44} label={initials} style={styles.avatarFallback} />
-        )}
-        <View style={styles.groupInfo}>
-          <View style={styles.groupNameRow}>
-            <Text variant="bodyLarge" style={[styles.groupName, hasUnread && styles.groupNameUnread]} numberOfLines={1}>
-              {displayName}
-            </Text>
-            {hasUnread && <View style={styles.unreadDot} />}
+      <SwipeableChatRow starred={!!item.starred} onToggleStar={() => toggleStar(item.id, !item.starred)}>
+        <Pressable style={styles.groupRow} onPress={() => router.push(`/(student)/chat/${item.id}`)} accessibilityLabel={`Chat with ${displayName}${item.starred ? ', starred' : ''}${hasUnread ? ', unread messages' : ''}`} accessibilityRole="button">
+          {avatarUrl ? (
+            <Avatar.Image size={44} source={{ uri: avatarUrl }} />
+          ) : (
+            <Avatar.Text size={44} label={initials} style={styles.avatarFallback} />
+          )}
+          <View style={styles.groupInfo}>
+            <View style={styles.groupNameRow}>
+              {item.starred && <Star size={13} color="#f59e0b" fill="#f59e0b" />}
+              <Text variant="bodyLarge" style={[styles.groupName, hasUnread && styles.groupNameUnread]} numberOfLines={1}>
+                {displayName}
+              </Text>
+              {hasUnread && <View style={styles.unreadDot} />}
+            </View>
+            {item.lastMessage && (
+              <Text variant="bodySmall" style={[styles.lastMessage, hasUnread && styles.lastMessageUnread]} numberOfLines={1}>
+                {item.lastMessage.content}
+              </Text>
+            )}
           </View>
           {item.lastMessage && (
-            <Text variant="bodySmall" style={[styles.lastMessage, hasUnread && styles.lastMessageUnread]} numberOfLines={1}>
-              {item.lastMessage.content}
-            </Text>
+            <Text variant="bodySmall" style={styles.time}>{formatDate(item.lastMessage.created_at)}</Text>
           )}
-        </View>
-        {item.lastMessage && (
-          <Text variant="bodySmall" style={styles.time}>{formatDate(item.lastMessage.created_at)}</Text>
-        )}
-      </Pressable>
+        </Pressable>
+      </SwipeableChatRow>
     );
   };
 
