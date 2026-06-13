@@ -67,6 +67,7 @@ export default function StudentPostsFeed() {
             commentCount={item.comments?.[0]?.count || 0}
             likeCount={item.like_count}
             viewCount={item.view_count}
+            attachments={item.attachments}
             liked={item.liked}
             onToggleLike={() => { toggleLike(item.id).catch(() => {}); }}
             onPress={() => router.push(`/(student)/posts/${item.id}`)}

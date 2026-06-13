@@ -2,6 +2,8 @@ import React from 'react';
 import { View, StyleSheet, Pressable, Share } from 'react-native';
 import { Avatar, Text, IconButton, Icon } from 'react-native-paper';
 import type { UserRole } from '@ambo/database';
+import { PostAttachments } from '@/components/PostAttachments';
+import type { Attachment } from '@/hooks/usePosts';
 
 interface PostCardProps {
   id: string;
@@ -16,6 +18,7 @@ interface PostCardProps {
   commentCount: number;
   likeCount: number;
   viewCount: number;
+  attachments?: Attachment[];
   liked: boolean;
   onToggleLike: () => void;
   onPress: () => void;
@@ -35,7 +38,7 @@ function formatTimeAgo(dateStr: string): string {
   return date.toLocaleDateString();
 }
 
-export function PostCard({ content, createdAt, author, commentCount, likeCount, viewCount, liked, onToggleLike, onPress }: PostCardProps) {
+export function PostCard({ content, createdAt, author, commentCount, likeCount, viewCount, liked, attachments, onToggleLike, onPress }: PostCardProps) {
   const initials = `${author.first_name?.[0] || ''}${author.last_name?.[0] || ''}`;
 
   return (
@@ -58,6 +61,9 @@ export function PostCard({ content, createdAt, author, commentCount, likeCount, 
       <Text variant="bodyMedium" style={styles.content} numberOfLines={3}>
         {content}
       </Text>
+      {attachments && attachments.length > 0 && (
+        <PostAttachments attachments={attachments} variant="compact" />
+      )}
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
           <View style={styles.likeGroup}>
