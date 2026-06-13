@@ -1,30 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, Alert, Pressable } from 'react-native';
-import { TextInput, Button, Text, Avatar, Checkbox, Divider } from 'react-native-paper';
+import { View, StyleSheet, Alert } from 'react-native';
+import { TextInput, Button, Divider } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { useChatGroups } from '@/hooks/useChatGroups';
 import { supabase } from '@/lib/supabase';
-
-interface UserItem {
-  id: string;
-  first_name: string;
-  last_name: string;
-  avatar_url?: string;
-  role: string;
-}
+import { MemberPickerGrid, MemberUser } from '@/components/MemberPickerGrid';
+import { theme } from '@/lib/theme';
 
 export default function AdminNewChat() {
   const router = useRouter();
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { createGroup } = useChatGroups(userId);
-  const [users, setUsers] = useState<UserItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [users, setUsers] = useState<MemberUser[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [groupName, setGroupName] = useState('');
   const [creating, setCreating] = useState(false);
-  const [loadingUsers, setLoadingUsers] = useState(true);
 
   useEffect(() => {
     if (!userId) return;
@@ -34,19 +26,10 @@ export default function AdminNewChat() {
         .select('id, first_name, last_name, avatar_url, role')
         .neq('id', userId)
         .order('last_name');
-      setUsers((data as UserItem[]) || []);
-      setLoadingUsers(false);
+      setUsers((data as MemberUser[]) || []);
     };
     fetchUsers();
   }, [userId]);
-
-  const filtered = users.filter((u) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      u.first_name.toLowerCase().includes(q) ||
-      u.last_name.toLowerCase().includes(q)
-    );
-  });
 
   const toggleUser = (uid: string) => {
     setSelected((prev) =>
@@ -70,26 +53,6 @@ export default function AdminNewChat() {
     }
   };
 
-  const renderUser = ({ item }: { item: UserItem }) => {
-    const initials = `${item.first_name?.[0] || ''}${item.last_name?.[0] || ''}`;
-    const isSelected = selected.includes(item.id);
-
-    return (
-      <Pressable style={styles.userRow} onPress={() => toggleUser(item.id)}>
-        <Checkbox status={isSelected ? 'checked' : 'unchecked'} onPress={() => toggleUser(item.id)} uncheckedColor="#9ca3af" />
-        {item.avatar_url ? (
-          <Avatar.Image size={36} source={{ uri: item.avatar_url }} />
-        ) : (
-          <Avatar.Text size={36} label={initials} style={styles.avatarFallback} />
-        )}
-        <View style={styles.userInfo}>
-          <Text variant="bodyMedium" style={styles.userName}>{item.first_name} {item.last_name}</Text>
-          <Text variant="bodySmall" style={styles.userRole}>{item.role}</Text>
-        </View>
-      </Pressable>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -101,28 +64,11 @@ export default function AdminNewChat() {
           dense
           style={styles.nameInput}
         />
-        <TextInput
-          mode="outlined"
-          label="Search users..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          dense
-          left={<TextInput.Icon icon="magnify" />}
-          style={styles.searchInput}
-        />
-        <Text variant="bodySmall" style={[styles.selectedCount, selected.length === 0 && styles.selectedCountHidden]}>
-          {selected.length > 0 ? `${selected.length} selected` : ' '}
-        </Text>
       </View>
 
       <Divider />
 
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
-        renderItem={renderUser}
-        contentContainerStyle={styles.listContent}
-      />
+      <MemberPickerGrid users={users} selectedIds={selected} onToggle={toggleUser} />
 
       <View style={styles.footer}>
         <Button
@@ -140,29 +86,14 @@ export default function AdminNewChat() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  header: { padding: 16, gap: 8 },
-  nameInput: { backgroundColor: '#fff' },
-  searchInput: { backgroundColor: '#fff' },
-  selectedCount: { color: '#111827', fontWeight: '600', minHeight: 20 },
-  selectedCountHidden: { opacity: 0 },
-  userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    gap: 8,
-  },
-  avatarFallback: { backgroundColor: '#e5e7eb' },
-  userInfo: { flex: 1 },
-  userName: { fontWeight: '600' },
-  userRole: { color: '#6b7280' },
-  listContent: { paddingBottom: 80 },
+  container: { flex: 1, backgroundColor: theme.colors.surface },
+  header: { padding: 16, paddingBottom: 8 },
+  nameInput: { backgroundColor: theme.colors.surface },
   footer: {
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: theme.colors.outline,
   },
   createButton: { borderRadius: 8 },
 });
