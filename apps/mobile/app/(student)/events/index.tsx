@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { SectionList, View, StyleSheet, RefreshControl, Pressable } from 'react-native';
-import { Chip, Text } from 'react-native-paper';
+import { Chip, Text, FAB } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -195,6 +195,13 @@ export default function StudentEvents() {
           <EmptyState icon="calendar-blank-outline" title="No events" subtitle={emptyMessages[filter]} />
         }
       />
+      <FAB
+        icon="plus"
+        color="#fff"
+        style={styles.fab}
+        onPress={() => router.push('/(student)/events/new')}
+        accessibilityLabel="Create event"
+      />
     </View>
   );
 }
@@ -235,4 +242,5 @@ const styles = StyleSheet.create({
   myRsvpRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
   myRsvpText: { fontWeight: '600', fontSize: 12 },
   eventDescription: { color: '#9ca3af', marginTop: 2 },
+  fab: { position: 'absolute', right: 16, bottom: 16, backgroundColor: '#005EFF' },
 });
