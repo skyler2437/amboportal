@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, ScrollView, StyleSheet, Alert, Linking, Platform, Pressable, ActionSheetIOS, Share } from 'react-native';
-import { Card, Text, Button, Divider, TextInput, Switch, ActivityIndicator } from 'react-native-paper';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { View, ScrollView, StyleSheet, Alert, Linking, Platform, ActionSheetIOS, Share } from 'react-native';
+import { Card, Text, Divider, Switch } from 'react-native-paper';
 import { useAuth } from '@/providers/AuthProvider';
 import { useProfile } from '@/hooks/useProfile';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -15,9 +14,14 @@ import { hapticSuccess, hapticError, hapticWarning } from '@/lib/haptics';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
 import { ChangePasswordCard } from '@/components/ChangePasswordCard';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { openExternalLink } from '@/lib/openExternalLink';
 import { useAppTheme } from '@/lib/ThemeProvider';
 import type { SemanticTokens } from '@/lib/theme';
+import { ProfileFieldsForm } from '@/components/profile/ProfileFieldsForm';
+import { PushNotificationsCard } from '@/components/profile/PushNotificationsCard';
+import { NotificationPreferencesCard } from '@/components/profile/NotificationPreferencesCard';
+import { CalendarSubscribeCard } from '@/components/profile/CalendarSubscribeCard';
+import { SupportCard } from '@/components/profile/SupportCard';
+import { AccountActions } from '@/components/profile/AccountActions';
 
 export default function StudentProfile() {
   const { tokens } = useAppTheme();
@@ -249,194 +253,45 @@ export default function StudentProfile() {
 
       {/* Editable Profile Fields */}
       <Text variant="titleSmall" style={styles.sectionLabel}>PROFILE INFORMATION</Text>
-      <View style={styles.formSection}>
-        <TextInput
-          mode="outlined"
-          label="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
-          dense
-          style={styles.input}
-        />
-        <TextInput
-          mode="outlined"
-          label="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-          dense
-          style={styles.input}
-        />
-        <TextInput
-          mode="outlined"
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          dense
-          style={styles.input}
-        />
-        <TextInput
-          mode="outlined"
-          label="Phone (10 digits)"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          maxLength={10}
-          dense
-          style={styles.input}
-        />
-        {hasChanges && (
-          <Button
-            mode="contained"
-            onPress={handleSave}
-            loading={saving}
-            disabled={saving}
-            style={styles.saveButton}
-          >
-            Save Changes
-          </Button>
-        )}
-      </View>
+      <ProfileFieldsForm
+        firstName={firstName}
+        onChangeFirstName={setFirstName}
+        lastName={lastName}
+        onChangeLastName={setLastName}
+        email={email}
+        onChangeEmail={setEmail}
+        phone={phone}
+        onChangePhone={setPhone}
+        hasChanges={hasChanges}
+        saving={saving}
+        onSave={handleSave}
+      />
 
       <Divider style={styles.divider} />
 
       {/* Push Notifications */}
       <Text variant="titleSmall" style={styles.sectionLabel}>NOTIFICATIONS</Text>
-      <Card elevation={0} style={styles.pushCard}>
-        <Card.Content>
-          <View style={styles.pushHeader}>
-            <MaterialCommunityIcons name="bell-ring-outline" size={24} color={tokens.textPrimary} />
-            <View style={styles.pushInfo}>
-              <Text variant="bodyLarge" style={styles.pushTitle}>Push Notifications</Text>
-              <Text variant="bodySmall" style={styles.pushSubtitle}>
-                {permissionStatus === 'granted'
-                  ? 'Notifications are enabled'
-                  : permissionStatus === 'denied'
-                  ? 'Notifications are blocked in device settings'
-                  : 'Enable to receive alerts for messages and events'}
-              </Text>
-            </View>
-          </View>
-          {pushLoading ? (
-            <ActivityIndicator style={styles.pushLoader} />
-          ) : permissionStatus === 'granted' ? (
-            <View style={styles.pushStatus}>
-              <MaterialCommunityIcons name="check-circle" size={16} color={tokens.statusGoodFg} />
-              <Text variant="bodySmall" style={styles.pushStatusText}>Enabled</Text>
-            </View>
-          ) : permissionStatus === 'denied' ? (
-            <Button
-              mode="outlined"
-              icon="cog"
-              onPress={() => {
-                if (Platform.OS === 'ios') {
-                  Linking.openURL('app-settings:');
-                } else {
-                  Linking.openSettings();
-                }
-              }}
-              compact
-            >
-              Open Settings
-            </Button>
-          ) : (
-            <Button
-              mode="contained"
-              icon="bell"
-              onPress={requestPermission}
-              style={styles.pushEnableButton}
-            >
-              Enable Notifications
-            </Button>
-          )}
-        </Card.Content>
-      </Card>
+      <PushNotificationsCard
+        permissionStatus={permissionStatus}
+        pushLoading={pushLoading}
+        onRequestPermission={requestPermission}
+        defaultSubtitle="Enable to receive alerts for messages and events"
+        cardStyle={styles.pushCard}
+      />
 
       {/* Notification Preferences */}
       <Text variant="titleSmall" style={styles.prefsLabel}>Notification Types</Text>
-      <Card elevation={0} style={styles.prefsCard}>
-        <Card.Content style={styles.prefsContent}>
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="chat-outline" size={20} color={tokens.textSecondary} />
-              <Text variant="bodyMedium">Chat Messages</Text>
-            </View>
-            <Switch
-              value={prefs.chat_messages}
-              onValueChange={(v) => updatePref('chat_messages', v)}
-            />
-          </View>
-          <Divider />
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="message-text-outline" size={20} color={tokens.textSecondary} />
-              <Text variant="bodyMedium">New Posts</Text>
-            </View>
-            <Switch
-              value={prefs.new_posts}
-              onValueChange={(v) => updatePref('new_posts', v)}
-            />
-          </View>
-          <Divider />
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="comment-text-outline" size={20} color={tokens.textSecondary} />
-              <Text variant="bodyMedium">Comments on My Posts</Text>
-            </View>
-            <Switch
-              value={prefs.post_comments}
-              onValueChange={(v) => updatePref('post_comments', v)}
-            />
-          </View>
-          <Divider />
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="calendar-text-outline" size={20} color={tokens.textSecondary} />
-              <Text variant="bodyMedium">Event Comments</Text>
-            </View>
-            <Switch
-              value={prefs.event_comments}
-              onValueChange={(v) => updatePref('event_comments', v)}
-            />
-          </View>
-          <Divider />
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="bell-alert-outline" size={20} color={tokens.textSecondary} />
-              <Text variant="bodyMedium">Event Reminders</Text>
-            </View>
-            <Switch
-              value={prefs.event_reminders}
-              onValueChange={(v) => updatePref('event_reminders', v)}
-            />
-          </View>
-        </Card.Content>
-      </Card>
+      <NotificationPreferencesCard
+        prefs={prefs}
+        updatePref={updatePref}
+        cardStyle={styles.prefsCard}
+      />
 
       <Divider style={styles.divider} />
 
       {/* Calendar Subscription */}
       <Text variant="titleSmall" style={styles.sectionLabel}>INTEGRATIONS</Text>
-      <Card elevation={0} style={styles.gcalCard}>
-        <Card.Content>
-          <View style={styles.gcalHeader}>
-            <MaterialCommunityIcons name="calendar-sync" size={24} color={tokens.accent} />
-            <View style={styles.gcalInfo}>
-              <Text variant="bodyLarge" style={styles.gcalTitle}>Subscribe to Calendar</Text>
-              <Text variant="bodySmall" style={styles.gcalSubtitle}>Add ambassador events to your calendar app. Events auto-update with RSVPs and details.</Text>
-            </View>
-          </View>
-          <Button
-            mode="contained"
-            icon="calendar-plus"
-            onPress={handleSubscribeCalendar}
-            style={styles.gcalConnectButton}
-          >
-            Subscribe to Calendar
-          </Button>
-        </Card.Content>
-      </Card>
+      <CalendarSubscribeCard onSubscribe={handleSubscribeCalendar} cardStyle={styles.gcalCard} />
 
       <Divider style={styles.divider} />
 
@@ -471,60 +326,12 @@ export default function StudentProfile() {
 
       {/* Support & About */}
       <Text variant="titleSmall" style={styles.sectionLabel}>SUPPORT</Text>
-      <Card elevation={0} style={styles.supportCard}>
-        <Card.Content style={styles.supportContent}>
-          <Pressable style={styles.supportRow} onPress={() => Linking.openURL('mailto:support@127makes.com')}>
-            <MaterialCommunityIcons name="email-outline" size={20} color={tokens.textSecondary} />
-            <Text variant="bodyMedium">Contact Support</Text>
-          </Pressable>
-          <Pressable
-            style={styles.supportRow}
-            onPress={() => {
-              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://amboportal.vercel.app';
-              openExternalLink(`${webUrl}/privacy`);
-            }}
-          >
-            <MaterialCommunityIcons name="shield-lock-outline" size={20} color={tokens.textSecondary} />
-            <Text variant="bodyMedium">Privacy Policy</Text>
-          </Pressable>
-          <Pressable
-            style={styles.supportRow}
-            onPress={() => {
-              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://amboportal.vercel.app';
-              openExternalLink(`${webUrl}/terms`);
-            }}
-          >
-            <MaterialCommunityIcons name="file-document-outline" size={20} color={tokens.textSecondary} />
-            <Text variant="bodyMedium">Terms of Service</Text>
-          </Pressable>
-        </Card.Content>
-      </Card>
+      <SupportCard cardStyle={styles.supportCard} />
 
       <Divider style={styles.divider} />
 
-      {/* Sign Out */}
-      <Button
-        mode="contained"
-        buttonColor={tokens.statusBadFg}
-        icon="logout"
-        onPress={signOut}
-        style={styles.signOutButton}
-      >
-        Sign Out
-      </Button>
-
-      {/* Delete Account */}
-      <Button
-        mode="text"
-        textColor={tokens.statusBadFg}
-        icon="delete-outline"
-        onPress={handleDeleteAccount}
-        loading={deleting}
-        disabled={deleting}
-        style={styles.deleteButton}
-      >
-        Delete Account
-      </Button>
+      {/* Sign Out + Delete Account */}
+      <AccountActions onSignOut={signOut} onDeleteAccount={handleDeleteAccount} deleting={deleting} />
 
       <Text variant="bodySmall" style={styles.versionText}>
         AmboPortal v{appVersion}
@@ -545,40 +352,12 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     letterSpacing: 0.8,
     marginBottom: 12,
   },
-  formSection: { gap: 12 },
-  input: { backgroundColor: t.surface },
-  saveButton: { borderRadius: 12, marginTop: 4 },
   pushCard: { backgroundColor: t.surface },
-  pushHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  pushInfo: { flex: 1 },
-  pushTitle: { fontWeight: '600' },
-  pushSubtitle: { color: t.textSecondary },
-  pushLoader: { marginVertical: 8 },
-  pushStatus: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  pushStatusText: { color: t.statusGoodFg, fontWeight: '600' },
-  pushEnableButton: { borderRadius: 8 },
   prefsLabel: { fontWeight: '600', marginBottom: 8, marginTop: 12, color: t.textMuted, letterSpacing: 0.8 },
   prefsCard: { backgroundColor: t.surface },
-  prefsContent: { gap: 4 },
-  prefRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  prefInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   gcalCard: { backgroundColor: t.surface },
-  gcalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  gcalInfo: { flex: 1 },
-  gcalTitle: { fontWeight: '600' },
-  gcalSubtitle: { color: t.textSecondary },
-  gcalConnectButton: { borderRadius: 8 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   card: { backgroundColor: t.surface },
   supportCard: { backgroundColor: t.surface },
-  supportContent: { gap: 0 },
-  supportRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  signOutButton: { borderRadius: 12 },
-  deleteButton: { marginTop: 12 },
   versionText: { color: t.textMuted, textAlign: 'center', marginTop: 16 },
 });
