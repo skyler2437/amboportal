@@ -12,6 +12,7 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { supabase } from '@/lib/supabase';
 import Constants from 'expo-constants';
 import { ChangePasswordCard } from '@/components/ChangePasswordCard';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { openExternalLink } from '@/lib/openExternalLink';
 
 export default function AdminProfile() {
@@ -419,6 +420,12 @@ export default function AdminProfile() {
           </Button>
         </Card.Content>
       </Card>
+
+      <Divider style={styles.divider} />
+
+      {/* Appearance */}
+      <Text variant="titleMedium" style={styles.sectionTitle}>Appearance</Text>
+      <ThemeToggle />
 
       <Divider style={styles.divider} />
 

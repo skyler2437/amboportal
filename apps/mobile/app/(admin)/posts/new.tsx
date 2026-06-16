@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, Alert, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Avatar } from 'react-native-paper';
 import { Stack, useRouter } from 'expo-router';
@@ -9,6 +9,8 @@ import { usePosts } from '@/hooks/usePosts';
 import { supabase } from '@/lib/supabase';
 import { PostAttachmentBar } from '@/components/PostAttachmentBar';
 import { type PickedAsset } from '@/lib/attachments';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function NewPost() {
   const router = useRouter();
@@ -16,6 +18,8 @@ export default function NewPost() {
   const userId = session?.user?.id || '';
   const { createPost } = usePosts();
   const insets = useSafeAreaInsets();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
 
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<PickedAsset[]>([]);
@@ -59,7 +63,7 @@ export default function NewPost() {
 
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Go back" style={styles.backBtn}>
-          <ChevronLeft size={28} color="#005EFF" />
+          <ChevronLeft size={28} color={tokens.accent} />
         </Pressable>
         <Pressable
           onPress={handlePost}
@@ -79,7 +83,7 @@ export default function NewPost() {
         )}
         <TextInput
           placeholder="Share an update…"
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={tokens.textMuted}
           value={content}
           onChangeText={setContent}
           multiline
@@ -93,21 +97,22 @@ export default function NewPost() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingBottom: 8,
-    backgroundColor: '#fff',
-  },
-  backBtn: { padding: 4 },
-  postBtn: { backgroundColor: '#005EFF', borderRadius: 999, paddingHorizontal: 18, paddingVertical: 6 },
-  postBtnDisabled: { opacity: 0.4 },
-  postBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-  body: { flex: 1, flexDirection: 'row', gap: 10, padding: 16 },
-  avatarFallback: { backgroundColor: '#e5e7eb' },
-  input: { flex: 1, fontSize: 16, color: '#111827', paddingTop: 6, textAlignVertical: 'top' },
-});
+const makeStyles = (t: SemanticTokens) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: t.background },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 12,
+      paddingBottom: 8,
+      backgroundColor: t.surfaceElevated,
+    },
+    backBtn: { padding: 4 },
+    postBtn: { backgroundColor: t.accentSolid, borderRadius: 999, paddingHorizontal: 18, paddingVertical: 6 },
+    postBtnDisabled: { opacity: 0.4 },
+    postBtnText: { color: t.onAccent, fontWeight: '600', fontSize: 14 },
+    body: { flex: 1, flexDirection: 'row', gap: 10, padding: 16 },
+    avatarFallback: { backgroundColor: t.surfaceVariant },
+    input: { flex: 1, fontSize: 16, color: t.textPrimary, paddingTop: 6, textAlignVertical: 'top' },
+  });

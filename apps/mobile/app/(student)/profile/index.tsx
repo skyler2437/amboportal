@@ -14,6 +14,7 @@ import Constants from 'expo-constants';
 import { hapticSuccess, hapticError, hapticWarning } from '@/lib/haptics';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
 import { ChangePasswordCard } from '@/components/ChangePasswordCard';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { openExternalLink } from '@/lib/openExternalLink';
 
 export default function StudentProfile() {
@@ -432,6 +433,12 @@ export default function StudentProfile() {
           </Button>
         </Card.Content>
       </Card>
+
+      <Divider style={styles.divider} />
+
+      {/* Appearance */}
+      <Text variant="titleSmall" style={styles.sectionLabel}>APPEARANCE</Text>
+      <ThemeToggle />
 
       <Divider style={styles.divider} />
 
