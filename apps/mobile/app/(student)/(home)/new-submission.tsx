@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { TextInput, Button, Text, Menu, Divider, Card } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
@@ -7,10 +7,14 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { SERVICE_TYPES } from '@ambo/database';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function NewSubmission() {
   const { session } = useAuth();
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [serviceType, setServiceType] = useState('Family Tour');
   const [menuVisible, setMenuVisible] = useState(false);
   const [hours, setHours] = useState('1');
@@ -71,7 +75,7 @@ export default function NewSubmission() {
         <View style={styles.successContainer}>
           <Card elevation={0} style={styles.successCard}>
             <Card.Content style={styles.successContent}>
-              <MaterialCommunityIcons name="check-circle" size={56} color="#10b981" />
+              <MaterialCommunityIcons name="check-circle" size={56} color={tokens.statusGoodFg} />
               <Text variant="headlineSmall" style={styles.successTitle}>
                 Submitted!
               </Text>
@@ -194,11 +198,11 @@ export default function NewSubmission() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
   content: { padding: 16, gap: 12 },
-  description: { color: '#6b7280', marginBottom: 4 },
-  input: { backgroundColor: '#fff' },
+  description: { color: t.textSecondary, marginBottom: 4 },
+  input: { backgroundColor: t.surface },
   row: { flexDirection: 'row', gap: 12 },
   halfInput: { flex: 1 },
   notesInput: { minHeight: 100 },
@@ -206,10 +210,10 @@ const styles = StyleSheet.create({
   menuScroll: { maxHeight: 300 },
   divider: { marginVertical: 8 },
   submitButton: { borderRadius: 12 },
-  successContainer: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff', gap: 24 },
-  successCard: { backgroundColor: '#f0fdf4' },
+  successContainer: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: t.background, gap: 24 },
+  successCard: { backgroundColor: t.statusGoodBg },
   successContent: { alignItems: 'center', gap: 12, paddingVertical: 24 },
-  successTitle: { fontWeight: '700', color: '#166534' },
-  successSubtitle: { color: '#6b7280', textAlign: 'center' },
+  successTitle: { fontWeight: '700', color: t.statusGoodFg },
+  successSubtitle: { color: t.textSecondary, textAlign: 'center' },
   successActions: { gap: 12 },
 });

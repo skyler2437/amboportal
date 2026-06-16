@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { FlatList, View, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text, Avatar } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -6,10 +6,14 @@ import { useUsers } from '@/hooks/useUsers';
 import { RoleBadge } from '@/components/RoleBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminUsers() {
   const { users, loading, refetch } = useUsers();
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
 
   if (loading && users.length === 0) return <LoadingScreen />;
 
@@ -24,7 +28,7 @@ export default function AdminUsers() {
         const initials = `${item.first_name?.[0] || ''}${item.last_name?.[0] || ''}`;
         return (
           <Pressable
-            onPress={() => router.push({ pathname: '/(admin)/users/[id]', params: { id: item.id } })}
+            onPress={() => router.push({ pathname: '/(admin)/(home)/users/[id]', params: { id: item.id } })}
             style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
           >
             <Card elevation={0} style={styles.cardInner}>
@@ -53,15 +57,15 @@ export default function AdminUsers() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   content: { padding: 16, paddingBottom: 32 },
   card: { marginBottom: 8 },
   cardPressed: { opacity: 0.7 },
-  cardInner: { backgroundColor: '#fff' },
+  cardInner: { backgroundColor: t.surface },
   cardContent: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { backgroundColor: '#e5e7eb' },
+  avatar: { backgroundColor: t.surfaceVariant },
   cardInfo: { flex: 1 },
   name: { fontWeight: '600' },
-  email: { color: '#6b7280' },
+  email: { color: t.textSecondary },
 });

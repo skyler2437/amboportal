@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, Linking } from 'react-native';
 import { Card, Text, IconButton } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface ResourceCardProps {
   title: string;
@@ -44,6 +46,8 @@ export function ResourceCard({
   showDelete,
   onDelete,
 }: ResourceCardProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const iconName = getFileIcon(fileType) as React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   const date = new Date(createdAt).toLocaleDateString();
 
@@ -51,7 +55,7 @@ export function ResourceCard({
     <Card elevation={0} style={styles.card} accessible={true} accessibilityLabel={`Resource: ${title}${fileSize ? `, ${formatFileSize(fileSize)}` : ''}, uploaded ${date}`}>
       <Card.Content style={styles.content}>
         <View style={styles.iconContainer} importantForAccessibility="no-hide-descendants">
-          <MaterialCommunityIcons name={iconName} size={28} color="#111827" />
+          <MaterialCommunityIcons name={iconName} size={28} color={tokens.textPrimary} />
         </View>
         <View style={styles.info}>
           <Text variant="bodyLarge" style={styles.title} numberOfLines={1}>{title}</Text>
@@ -74,7 +78,7 @@ export function ResourceCard({
             <IconButton
               icon="delete-outline"
               size={20}
-              iconColor="#ef4444"
+              iconColor={tokens.statusBadFg}
               onPress={onDelete}
               accessibilityLabel={`Delete ${title}`}
             />
@@ -85,10 +89,10 @@ export function ResourceCard({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   card: {
     marginBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: t.surface,
   },
   content: {
     flexDirection: 'row',
@@ -99,14 +103,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 10,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: t.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
   },
   info: { flex: 1 },
   title: { fontWeight: '600' },
-  description: { color: '#6b7280', marginTop: 2 },
+  description: { color: t.textSecondary, marginTop: 2 },
   meta: { flexDirection: 'row', gap: 12, marginTop: 4 },
-  metaText: { color: '#9ca3af' },
+  metaText: { color: t.textMuted },
   actions: { flexDirection: 'row' },
 });

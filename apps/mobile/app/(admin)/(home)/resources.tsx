@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { FAB, Portal, Dialog, TextInput, Button, Text, ProgressBar } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -8,8 +8,12 @@ import { useResources, Resource } from '@/hooks/useResources';
 import { ResourceCard } from '@/components/ResourceCard';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminResources() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { resources, loading, refetch, uploadResource, deleteResource } = useResources();
@@ -97,7 +101,7 @@ export default function AdminResources() {
         refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} />}
       />
 
-      <FAB icon="plus" color="#fff" style={styles.fab} onPress={handlePickFile} accessibilityLabel="Upload new resource" />
+      <FAB icon="plus" color={tokens.onAccent} style={styles.fab} onPress={handlePickFile} accessibilityLabel="Upload new resource" />
 
       <Portal>
         <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)}>
@@ -105,7 +109,7 @@ export default function AdminResources() {
           <Dialog.Content style={styles.dialogContent}>
             {selectedFile && (
               <View style={styles.filePreview}>
-                <MaterialCommunityIcons name="file-outline" size={20} color="#6b7280" />
+                <MaterialCommunityIcons name="file-outline" size={20} color={tokens.textSecondary} />
                 <View style={styles.fileInfo}>
                   <Text variant="bodySmall" style={styles.fileName} numberOfLines={1}>
                     {selectedFile.name}
@@ -159,27 +163,27 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
   list: { padding: 16 },
   emptyContainer: { flex: 1, padding: 16 },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#005EFF',
+    backgroundColor: t.accentSolid,
   },
   dialogContent: { gap: 12 },
   filePreview: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#f9fafb',
+    backgroundColor: t.surfaceVariant,
     padding: 10,
     borderRadius: 8,
   },
   fileInfo: { flex: 1 },
-  fileName: { fontWeight: '600', color: '#374151' },
-  fileSize: { color: '#9ca3af' },
+  fileName: { fontWeight: '600', color: t.textPrimary },
+  fileSize: { color: t.textMuted },
   progressBar: { borderRadius: 4 },
 });

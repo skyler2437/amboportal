@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,12 +13,16 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || '';
 
 export default function RegisterScreen() {
   const { signIn } = useAuth();
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -162,7 +166,7 @@ export default function RegisterScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={tokens.onAccent} />
           ) : (
             <Text style={styles.buttonText}>Create Account</Text>
           )}
@@ -179,23 +183,23 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  flex: { flex: 1, backgroundColor: t.surface },
   container: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   title: { fontSize: 28, fontWeight: '700', textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 32 },
+  subtitle: { fontSize: 16, color: t.textSecondary, textAlign: 'center', marginBottom: 32 },
   row: { flexDirection: 'row', gap: 8 },
   input: {
-    borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: '#fafafa',
+    borderWidth: 1, borderColor: t.border, borderRadius: 8, padding: 14,
+    fontSize: 16, marginBottom: 12, backgroundColor: t.surfaceVariant,
   },
   halfInput: { flex: 1 },
   button: {
-    backgroundColor: '#005EFF', borderRadius: 8, padding: 16,
+    backgroundColor: t.accentSolid, borderRadius: 8, padding: 16,
     alignItems: 'center', marginTop: 8,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: t.onAccent, fontSize: 16, fontWeight: '600' },
   linkButton: { alignItems: 'center', marginTop: 20, padding: 8 },
-  linkText: { fontSize: 15, color: '#6366f1', fontWeight: '500' },
+  linkText: { fontSize: 15, color: t.secondary, fontWeight: '500' },
 });

@@ -1,6 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Star, StarOff, Trash2 } from 'lucide-react-native';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 const STAR_W = 76;
 const DELETE_W = 76;
@@ -31,6 +33,8 @@ interface Props {
  * while taps and vertical scrolls still pass through.
  */
 export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: Props) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const translateX = useRef(new Animated.Value(0)).current;
   const restOffset = useRef(0); // 0 = closed, -OPEN_WIDTH = open
   const [open, setOpen] = useState(false);
@@ -110,7 +114,7 @@ export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: 
             onPress={handleStar}
             accessibilityLabel={starred ? 'Unstar chat' : 'Star chat'}
           >
-            {starred ? <StarOff size={20} color="#fff" /> : <Star size={20} color="#fff" fill="#fff" />}
+            {starred ? <StarOff size={20} color={tokens.onAccent} /> : <Star size={20} color={tokens.onAccent} fill={tokens.onAccent} />}
             <Text style={styles.actionText}>{starred ? 'Unstar' : 'Star'}</Text>
           </Pressable>
           <Pressable
@@ -118,7 +122,7 @@ export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: 
             onPress={handleDelete}
             accessibilityLabel="Delete chat"
           >
-            <Trash2 size={20} color="#fff" />
+            <Trash2 size={20} color={tokens.onAccent} />
             <Text style={styles.actionText}>Delete</Text>
           </Pressable>
         </View>
@@ -127,10 +131,10 @@ export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: 
   );
 }
 
-const styles = StyleSheet.create({
-  container: { backgroundColor: '#fff', overflow: 'hidden' },
-  row: { backgroundColor: '#fff' },
-  rowContent: { backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { backgroundColor: t.surface, overflow: 'hidden' },
+  row: { backgroundColor: t.surface },
+  rowContent: { backgroundColor: t.surface },
   actions: {
     position: 'absolute',
     left: '100%',
@@ -140,7 +144,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   action: { width: STAR_W, alignItems: 'center', justifyContent: 'center', gap: 2 },
-  starAction: { backgroundColor: '#f59e0b' },
-  deleteAction: { backgroundColor: '#ef4444', width: DELETE_W },
-  actionText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  starAction: { backgroundColor: t.statusWarnFg },
+  deleteAction: { backgroundColor: t.statusBadFg, width: DELETE_W },
+  actionText: { color: t.onAccent, fontSize: 12, fontWeight: '600' },
 });

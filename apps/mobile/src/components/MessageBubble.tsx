@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { Avatar, Icon, Text } from 'react-native-paper';
 import type { MessageStatus } from '@/hooks/useChatMessages';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface MessageBubbleProps {
   content: string;
@@ -17,6 +19,8 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ content, createdAt, senderName, senderAvatar, isOwn, status, onRetry, likeCount = 0, liked = false, onToggleLike }: MessageBubbleProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const time = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const initials = senderName
     .split(' ')
@@ -69,7 +73,7 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
               <Icon
                 source={liked ? 'heart' : 'heart-outline'}
                 size={12}
-                color={liked ? '#ef4444' : '#9ca3af'}
+                color={liked ? tokens.statusBadFg : tokens.textMuted}
               />
               <Text style={styles.likeBadgeText}>{likeCount}</Text>
             </View>
@@ -99,6 +103,8 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
 
 /** Renders a date separator header between message groups */
 export function DateSeparator({ date }: { date: string }) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.dateSeparator}>
       <View style={styles.dateLine} />
@@ -110,6 +116,8 @@ export function DateSeparator({ date }: { date: string }) {
 
 /** Renders a "typing" indicator bubble */
 export function TypingIndicator({ names }: { names: string[] }) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   if (names.length === 0) return null;
 
   const label =
@@ -137,7 +145,7 @@ export function TypingIndicator({ names }: { names: string[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     marginVertical: 4,
@@ -154,7 +162,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginBottom: 16,
   },
-  avatarFallback: { backgroundColor: '#e5e7eb' },
+  avatarFallback: { backgroundColor: t.surfaceVariant },
   messageCol: {
     maxWidth: '75%',
   },
@@ -164,30 +172,30 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   ownBubble: {
-    backgroundColor: '#005EFF',
+    backgroundColor: t.accentSolid,
     borderBottomRightRadius: 4,
     alignSelf: 'flex-end',
   },
   otherBubble: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: t.surfaceVariant,
     borderBottomLeftRadius: 4,
     alignSelf: 'flex-start',
   },
   failedBubble: {
-    backgroundColor: '#451a1a',
+    backgroundColor: t.statusBadBg,
   },
   senderName: {
-    color: '#6b7280',
+    color: t.textSecondary,
     fontWeight: '600',
     fontSize: 11,
     marginBottom: 2,
     marginLeft: 4,
   },
   ownText: {
-    color: '#fff',
+    color: t.onAccent,
   },
   otherText: {
-    color: '#1f2937',
+    color: t.textPrimary,
   },
   metaRow: {
     flexDirection: 'row',
@@ -204,15 +212,15 @@ const styles = StyleSheet.create({
   },
   timeOutside: {
     fontSize: 10,
-    color: '#9ca3af',
+    color: t.textMuted,
   },
   statusText: {
     fontSize: 10,
-    color: '#9ca3af',
+    color: t.textMuted,
   },
   failedText: {
     fontSize: 11,
-    color: '#ef4444',
+    color: t.statusBadFg,
     fontWeight: '600',
   },
   // Date separator
@@ -226,10 +234,10 @@ const styles = StyleSheet.create({
   dateLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.border,
   },
   dateText: {
-    color: '#9ca3af',
+    color: t.textMuted,
     fontWeight: '600',
     fontSize: 11,
   },
@@ -240,7 +248,7 @@ const styles = StyleSheet.create({
   },
   typingLabel: {
     fontSize: 10,
-    color: '#9ca3af',
+    color: t.textMuted,
     marginTop: 2,
   },
   dotsRow: {
@@ -252,7 +260,7 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#9ca3af',
+    backgroundColor: t.textMuted,
     opacity: 0.4,
   },
   dot1: { opacity: 0.4 },
@@ -263,8 +271,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 3,
-    backgroundColor: '#fff',
-    borderColor: '#e5e7eb',
+    backgroundColor: t.surface,
+    borderColor: t.border,
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 6,
@@ -273,5 +281,5 @@ const styles = StyleSheet.create({
   },
   likeBadgeOwn: { alignSelf: 'flex-end' },
   likeBadgeOther: { alignSelf: 'flex-start' },
-  likeBadgeText: { fontSize: 11, color: '#6b7280', fontWeight: '600' },
+  likeBadgeText: { fontSize: 11, color: t.textSecondary, fontWeight: '600' },
 });

@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Text, Menu, Button } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 const GRADE_OPTIONS = [
   { label: 'Freshman (9th)', value: '9' },
@@ -16,6 +18,8 @@ interface StepPersonalProps {
 }
 
 export default function StepPersonal({ data, onChange }: StepPersonalProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [menuVisible, setMenuVisible] = useState(false);
   const selectedLabel = GRADE_OPTIONS.find((o) => o.value === data.grade_current)?.label || 'Select...';
 
@@ -84,10 +88,10 @@ export default function StepPersonal({ data, onChange }: StepPersonalProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { gap: 10 },
-  input: { backgroundColor: '#fff' },
-  label: { color: '#374151', marginTop: 4 },
+  input: { backgroundColor: t.surface },
+  label: { color: t.textSecondary, marginTop: 4 },
   menuButton: { justifyContent: 'flex-start' },
-  menuButtonOuter: { borderColor: '#d1d5db' },
+  menuButtonOuter: { borderColor: t.border },
 });

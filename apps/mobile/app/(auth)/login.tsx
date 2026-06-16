@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '@/providers/AuthProvider';
 import { CheddarRain } from '@/components/CheddarRain';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function LoginScreen() {
   const { signIn, signInWithApple } = useAuth();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -138,28 +142,28 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  flex: { flex: 1, backgroundColor: t.background },
   container: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   title: { fontSize: 28, fontWeight: '700', textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 32 },
+  subtitle: { fontSize: 16, color: t.textSecondary, textAlign: 'center', marginBottom: 32 },
   input: {
-    borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: '#fafafa',
+    borderWidth: 1, borderColor: t.border, borderRadius: 8, padding: 14,
+    fontSize: 16, marginBottom: 12, backgroundColor: t.surface,
   },
   button: {
-    backgroundColor: '#005EFF', borderRadius: 8, padding: 16,
+    backgroundColor: t.accentSolid, borderRadius: 8, padding: 16,
     alignItems: 'center', marginTop: 8,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: t.onAccent, fontSize: 16, fontWeight: '600' },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
     marginBottom: 4,
   },
   forgotPasswordText: {
     fontSize: 14,
-    color: '#6366f1',
+    color: t.secondary,
   },
   createAccountButton: {
     alignItems: 'center',
@@ -168,7 +172,7 @@ const styles = StyleSheet.create({
   },
   createAccountText: {
     fontSize: 15,
-    color: '#6366f1',
+    color: t.secondary,
     fontWeight: '500',
   },
   divider: {
@@ -179,12 +183,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.border,
   },
   dividerText: {
     marginHorizontal: 12,
     fontSize: 13,
-    color: '#9ca3af',
+    color: t.textMuted,
     textTransform: 'uppercase',
   },
   appleButton: {
@@ -198,6 +202,6 @@ const styles = StyleSheet.create({
   },
   cheddarText: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: t.textMuted,
   },
 });

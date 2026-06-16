@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button, Icon } from 'react-native-paper';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface ErrorStateProps {
   message?: string;
@@ -8,9 +10,12 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+
   return (
     <View style={styles.container}>
-      <Icon source="alert-circle-outline" size={48} color="#ef4444" />
+      <Icon source="alert-circle-outline" size={48} color={tokens.statusBadFg} />
       <Text variant="titleMedium" style={styles.title}>Something went wrong</Text>
       {message && (
         <Text variant="bodyMedium" style={styles.message}>{message}</Text>
@@ -29,7 +34,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -39,11 +44,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '600',
-    color: '#374151',
+    color: t.textPrimary,
     textAlign: 'center',
   },
   message: {
-    color: '#6b7280',
+    color: t.textSecondary,
     textAlign: 'center',
   },
   retryButton: {

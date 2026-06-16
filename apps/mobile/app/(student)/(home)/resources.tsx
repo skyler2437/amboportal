@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
 import { useResources, Resource } from '@/hooks/useResources';
 import { ResourceCard } from '@/components/ResourceCard';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function StudentResources() {
   const { resources, loading, error, refetch } = useResources();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
 
   if (loading && resources.length === 0) return <LoadingScreen />;
   if (error && resources.length === 0) return <ErrorState message={error} onRetry={refetch} />;
@@ -35,8 +39,8 @@ export default function StudentResources() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
   list: { padding: 16 },
   emptyContainer: { flex: 1, padding: 16 },
 });

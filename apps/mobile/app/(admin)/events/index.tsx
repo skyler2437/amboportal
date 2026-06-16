@@ -9,16 +9,11 @@ import { useEvents, type EventWithRsvp } from '@/hooks/useEvents';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
+import { getRsvpTint, getDefaultCardTint } from '@/lib/theme';
 
 type EventFilter = 'upcoming' | 'all' | 'past';
-
-// Card tint colors by RSVP status
-const CARD_TINT: Record<string, { bg: string; border: string; accent: string }> = {
-  going: { bg: '#f0fdf4', border: '#bbf7d0', accent: '#10b981' },
-  maybe: { bg: '#fffbeb', border: '#fde68a', accent: '#f59e0b' },
-  no:    { bg: '#f9fafb', border: '#e5e7eb', accent: '#9ca3af' },
-};
-const DEFAULT_CARD = { bg: '#fff', border: '#e5e7eb', accent: 'transparent' };
 
 const RSVP_LABEL: Record<string, string> = {
   going: 'Going',
@@ -51,6 +46,10 @@ function getRsvpDisplay(item: EventWithRsvp): { label: string; status: string } 
 }
 
 export default function AdminEvents() {
+  const { tokens, mode } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const cardTint = getRsvpTint(mode);
+  const defaultCard = getDefaultCardTint(mode);
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { events, loading, error, refetch } = useEvents(userId);
@@ -139,7 +138,7 @@ export default function AdminEvents() {
           const counts = item.rsvpCounts;
           const totalGoing = counts?.going || 0;
           const rsvpDisplay = getRsvpDisplay(item);
-          const tint = rsvpDisplay ? (CARD_TINT[rsvpDisplay.status] || DEFAULT_CARD) : DEFAULT_CARD;
+          const tint = rsvpDisplay ? (cardTint[rsvpDisplay.status as 'going' | 'maybe' | 'no'] || defaultCard) : defaultCard;
 
           return (
             <Pressable
@@ -153,14 +152,14 @@ export default function AdminEvents() {
                   </Text>
                   <View style={styles.eventMeta}>
                     <View style={styles.metaItem}>
-                      <MaterialCommunityIcons name="clock-outline" size={14} color="#6b7280" />
+                      <MaterialCommunityIcons name="clock-outline" size={14} color={tokens.textSecondary} />
                       <Text variant="bodySmall" style={styles.metaText}>
                         {formatTime(item.start_time)} - {formatTime(item.end_time)}
                       </Text>
                     </View>
                     {totalGoing > 0 && (
                       <View style={styles.metaItem}>
-                        <MaterialCommunityIcons name="account-group-outline" size={14} color="#6b7280" />
+                        <MaterialCommunityIcons name="account-group-outline" size={14} color={tokens.textSecondary} />
                         <Text variant="bodySmall" style={styles.metaText}>
                           {totalGoing} going
                         </Text>
@@ -194,21 +193,21 @@ export default function AdminEvents() {
         }
       />
 
-      <FAB icon="plus" color="#fff" style={styles.fab} onPress={() => router.push('/(admin)/events/new')} accessibilityLabel="Create new event" />
+      <FAB icon="plus" color={tokens.onAccent} style={styles.fab} onPress={() => router.push('/(admin)/events/new')} accessibilityLabel="Create new event" />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  outerContainer: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  outerContainer: { flex: 1, backgroundColor: t.background },
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 },
   filterChip: {},
   content: { padding: 16, paddingBottom: 32 },
   sectionHeader: {
     fontWeight: '600',
-    color: '#374151',
+    color: t.textPrimary,
     paddingVertical: 8,
-    backgroundColor: '#fff',
+    backgroundColor: t.background,
   },
   eventCard: {
     marginBottom: 10,
@@ -230,15 +229,15 @@ const styles = StyleSheet.create({
   eventTitle: { fontWeight: '600', marginBottom: 6 },
   eventMeta: { flexDirection: 'row', gap: 16, marginBottom: 4 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  metaText: { color: '#6b7280' },
+  metaText: { color: t.textSecondary },
   myRsvpRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
   myRsvpText: { fontWeight: '600', fontSize: 12 },
-  eventDescription: { color: '#9ca3af', marginTop: 2 },
+  eventDescription: { color: t.textMuted, marginTop: 2 },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#005EFF',
+    backgroundColor: t.accentSolid,
     borderRadius: 16,
   },
 });

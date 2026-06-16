@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, View, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Card, TextInput, Button, Divider, Avatar } from 'react-native-paper';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
@@ -6,6 +6,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { supabase } from '@/lib/supabase';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 import type { Submission, SubmissionStatus } from '@ambo/database';
 
 interface SubmissionDetail extends Submission {
@@ -15,6 +17,8 @@ interface SubmissionDetail extends Submission {
 export default function SubmissionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState('');
@@ -102,7 +106,7 @@ export default function SubmissionDetailPage() {
             <Card.Content style={styles.detailsContent}>
               <View style={styles.detailRow}>
                 <View style={styles.detailIconRow}>
-                  <MaterialCommunityIcons name="briefcase-outline" size={18} color="#6b7280" />
+                  <MaterialCommunityIcons name="briefcase-outline" size={18} color={tokens.textSecondary} />
                   <Text variant="bodySmall" style={styles.detailLabel}>Service Type</Text>
                 </View>
                 <Text variant="bodyMedium" style={styles.detailValue}>{submission.service_type}</Text>
@@ -110,7 +114,7 @@ export default function SubmissionDetailPage() {
               <Divider style={styles.rowDivider} />
               <View style={styles.detailRow}>
                 <View style={styles.detailIconRow}>
-                  <MaterialCommunityIcons name="calendar-outline" size={18} color="#6b7280" />
+                  <MaterialCommunityIcons name="calendar-outline" size={18} color={tokens.textSecondary} />
                   <Text variant="bodySmall" style={styles.detailLabel}>Date</Text>
                 </View>
                 <Text variant="bodyMedium" style={styles.detailValue}>{serviceDate}</Text>
@@ -148,8 +152,8 @@ export default function SubmissionDetailPage() {
               <Button
                 mode="contained"
                 icon="check-circle-outline"
-                buttonColor="#10b981"
-                textColor="#fff"
+                buttonColor={tokens.statusGoodFg}
+                textColor={tokens.onAccent}
                 onPress={() => handleAction('Approved')}
                 loading={saving}
                 disabled={saving}
@@ -164,8 +168,8 @@ export default function SubmissionDetailPage() {
               <Button
                 mode="contained"
                 icon="close-circle-outline"
-                buttonColor="#ef4444"
-                textColor="#fff"
+                buttonColor={tokens.statusBadFg}
+                textColor={tokens.onAccent}
                 onPress={() => handleAction('Denied')}
                 loading={saving}
                 disabled={saving}
@@ -183,41 +187,41 @@ export default function SubmissionDetailPage() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
   content: { padding: 16, paddingBottom: 40 },
-  studentCard: { backgroundColor: '#fff', marginBottom: 20 },
+  studentCard: { backgroundColor: t.surface, marginBottom: 20 },
   studentContent: { gap: 12 },
   studentRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatarFallback: { backgroundColor: '#e5e7eb' },
+  avatarFallback: { backgroundColor: t.surfaceVariant },
   studentInfo: { flex: 1 },
   studentName: { fontWeight: '700' },
-  email: { color: '#6b7280', marginTop: 2 },
+  email: { color: t.textSecondary, marginTop: 2 },
   sectionLabel: {
-    color: '#9ca3af',
+    color: t.textMuted,
     fontWeight: '600',
     letterSpacing: 0.8,
     marginBottom: 8,
     marginTop: 4,
   },
-  detailsCard: { backgroundColor: '#fff', marginBottom: 20 },
+  detailsCard: { backgroundColor: t.surface, marginBottom: 20 },
   detailsContent: { gap: 0 },
   detailRow: {
     paddingVertical: 12,
   },
   detailIconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  detailLabel: { color: '#9ca3af' },
+  detailLabel: { color: t.textMuted },
   detailValue: { fontWeight: '500', marginLeft: 26 },
-  rowDivider: { backgroundColor: '#f3f4f6' },
+  rowDivider: { backgroundColor: t.divider },
   statsRow: {
     flexDirection: 'row',
     paddingTop: 12,
   },
   statBox: { flex: 1, alignItems: 'center', paddingVertical: 8 },
-  statDivider: { width: 1, backgroundColor: '#f3f4f6' },
-  statNumber: { fontWeight: '700', color: '#111827' },
-  statUnit: { color: '#9ca3af', marginTop: 2 },
-  feedbackInput: { backgroundColor: '#fff', marginBottom: 8, minHeight: 100 },
+  statDivider: { width: 1, backgroundColor: t.divider },
+  statNumber: { fontWeight: '700', color: t.textPrimary },
+  statUnit: { color: t.textMuted, marginTop: 2 },
+  feedbackInput: { backgroundColor: t.surface, marginBottom: 8, minHeight: 100 },
   actionButtons: {
     flexDirection: 'row',
     gap: 12,

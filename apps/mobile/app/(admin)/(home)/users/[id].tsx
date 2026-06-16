@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ScrollView, View, StyleSheet, Alert } from 'react-native';
 import { Text, Card, Avatar, Divider, TextInput, Button, SegmentedButtons, Dialog, Portal } from 'react-native-paper';
 import { useLocalSearchParams, Stack } from 'expo-router';
@@ -8,6 +8,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import { RoleBadge } from '@/components/RoleBadge';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 import type { User, UserRole, SubmissionStatus } from '@ambo/database';
 
 const ROLE_OPTIONS = [
@@ -26,6 +28,8 @@ interface SubmissionSummary {
 
 export default function UserDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const { userRole: currentUserRole } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -280,13 +284,13 @@ export default function UserDetail() {
         >
           <Card.Content style={styles.summaryHeader}>
             <View style={styles.summaryLeft}>
-              <MaterialCommunityIcons name="file-document-outline" size={20} color="#111827" />
+              <MaterialCommunityIcons name="file-document-outline" size={20} color={tokens.textPrimary} />
               <Text variant="bodyLarge" style={styles.summaryTitle}>Submissions</Text>
             </View>
             <MaterialCommunityIcons
               name={showSubmissions ? 'chevron-up' : 'chevron-down'}
               size={20}
-              color="#9ca3af"
+              color={tokens.textMuted}
             />
           </Card.Content>
         </Card>
@@ -332,25 +336,25 @@ export default function UserDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
   content: { padding: 16, paddingBottom: 40 },
   avatarSection: { alignItems: 'center', gap: 8, paddingVertical: 16 },
-  avatar: { backgroundColor: '#e5e7eb' },
+  avatar: { backgroundColor: t.surfaceVariant },
   bold: { fontWeight: '700' },
-  warningText: { color: '#f59e0b', marginTop: 8 },
+  warningText: { color: t.statusWarnFg, marginTop: 8 },
   divider: { marginVertical: 16 },
   sectionLabel: {
-    color: '#9ca3af',
+    color: t.textMuted,
     fontWeight: '600',
     letterSpacing: 0.8,
     marginBottom: 12,
   },
   formSection: { gap: 12 },
-  input: { backgroundColor: '#fff' },
+  input: { backgroundColor: t.surface },
   roleButtons: { marginBottom: 4 },
   saveButton: { marginTop: 16, borderRadius: 12 },
-  summaryCard: { backgroundColor: '#fff' },
+  summaryCard: { backgroundColor: t.surface },
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -358,13 +362,13 @@ const styles = StyleSheet.create({
   },
   summaryLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   summaryTitle: { fontWeight: '600' },
-  submissionsCard: { backgroundColor: '#fff', marginTop: 1, borderTopLeftRadius: 0, borderTopRightRadius: 0 },
-  noData: { color: '#9ca3af', paddingVertical: 8 },
+  submissionsCard: { backgroundColor: t.surface, marginTop: 1, borderTopLeftRadius: 0, borderTopRightRadius: 0 },
+  noData: { color: t.textMuted, paddingVertical: 8 },
   statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12 },
   statItem: { alignItems: 'center' },
-  statNumber: { fontWeight: '700', color: '#111827' },
-  statUnit: { color: '#9ca3af', marginTop: 2 },
-  rowDivider: { backgroundColor: '#f3f4f6', marginVertical: 8 },
+  statNumber: { fontWeight: '700', color: t.textPrimary },
+  statUnit: { color: t.textMuted, marginTop: 2 },
+  rowDivider: { backgroundColor: t.divider, marginVertical: 8 },
   subRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -373,5 +377,5 @@ const styles = StyleSheet.create({
   },
   subInfo: { flex: 1, marginRight: 12 },
   subType: { fontWeight: '500' },
-  subDate: { color: '#9ca3af', marginTop: 2 },
+  subDate: { color: t.textMuted, marginTop: 2 },
 });

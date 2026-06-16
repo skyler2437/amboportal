@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Linking, Platform, Pressable, ActionSheetIOS, Share } from 'react-native';
 import { Card, Text, Button, Divider, TextInput, Switch, ActivityIndicator } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -14,8 +14,12 @@ import Constants from 'expo-constants';
 import { ChangePasswordCard } from '@/components/ChangePasswordCard';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { openExternalLink } from '@/lib/openExternalLink';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminProfile() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const { session, signOut } = useAuth();
   const userId = session?.user?.id || '';
   const { user, loading, refetch } = useProfile(userId);
@@ -289,7 +293,7 @@ export default function AdminProfile() {
       <Card elevation={0} style={styles.pushCard}>
         <Card.Content>
           <View style={styles.pushHeader}>
-            <MaterialCommunityIcons name="bell-ring-outline" size={24} color="#111827" />
+            <MaterialCommunityIcons name="bell-ring-outline" size={24} color={tokens.textPrimary} />
             <View style={styles.pushInfo}>
               <Text variant="bodyLarge" style={styles.pushTitle}>Push Notifications</Text>
               <Text variant="bodySmall" style={styles.pushSubtitle}>
@@ -305,7 +309,7 @@ export default function AdminProfile() {
             <ActivityIndicator style={styles.pushLoader} />
           ) : permissionStatus === 'granted' ? (
             <View style={styles.pushStatus}>
-              <MaterialCommunityIcons name="check-circle" size={16} color="#16a34a" />
+              <MaterialCommunityIcons name="check-circle" size={16} color={tokens.statusGoodFg} />
               <Text variant="bodySmall" style={styles.pushStatusText}>Enabled</Text>
             </View>
           ) : permissionStatus === 'denied' ? (
@@ -342,7 +346,7 @@ export default function AdminProfile() {
         <Card.Content style={styles.prefsContent}>
           <View style={styles.prefRow}>
             <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="chat-outline" size={20} color="#6b7280" />
+              <MaterialCommunityIcons name="chat-outline" size={20} color={tokens.textSecondary} />
               <Text variant="bodyMedium">Chat Messages</Text>
             </View>
             <Switch
@@ -353,7 +357,7 @@ export default function AdminProfile() {
           <Divider />
           <View style={styles.prefRow}>
             <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="message-text-outline" size={20} color="#6b7280" />
+              <MaterialCommunityIcons name="message-text-outline" size={20} color={tokens.textSecondary} />
               <Text variant="bodyMedium">New Posts</Text>
             </View>
             <Switch
@@ -364,7 +368,7 @@ export default function AdminProfile() {
           <Divider />
           <View style={styles.prefRow}>
             <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="comment-text-outline" size={20} color="#6b7280" />
+              <MaterialCommunityIcons name="comment-text-outline" size={20} color={tokens.textSecondary} />
               <Text variant="bodyMedium">Comments on My Posts</Text>
             </View>
             <Switch
@@ -375,7 +379,7 @@ export default function AdminProfile() {
           <Divider />
           <View style={styles.prefRow}>
             <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="calendar-text-outline" size={20} color="#6b7280" />
+              <MaterialCommunityIcons name="calendar-text-outline" size={20} color={tokens.textSecondary} />
               <Text variant="bodyMedium">Event Comments</Text>
             </View>
             <Switch
@@ -386,7 +390,7 @@ export default function AdminProfile() {
           <Divider />
           <View style={styles.prefRow}>
             <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="bell-alert-outline" size={20} color="#6b7280" />
+              <MaterialCommunityIcons name="bell-alert-outline" size={20} color={tokens.textSecondary} />
               <Text variant="bodyMedium">Event Reminders</Text>
             </View>
             <Switch
@@ -404,7 +408,7 @@ export default function AdminProfile() {
       <Card elevation={0} style={styles.gcalCard}>
         <Card.Content>
           <View style={styles.gcalHeader}>
-            <MaterialCommunityIcons name="calendar-sync" size={24} color="#4285F4" />
+            <MaterialCommunityIcons name="calendar-sync" size={24} color={tokens.accent} />
             <View style={styles.gcalInfo}>
               <Text variant="bodyLarge" style={styles.gcalTitle}>Subscribe to Calendar</Text>
               <Text variant="bodySmall" style={styles.gcalSubtitle}>Add ambassador events to your calendar app. Events auto-update with RSVPs and details.</Text>
@@ -440,7 +444,7 @@ export default function AdminProfile() {
       <Card elevation={0} style={styles.supportCard}>
         <Card.Content style={styles.supportContent}>
           <Pressable style={styles.supportRow} onPress={() => Linking.openURL('mailto:support@127makes.com')}>
-            <MaterialCommunityIcons name="email-outline" size={20} color="#6b7280" />
+            <MaterialCommunityIcons name="email-outline" size={20} color={tokens.textSecondary} />
             <Text variant="bodyMedium">Contact Support</Text>
           </Pressable>
           <Pressable
@@ -450,7 +454,7 @@ export default function AdminProfile() {
               openExternalLink(`${webUrl}/privacy`);
             }}
           >
-            <MaterialCommunityIcons name="shield-lock-outline" size={20} color="#6b7280" />
+            <MaterialCommunityIcons name="shield-lock-outline" size={20} color={tokens.textSecondary} />
             <Text variant="bodyMedium">Privacy Policy</Text>
           </Pressable>
           <Pressable
@@ -460,7 +464,7 @@ export default function AdminProfile() {
               openExternalLink(`${webUrl}/terms`);
             }}
           >
-            <MaterialCommunityIcons name="file-document-outline" size={20} color="#6b7280" />
+            <MaterialCommunityIcons name="file-document-outline" size={20} color={tokens.textSecondary} />
             <Text variant="bodyMedium">Terms of Service</Text>
           </Pressable>
         </Card.Content>
@@ -471,7 +475,7 @@ export default function AdminProfile() {
       {/* Sign Out */}
       <Button
         mode="contained"
-        buttonColor="#ef4444"
+        buttonColor={tokens.statusBadFg}
         icon="logout"
         onPress={signOut}
         style={styles.signOutButton}
@@ -482,7 +486,7 @@ export default function AdminProfile() {
       {/* Delete Account */}
       <Button
         mode="text"
-        textColor="#ef4444"
+        textColor={tokens.statusBadFg}
         icon="delete-outline"
         onPress={handleDeleteAccount}
         loading={deleting}
@@ -499,26 +503,26 @@ export default function AdminProfile() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
   content: { padding: 16, paddingBottom: 48 },
   avatarSection: { alignItems: 'center', gap: 8, paddingVertical: 16 },
   divider: { marginVertical: 16 },
   sectionTitle: { fontWeight: '600', marginBottom: 12 },
   formSection: { gap: 12 },
-  input: { backgroundColor: '#fff' },
+  input: { backgroundColor: t.surface },
   saveButton: { borderRadius: 12, marginTop: 4 },
-  pushCard: { backgroundColor: '#f9fafb', marginBottom: 12 },
+  pushCard: { backgroundColor: t.surfaceVariant, marginBottom: 12 },
   pushHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
   pushInfo: { flex: 1 },
   pushTitle: { fontWeight: '600' },
-  pushSubtitle: { color: '#6b7280' },
+  pushSubtitle: { color: t.textSecondary },
   pushLoader: { marginVertical: 8 },
   pushStatus: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  pushStatusText: { color: '#16a34a', fontWeight: '600' },
+  pushStatusText: { color: t.statusGoodFg, fontWeight: '600' },
   pushEnableButton: { borderRadius: 8 },
-  prefsLabel: { fontWeight: '600', marginBottom: 8, color: '#6b7280' },
-  prefsCard: { backgroundColor: '#f9fafb' },
+  prefsLabel: { fontWeight: '600', marginBottom: 8, color: t.textSecondary },
+  prefsCard: { backgroundColor: t.surfaceVariant },
   prefsContent: { gap: 4 },
   prefRow: {
     flexDirection: 'row',
@@ -527,16 +531,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   prefInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  gcalCard: { backgroundColor: '#f9fafb' },
+  gcalCard: { backgroundColor: t.surfaceVariant },
   gcalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
   gcalInfo: { flex: 1 },
   gcalTitle: { fontWeight: '600' },
-  gcalSubtitle: { color: '#6b7280' },
+  gcalSubtitle: { color: t.textSecondary },
   gcalConnectButton: { borderRadius: 8 },
-  supportCard: { backgroundColor: '#f9fafb' },
+  supportCard: { backgroundColor: t.surfaceVariant },
   supportContent: { gap: 0 },
   supportRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
   signOutButton: { borderRadius: 12 },
   deleteButton: { marginTop: 12 },
-  versionText: { color: '#d1d5db', textAlign: 'center', marginTop: 16 },
+  versionText: { color: t.textMuted, textAlign: 'center', marginTop: 16 },
 });

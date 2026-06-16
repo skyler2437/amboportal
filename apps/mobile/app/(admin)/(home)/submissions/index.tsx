@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { FlatList, View, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -6,10 +6,14 @@ import { useSubmissions } from '@/hooks/useSubmissions';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminSubmissions() {
   const { submissions, loading, refreshing, hasMore, refetch, silentRefresh, fetchMore } = useSubmissions();
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
 
   // Silently refresh data when screen regains focus (no spinner flash)
   useFocusEffect(useCallback(() => { silentRefresh(); }, [silentRefresh]));
@@ -25,7 +29,7 @@ export default function AdminSubmissions() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refetch} />}
       renderItem={({ item }) => (
         <Pressable
-          onPress={() => router.push({ pathname: '/(admin)/submissions/[id]', params: { id: item.id } })}
+          onPress={() => router.push({ pathname: '/(admin)/(home)/submissions/[id]', params: { id: item.id } })}
           style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
         >
           <Card elevation={0} style={styles.cardInner}>
@@ -55,16 +59,16 @@ export default function AdminSubmissions() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   content: { padding: 16, paddingBottom: 32 },
   emptyContent: { flex: 1, padding: 16 },
   card: { marginBottom: 12 },
   cardPressed: { opacity: 0.7 },
-  cardInner: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12 },
+  cardInner: { backgroundColor: t.surface, borderWidth: 1, borderColor: t.border, borderRadius: 12 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   studentName: { fontWeight: '700', flex: 1, marginRight: 8 },
-  serviceType: { color: '#6b7280', marginBottom: 6 },
+  serviceType: { color: t.textSecondary, marginBottom: 6 },
   cardDetails: { flexDirection: 'row', gap: 16 },
-  detailText: { color: '#9ca3af' },
+  detailText: { color: t.textMuted },
 });

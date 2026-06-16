@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
 import { Portal, Dialog, Avatar, Text, Button, ActivityIndicator } from 'react-native-paper';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export interface DialogUser {
   id: string;
@@ -17,6 +19,8 @@ interface UserListDialogProps {
 }
 
 export function UserListDialog({ visible, title, users, onDismiss }: UserListDialogProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onDismiss}>
@@ -52,9 +56,9 @@ export function UserListDialog({ visible, title, users, onDismiss }: UserListDia
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
-  fallback: { backgroundColor: '#e5e7eb' },
+  fallback: { backgroundColor: t.surfaceVariant },
   name: { fontSize: 15 },
-  empty: { color: '#9ca3af', paddingVertical: 8 },
+  empty: { color: t.textMuted, paddingVertical: 8 },
 });

@@ -5,18 +5,17 @@ import { useRouter } from 'expo-router';
 import { useApplications, Application, ApplicationStatus } from '@/hooks/useApplications';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import { getApplicationStatusStyles } from '@/lib/theme';
+import type { SemanticTokens } from '@/lib/theme';
 
 const STATUS_FILTERS: ApplicationStatus[] = ['submitted', 'approved', 'rejected', 'draft'];
 
-const statusStyles: Record<ApplicationStatus, { bg: string; text: string }> = {
-  submitted: { bg: '#eff6ff', text: '#3b82f6' },
-  approved: { bg: '#ecfdf5', text: '#10b981' },
-  rejected: { bg: '#fef2f2', text: '#ef4444' },
-  draft: { bg: '#f5f5f5', text: '#6b7280' },
-};
-
 export default function ApplicationsList() {
   const router = useRouter();
+  const { tokens, mode } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const statusStyles = getApplicationStatusStyles(mode);
   const { applications, loading, refetch } = useApplications();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | null>(null);
@@ -48,7 +47,7 @@ export default function ApplicationsList() {
 
     return (
       <Pressable
-        onPress={() => router.push(`/(admin)/applications/${item.id}`)}
+        onPress={() => router.push(`/(admin)/(home)/applications/${item.id}`)}
         style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
       >
         <Card elevation={0} style={styles.cardInner}>
@@ -117,22 +116,22 @@ export default function ApplicationsList() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: { backgroundColor: '#fff', padding: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
-  searchInput: { backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
+  header: { backgroundColor: t.surfaceElevated, padding: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: t.border },
+  searchInput: { backgroundColor: t.surface },
   filters: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   list: { padding: 16 },
   emptyContainer: { flex: 1, padding: 16 },
   card: { marginBottom: 10 },
   cardPressed: { opacity: 0.7 },
-  cardInner: { backgroundColor: '#fff' },
+  cardInner: { backgroundColor: t.surface },
   cardContent: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { backgroundColor: '#e5e7eb' },
+  avatar: { backgroundColor: t.surfaceVariant },
   cardInfo: { flex: 1 },
   name: { fontWeight: '600' },
-  email: { color: '#6b7280' },
-  date: { color: '#9ca3af', marginTop: 2 },
+  email: { color: t.textSecondary },
+  date: { color: t.textMuted, marginTop: 2 },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   statusText: { fontSize: 12, fontWeight: '600' },
 });

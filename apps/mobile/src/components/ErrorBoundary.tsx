@@ -1,8 +1,10 @@
-import React, { Component, type ErrorInfo, type ReactNode } from 'react';
+import React, { Component, useMemo, type ErrorInfo, type ReactNode } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Button, Icon } from 'react-native-paper';
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface Props {
   children: ReactNode;
@@ -55,43 +57,12 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback;
 
       return (
-        <View style={styles.container}>
-          <ScrollView contentContainerStyle={styles.content}>
-            <Icon source="alert-circle-outline" size={64} color="#ef4444" />
-            <Text variant="headlineSmall" style={styles.title}>
-              Something went wrong
-            </Text>
-            <Text variant="bodyMedium" style={styles.message}>
-              The app encountered an unexpected error. Please try again.
-            </Text>
-            {__DEV__ && this.state.error && (
-              <View style={styles.errorDetails}>
-                <Text variant="labelSmall" style={styles.errorText}>
-                  {this.state.error.message}
-                </Text>
-              </View>
-            )}
-            <Button
-              mode="contained"
-              icon="refresh"
-              onPress={this.handleReset}
-              style={styles.button}
-              disabled={this.state.signingOut}
-            >
-              Try Again
-            </Button>
-            <Button
-              mode="text"
-              icon="logout"
-              onPress={this.handleSignOut}
-              style={styles.secondaryButton}
-              loading={this.state.signingOut}
-              disabled={this.state.signingOut}
-            >
-              Sign out and restart
-            </Button>
-          </ScrollView>
-        </View>
+        <ErrorFallback
+          error={this.state.error}
+          signingOut={this.state.signingOut}
+          onReset={this.handleReset}
+          onSignOut={this.handleSignOut}
+        />
       );
     }
 
@@ -99,44 +70,97 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-    gap: 16,
-  },
-  title: {
-    fontWeight: '700',
-    color: '#374151',
-    textAlign: 'center',
-  },
-  message: {
-    color: '#6b7280',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  errorDetails: {
-    backgroundColor: '#fef2f2',
-    borderRadius: 8,
-    padding: 12,
-    width: '100%',
-  },
-  errorText: {
-    color: '#991b1b',
-    fontFamily: 'monospace',
-  },
-  button: {
-    marginTop: 8,
-    borderRadius: 12,
-  },
-  secondaryButton: {
-    marginTop: 4,
-    borderRadius: 12,
-  },
-});
+interface ErrorFallbackProps {
+  error: Error | null;
+  signingOut: boolean;
+  onReset: () => void;
+  onSignOut: () => void;
+}
+
+function ErrorFallback({ error, signingOut, onReset, onSignOut }: ErrorFallbackProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+
+  return (
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Icon source="alert-circle-outline" size={64} color={tokens.statusBadFg} />
+        <Text variant="headlineSmall" style={styles.title}>
+          Something went wrong
+        </Text>
+        <Text variant="bodyMedium" style={styles.message}>
+          The app encountered an unexpected error. Please try again.
+        </Text>
+        {__DEV__ && error && (
+          <View style={styles.errorDetails}>
+            <Text variant="labelSmall" style={styles.errorText}>
+              {error.message}
+            </Text>
+          </View>
+        )}
+        <Button
+          mode="contained"
+          icon="refresh"
+          onPress={onReset}
+          style={styles.button}
+          disabled={signingOut}
+        >
+          Try Again
+        </Button>
+        <Button
+          mode="text"
+          icon="logout"
+          onPress={onSignOut}
+          style={styles.secondaryButton}
+          loading={signingOut}
+          disabled={signingOut}
+        >
+          Sign out and restart
+        </Button>
+      </ScrollView>
+    </View>
+  );
+}
+
+const makeStyles = (t: SemanticTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    content: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 32,
+      gap: 16,
+    },
+    title: {
+      fontWeight: '700',
+      color: t.textPrimary,
+      textAlign: 'center',
+    },
+    message: {
+      color: t.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+    errorDetails: {
+      backgroundColor: t.statusBadBg,
+      borderRadius: 8,
+      padding: 12,
+      width: '100%',
+    },
+    errorText: {
+      color: t.statusBadFg,
+      fontFamily: 'monospace',
+    },
+    button: {
+      marginTop: 8,
+      borderRadius: 12,
+    },
+    secondaryButton: {
+      marginTop: 4,
+      borderRadius: 12,
+    },
+  });

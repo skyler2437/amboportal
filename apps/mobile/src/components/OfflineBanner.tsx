@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useNetwork } from '@/providers/NetworkProvider';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export function OfflineBanner() {
   const { isOffline } = useNetwork();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
 
   if (!isOffline) return null;
 
@@ -16,15 +20,15 @@ export function OfflineBanner() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   banner: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: t.statusWarnFg,
     paddingVertical: 8,
     paddingHorizontal: 16,
     alignItems: 'center',
   },
   text: {
-    color: '#ffffff',
+    color: t.onAccent,
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',

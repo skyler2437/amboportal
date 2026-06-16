@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
 import { FAB } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -9,9 +9,13 @@ import { PostCard } from '@/components/PostCard';
 import { PostListSkeleton } from '@/components/SkeletonLoader';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function StudentPostsFeed() {
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const { posts, loading, error, hasMore, refetch, fetchMore, toggleLike } = usePosts();
   const [refreshing, setRefreshing] = useState(false);
   const initialLoadDone = useRef(false);
@@ -89,7 +93,7 @@ export default function StudentPostsFeed() {
       />
       <FAB
         icon="plus"
-        color="#fff"
+        color={tokens.onAccent}
         style={styles.fab}
         onPress={() => router.push('/(student)/posts/new')}
         accessibilityLabel="Create new post"
@@ -98,15 +102,15 @@ export default function StudentPostsFeed() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   list: { padding: 16 },
   emptyContainer: { flex: 1, padding: 16 },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#005EFF',
+    backgroundColor: t.accentSolid,
     borderRadius: 16,
   },
 });

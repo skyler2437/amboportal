@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Alert } from 'react-native';
 import { Avatar, ActivityIndicator } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { File } from 'expo-file-system';
 import { supabase } from '@/lib/supabase';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface AvatarUploadProps {
   userId: string;
@@ -14,6 +16,8 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ userId, avatarUrl, initials, size = 80, onUploaded }: AvatarUploadProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [uploading, setUploading] = useState(false);
 
   const handlePress = async () => {
@@ -86,13 +90,13 @@ export function AvatarUpload({ userId, avatarUrl, initials, size = 80, onUploade
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
   },
   fallback: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.surfaceVariant,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   ScrollView,
@@ -28,6 +28,8 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { PostAttachments } from '@/components/PostAttachments';
 import { UserListDialog, DialogUser } from '@/components/UserListDialog';
 import { supabase } from '@/lib/supabase';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 import type { UserRole } from '@ambo/database';
 
 function canModify(
@@ -60,6 +62,8 @@ function formatTimeAgo(dateStr: string): string {
 export default function StudentPostDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const { session, userRole } = useAuth();
   const userId = session?.user?.id || '';
   const currentRole = userRole || 'student';
@@ -265,7 +269,7 @@ export default function StudentPostDetail() {
               <Button
                 mode="outlined"
                 icon="delete"
-                textColor="#ef4444"
+                textColor={tokens.statusBadFg}
                 onPress={handleDelete}
                 compact
               >
@@ -312,7 +316,7 @@ export default function StudentPostDetail() {
             <IconButton
               icon={post.liked ? 'heart' : 'heart-outline'}
               size={20}
-              iconColor={post.liked ? '#ef4444' : '#6b7280'}
+              iconColor={post.liked ? tokens.statusBadFg : tokens.textSecondary}
               onPress={() => toggleLike(post.id).catch(() => {})}
               accessibilityLabel={post.liked ? 'Unlike post' : 'Like post'}
               style={{ margin: 0 }}
@@ -321,7 +325,7 @@ export default function StudentPostDetail() {
               {post.like_count} {post.like_count === 1 ? 'like' : 'likes'}
             </Text>
             <Pressable onPress={openViewers} style={styles.engagementViews}>
-              <Icon source="eye-outline" size={16} color="#6b7280" />
+              <Icon source="eye-outline" size={16} color={tokens.textSecondary} />
               <Text variant="bodySmall" style={styles.engagementText}>{post.view_count} seen</Text>
             </Pressable>
           </View>
@@ -420,7 +424,7 @@ export default function StudentPostDetail() {
                       <IconButton
                         icon="delete-outline"
                         size={14}
-                        iconColor="#ef4444"
+                        iconColor={tokens.statusBadFg}
                         onPress={() => handleDeleteComment(comment.id)}
                       />
                     </View>
@@ -461,38 +465,38 @@ export default function StudentPostDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   scrollContent: { padding: 16, paddingBottom: 16 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 },
-  notFoundText: { color: '#6b7280' },
+  notFoundText: { color: t.textSecondary },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     marginBottom: 16,
   },
-  avatarFallback: { backgroundColor: '#e5e7eb' },
+  avatarFallback: { backgroundColor: t.surfaceVariant },
   authorInfo: { gap: 2, flex: 1 },
   authorName: { fontWeight: '700' },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  timestamp: { color: '#9ca3af', fontSize: 12 },
+  timestamp: { color: t.textMuted, fontSize: 12 },
   adminActions: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  content: { lineHeight: 24, color: '#111827' },
+  content: { lineHeight: 24, color: t.textPrimary },
   editSection: { gap: 8 },
-  editInput: { backgroundColor: '#fff' },
+  editInput: { backgroundColor: t.surface },
   editActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
   divider: { marginVertical: 20 },
   sectionTitle: { fontWeight: '600', marginBottom: 12 },
-  loadingText: { color: '#9ca3af', paddingVertical: 8 },
-  noComments: { color: '#9ca3af', paddingVertical: 8 },
+  loadingText: { color: t.textMuted, paddingVertical: 8 },
+  noComments: { color: t.textMuted, paddingVertical: 8 },
   commentRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
     marginBottom: 12,
   },
-  commentAvatar: { backgroundColor: '#e5e7eb' },
+  commentAvatar: { backgroundColor: t.surfaceVariant },
   commentBody: { flex: 1 },
   commentHeader: {
     flexDirection: 'row',
@@ -508,13 +512,13 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingTop: 8,
-    backgroundColor: '#fff',
+    backgroundColor: t.surface,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: t.border,
   },
-  commentTextInput: { flex: 1, backgroundColor: '#fff', maxHeight: 100 },
+  commentTextInput: { flex: 1, backgroundColor: t.surface, maxHeight: 100 },
   engagementRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  engagementText: { color: '#6b7280' },
+  engagementText: { color: t.textSecondary },
   // Cancels part of the IconButton's internal padding so the count hugs the heart
   likeCountTight: { marginLeft: -4 },
   engagementViews: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 16 },

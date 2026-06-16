@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, Pressable, Share } from 'react-native';
 import { Avatar, Text, IconButton, Icon } from 'react-native-paper';
 import type { UserRole } from '@ambo/database';
 import { PostAttachments } from '@/components/PostAttachments';
 import type { Attachment } from '@/hooks/usePosts';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface PostCardProps {
   id: string;
@@ -39,6 +41,8 @@ function formatTimeAgo(dateStr: string): string {
 }
 
 export function PostCard({ content, createdAt, author, commentCount, likeCount, viewCount, liked, attachments, onToggleLike, onPress }: PostCardProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const initials = `${author.first_name?.[0] || ''}${author.last_name?.[0] || ''}`;
 
   return (
@@ -70,7 +74,7 @@ export function PostCard({ content, createdAt, author, commentCount, likeCount, 
             <IconButton
               icon={liked ? 'heart' : 'heart-outline'}
               size={18}
-              iconColor={liked ? '#ef4444' : '#9ca3af'}
+              iconColor={liked ? tokens.statusBadFg : tokens.textMuted}
               accessibilityLabel={liked ? 'Unlike post' : 'Like post'}
               style={styles.iconBtn}
               onPress={(e) => { e.stopPropagation?.(); onToggleLike(); }}
@@ -82,12 +86,12 @@ export function PostCard({ content, createdAt, author, commentCount, likeCount, 
           </Text>
         </View>
         <View style={styles.footerRight}>
-          <Icon source="eye-outline" size={14} color="#6b7280" />
+          <Icon source="eye-outline" size={14} color={tokens.textSecondary} />
           <Text variant="bodySmall" style={styles.metaText}>{viewCount}</Text>
           <IconButton
             icon="share-variant-outline"
             size={18}
-            iconColor="#9ca3af"
+            iconColor={tokens.textMuted}
             accessibilityLabel="Share post"
             style={styles.iconBtn}
             onPress={(e) => {
@@ -103,14 +107,14 @@ export function PostCard({ content, createdAt, author, commentCount, likeCount, 
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: t.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0,
@@ -122,10 +126,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  avatarFallback: { backgroundColor: '#e5e7eb' },
+  avatarFallback: { backgroundColor: t.surfaceVariant },
   authorInfo: { gap: 2, flex: 1 },
   authorName: { fontWeight: '600' },
-  timestamp: { color: '#9ca3af', fontSize: 12 },
+  timestamp: { color: t.textMuted, fontSize: 12 },
   content: { marginTop: 10, lineHeight: 20 },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
   footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -133,9 +137,9 @@ const styles = StyleSheet.create({
   // internal padding per side); the negative margin pulls the count back
   // against the glyph so it reads as one unit, separate from the comments.
   likeGroup: { flexDirection: 'row', alignItems: 'center' },
-  likeCountText: { color: '#6b7280', marginLeft: -6 },
+  likeCountText: { color: t.textSecondary, marginLeft: -6 },
   footerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconBtn: { margin: 0 },
-  metaText: { color: '#6b7280' },
-  commentCount: { color: '#6b7280', fontWeight: '500' },
+  metaText: { color: t.textSecondary },
+  commentCount: { color: t.textSecondary, fontWeight: '500' },
 });

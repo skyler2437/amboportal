@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Text } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface StepContactProps {
   data: ApplicationData;
@@ -9,6 +11,8 @@ interface StepContactProps {
 }
 
 export default function StepContact({ data, onChange }: StepContactProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.container}>
       <Text variant="titleMedium" style={styles.heading}>Welcome</Text>
@@ -29,10 +33,10 @@ export default function StepContact({ data, onChange }: StepContactProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { gap: 8 },
   heading: { textAlign: 'center', fontWeight: '600' },
-  subtitle: { textAlign: 'center', color: '#6b7280', marginBottom: 8 },
-  input: { backgroundColor: '#fff' },
-  hint: { color: '#9ca3af' },
+  subtitle: { textAlign: 'center', color: t.textSecondary, marginBottom: 8 },
+  input: { backgroundColor: t.surface },
+  hint: { color: t.textMuted },
 });

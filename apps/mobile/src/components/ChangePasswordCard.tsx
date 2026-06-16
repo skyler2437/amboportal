@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Card, Text, TextInput, Button } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { supabase } from '@/lib/supabase';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL;
 
 export function ChangePasswordCard() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -72,7 +76,7 @@ export function ChangePasswordCard() {
     <Card elevation={0} style={styles.card}>
       <Card.Content>
         <View style={styles.header}>
-          <MaterialCommunityIcons name="lock-reset" size={24} color="#111827" />
+          <MaterialCommunityIcons name="lock-reset" size={24} color={tokens.textPrimary} />
           <View style={styles.headerInfo}>
             <Text variant="bodyLarge" style={styles.title}>Change Password</Text>
             <Text variant="bodySmall" style={styles.subtitle}>
@@ -135,12 +139,12 @@ export function ChangePasswordCard() {
   );
 }
 
-const styles = StyleSheet.create({
-  card: { backgroundColor: '#f9fafb' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  card: { backgroundColor: t.surfaceVariant },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
   headerInfo: { flex: 1 },
   title: { fontWeight: '600' },
-  subtitle: { color: '#6b7280' },
-  input: { backgroundColor: '#fff', marginBottom: 10 },
+  subtitle: { color: t.textSecondary },
+  input: { backgroundColor: t.surface, marginBottom: 10 },
   button: { borderRadius: 8, marginTop: 4 },
 });

@@ -1,11 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { Users, FileText, Clock, LogOut } from 'lucide-react-native';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function WelcomeScreen() {
   const { userRole, signOut, refreshRole } = useAuth();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -42,7 +46,7 @@ export default function WelcomeScreen() {
         {/* Card 1: Current Ambassador */}
         <View style={styles.card}>
           <View style={styles.cardIcon}>
-            <Users size={28} color="#4f46e5" />
+            <Users size={28} color={tokens.secondary} />
           </View>
           <Text style={styles.cardTitle}>Current Student Ambassador?</Text>
           <Text style={styles.cardBody}>
@@ -58,7 +62,7 @@ export default function WelcomeScreen() {
         {isApplicant ? (
           <View style={styles.card}>
             <View style={styles.cardIcon}>
-              <Clock size={28} color="#f59e0b" />
+              <Clock size={28} color={tokens.statusWarnFg} />
             </View>
             <Text style={styles.cardTitle}>Application Under Review</Text>
             <Text style={styles.cardBody}>
@@ -69,7 +73,7 @@ export default function WelcomeScreen() {
         ) : (
           <View style={styles.card}>
             <View style={styles.cardIcon}>
-              <FileText size={28} color="#10b981" />
+              <FileText size={28} color={tokens.statusGoodFg} />
             </View>
             <Text style={styles.cardTitle}>Want to Become an Ambassador?</Text>
             <Text style={styles.cardBody}>
@@ -90,7 +94,7 @@ export default function WelcomeScreen() {
           await signOut();
           router.replace('/(auth)/login');
         }}>
-          <LogOut size={18} color="#6b7280" />
+          <LogOut size={18} color={tokens.textSecondary} />
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -98,27 +102,27 @@ export default function WelcomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#f3f4f6' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: t.background },
   container: { flexGrow: 1, padding: 24, paddingTop: 48 },
   title: {
     fontSize: 26,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#111827',
+    color: t.textPrimary,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: t.textSecondary,
     textAlign: 'center',
     marginBottom: 32,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: t.border,
     padding: 20,
     marginBottom: 16,
   },
@@ -126,7 +130,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: t.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -134,29 +138,29 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#111827',
+    color: t.textPrimary,
     marginBottom: 8,
   },
   cardBody: {
     fontSize: 15,
-    color: '#4b5563',
+    color: t.textSecondary,
     lineHeight: 22,
   },
   contactText: {
     fontSize: 15,
-    color: '#4f46e5',
+    color: t.secondary,
     fontWeight: '600',
     marginTop: 8,
   },
   applyButton: {
-    backgroundColor: '#005EFF',
+    backgroundColor: t.accentSolid,
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
     marginTop: 16,
   },
   applyButtonText: {
-    color: '#fff',
+    color: t.onAccent,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -170,7 +174,7 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     fontSize: 15,
-    color: '#6b7280',
+    color: t.textSecondary,
     fontWeight: '500',
   },
 });

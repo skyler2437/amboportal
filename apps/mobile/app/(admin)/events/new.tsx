@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Alert, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { TextInput, Button, Text, IconButton } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
@@ -6,11 +6,15 @@ import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import Constants from 'expo-constants';
 import { EventDateTimePicker } from '@/components/EventDateTimePicker';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function NewEvent() {
   const router = useRouter();
   const { session } = useAuth();
   const userId = session?.user?.id || '';
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
 
   const defaultStart = new Date();
   defaultStart.setHours(0, 0, 0, 0);
@@ -185,15 +189,16 @@ export default function NewEvent() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  content: { padding: 16, paddingBottom: 40 },
-  input: { backgroundColor: '#fff', marginBottom: 12 },
-  dateLabel: { fontWeight: '600', color: '#374151', marginBottom: 4, marginTop: 4 },
-  sectionLabel: { fontWeight: '600', color: '#374151', marginBottom: 8, marginTop: 16 },
-  rsvpHint: { color: '#9ca3af', marginBottom: 8, marginTop: -4 },
-  rsvpOptionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
-  rsvpOptionInput: { flex: 1, backgroundColor: '#fff' },
-  addOptionButton: { alignSelf: 'flex-start', marginBottom: 8 },
-  createButton: { borderRadius: 8, marginTop: 8 },
-});
+const makeStyles = (t: SemanticTokens) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: t.background },
+    content: { padding: 16, paddingBottom: 40 },
+    input: { backgroundColor: t.surface, marginBottom: 12 },
+    dateLabel: { fontWeight: '600', color: t.textPrimary, marginBottom: 4, marginTop: 4 },
+    sectionLabel: { fontWeight: '600', color: t.textPrimary, marginBottom: 8, marginTop: 16 },
+    rsvpHint: { color: t.textMuted, marginBottom: 8, marginTop: -4 },
+    rsvpOptionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+    rsvpOptionInput: { flex: 1, backgroundColor: t.surface },
+    addOptionButton: { alignSelf: 'flex-start', marginBottom: 8 },
+    createButton: { borderRadius: 8, marginTop: 8 },
+  });

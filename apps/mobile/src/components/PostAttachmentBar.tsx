@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, Pressable, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
@@ -12,6 +12,8 @@ import {
   formatBytes,
   type PickedAsset,
 } from '@/lib/attachments';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface PostAttachmentBarProps {
   attachments: PickedAsset[];
@@ -19,6 +21,9 @@ interface PostAttachmentBarProps {
 }
 
 export function PostAttachmentBar({ attachments, onChange }: PostAttachmentBarProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+
   const add = (asset: PickedAsset) => {
     if (attachments.length >= MAX_POST_ATTACHMENTS) {
       Alert.alert('Limit reached', `You can attach up to ${MAX_POST_ATTACHMENTS} files.`);
@@ -73,16 +78,16 @@ export function PostAttachmentBar({ attachments, onChange }: PostAttachmentBarPr
           {attachments.map((a) => (
             <View key={a.uri} style={styles.chip}>
               {isImageAttachment({ file_name: a.name, file_type: a.mimeType }) ? (
-                <ImageIcon size={14} color="#6b7280" />
+                <ImageIcon size={14} color={tokens.textSecondary} />
               ) : (
-                <FileText size={14} color="#6b7280" />
+                <FileText size={14} color={tokens.textSecondary} />
               )}
               <Text variant="bodySmall" style={styles.chipText} numberOfLines={1}>
                 {a.name}
               </Text>
               <Text variant="bodySmall" style={styles.chipSize}>{formatBytes(a.size)}</Text>
               <Pressable onPress={() => remove(a.uri)} hitSlop={8} accessibilityLabel={`Remove ${a.name}`}>
-                <X size={15} color="#6b7280" />
+                <X size={15} color={tokens.textSecondary} />
               </Pressable>
             </View>
           ))}
@@ -90,22 +95,22 @@ export function PostAttachmentBar({ attachments, onChange }: PostAttachmentBarPr
       )}
       <View style={styles.bar}>
         <Pressable onPress={pickFile} hitSlop={8} accessibilityLabel="Attach file" style={styles.iconBtn}>
-          <Paperclip size={22} color="#6b7280" />
+          <Paperclip size={22} color={tokens.textSecondary} />
         </Pressable>
         <Pressable onPress={pickImage} hitSlop={8} accessibilityLabel="Attach image" style={styles.iconBtn}>
-          <ImageIcon size={22} color="#6b7280" />
+          <ImageIcon size={22} color={tokens.textSecondary} />
         </Pressable>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { borderTopWidth: 1, borderTopColor: '#e5e7eb', backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { borderTopWidth: 1, borderTopColor: t.border, backgroundColor: t.surface },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12, paddingBottom: 0 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: '100%', backgroundColor: '#f3f4f6', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
-  chipText: { color: '#374151', flexShrink: 1 },
-  chipSize: { color: '#9ca3af' },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: '100%', backgroundColor: t.surfaceVariant, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
+  chipText: { color: t.textSecondary, flexShrink: 1 },
+  chipSize: { color: t.textMuted },
   bar: { flexDirection: 'row', alignItems: 'center', gap: 20, paddingHorizontal: 16, paddingVertical: 12 },
   iconBtn: {},
 });

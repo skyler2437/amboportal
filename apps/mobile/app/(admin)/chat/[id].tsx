@@ -14,6 +14,8 @@ import { IconButton, Text } from 'react-native-paper';
 import { supabase } from '@/lib/supabase';
 import { useChatReadStore } from '@/stores/chatReadStore';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 type ListItem =
   | { type: 'date'; date: string; key: string }
@@ -39,6 +41,8 @@ function getDateKey(dateStr: string): string {
 export default function AdminMessageThread() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const {
@@ -258,7 +262,7 @@ export default function AdminMessageThread() {
             hasOlderMessages && messages.length > 0 ? (
               <Pressable onPress={loadOlderMessages} style={styles.loadOlderBtn}>
                 {loadingOlder ? (
-                  <ActivityIndicator size="small" color="#9ca3af" />
+                  <ActivityIndicator size="small" color={tokens.textMuted} />
                 ) : (
                   <Text variant="bodySmall" style={styles.loadOlderText}>Load older messages</Text>
                 )}
@@ -282,7 +286,7 @@ export default function AdminMessageThread() {
 
         {showScrollToBottom && (
           <Pressable style={styles.scrollToBottomBtn} onPress={scrollToBottom}>
-            <MaterialCommunityIcons name="chevron-down" size={22} color="#fff" />
+            <MaterialCommunityIcons name="chevron-down" size={22} color={tokens.onAccent} />
           </Pressable>
         )}
 
@@ -292,8 +296,8 @@ export default function AdminMessageThread() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   list: { paddingVertical: 12 },
   emptyContainer: { flex: 1 },
   loadOlderBtn: {
@@ -301,7 +305,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   loadOlderText: {
-    color: '#3b82f6',
+    color: t.accent,
     fontWeight: '600',
     fontSize: 13,
   },
@@ -312,7 +316,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#005EFF',
+    backgroundColor: t.accentSolid,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

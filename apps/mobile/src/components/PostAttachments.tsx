@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Image, StyleSheet, Pressable, Linking } from 'react-native';
 import { Text } from 'react-native-paper';
 import { FileText, Paperclip } from 'lucide-react-native';
 import { isImageAttachment } from '@/lib/attachments';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 import type { Attachment } from '@/hooks/usePosts';
 
 interface PostAttachmentsProps {
@@ -11,6 +13,9 @@ interface PostAttachmentsProps {
 }
 
 export function PostAttachments({ attachments, variant = 'full' }: PostAttachmentsProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+
   if (!attachments || attachments.length === 0) return null;
 
   const images = attachments.filter(isImageAttachment);
@@ -25,7 +30,7 @@ export function PostAttachments({ attachments, variant = 'full' }: PostAttachmen
         ))}
         {files.length > 0 && (
           <View style={styles.fileChip}>
-            <Paperclip size={13} color="#6b7280" />
+            <Paperclip size={13} color={tokens.textSecondary} />
             <Text variant="bodySmall" style={styles.fileChipText}>
               {files.length} {files.length === 1 ? 'file' : 'files'}
             </Text>
@@ -56,7 +61,7 @@ export function PostAttachments({ attachments, variant = 'full' }: PostAttachmen
       )}
       {files.map((file) => (
         <Pressable key={file.id} onPress={() => Linking.openURL(file.file_url).catch(() => {})} style={styles.fileRow}>
-          <FileText size={18} color="#6b7280" />
+          <FileText size={18} color={tokens.textSecondary} />
           <Text variant="bodyMedium" style={styles.fileName} numberOfLines={1}>
             {file.file_name}
           </Text>
@@ -66,18 +71,18 @@ export function PostAttachments({ attachments, variant = 'full' }: PostAttachmen
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   compactRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-  compactThumb: { width: 64, height: 64, borderRadius: 8, backgroundColor: '#f3f4f6' },
-  fileChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#f3f4f6', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  fileChipText: { color: '#6b7280' },
+  compactThumb: { width: 64, height: 64, borderRadius: 8, backgroundColor: t.surfaceVariant },
+  fileChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: t.surfaceVariant, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  fileChipText: { color: t.textSecondary },
   fullContainer: { marginTop: 12, gap: 8 },
   singleImageWrap: {},
   singleImagePress: { width: '100%' },
-  singleImage: { width: '100%', height: 240, borderRadius: 12, backgroundColor: '#f3f4f6' },
+  singleImage: { width: '100%', height: 240, borderRadius: 12, backgroundColor: t.surfaceVariant },
   imageGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   gridImagePress: { width: '49%' },
-  gridImage: { width: '100%', height: 150, borderRadius: 10, backgroundColor: '#f3f4f6' },
-  fileRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10 },
-  fileName: { flex: 1, color: '#111827' },
+  gridImage: { width: '100%', height: 150, borderRadius: 10, backgroundColor: t.surfaceVariant },
+  fileRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderWidth: 1, borderColor: t.border, borderRadius: 10 },
+  fileName: { flex: 1, color: t.textPrimary },
 });

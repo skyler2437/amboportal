@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, TextInput, TextInput as RNTextInput } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hapticLight } from '@/lib/haptics';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface ChatInputProps {
   onSend: (text: string) => Promise<void>;
@@ -11,6 +13,8 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const insets = useSafeAreaInsets();
@@ -45,7 +49,7 @@ export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
       <TextInput
         ref={inputRef}
         placeholder="Type a message..."
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor={tokens.textMuted}
         value={text}
         onChangeText={handleChangeText}
         style={styles.input}
@@ -65,26 +69,26 @@ export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 8,
     paddingTop: 8,
     paddingBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: t.surface,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: t.border,
     gap: 4,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: t.surfaceVariant,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 15,
     maxHeight: 100,
-    color: '#111827',
+    color: t.textPrimary,
   },
 });

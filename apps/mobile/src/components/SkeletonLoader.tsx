@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface SkeletonProps {
   width?: number | string;
@@ -9,6 +11,8 @@ interface SkeletonProps {
 }
 
 function SkeletonItem({ width = '100%', height = 16, borderRadius = 8, style }: SkeletonProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
@@ -34,6 +38,8 @@ function SkeletonItem({ width = '100%', height = 16, borderRadius = 8, style }: 
 }
 
 export function CardSkeleton() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -50,6 +56,8 @@ export function CardSkeleton() {
 }
 
 export function ListItemSkeleton() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.listItem}>
       <SkeletonItem width={36} height={36} borderRadius={18} />
@@ -62,6 +70,8 @@ export function ListItemSkeleton() {
 }
 
 export function StatCardSkeleton() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.statCard}>
       <SkeletonItem width={24} height={24} borderRadius={4} />
@@ -72,6 +82,8 @@ export function StatCardSkeleton() {
 }
 
 export function DashboardSkeleton() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.dashboardContainer}>
       <SkeletonItem width={180} height={24} />
@@ -89,6 +101,8 @@ export function DashboardSkeleton() {
 }
 
 export function SubmissionListSkeleton() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.dashboardContainer}>
       <View style={styles.statsRow}>
@@ -103,6 +117,8 @@ export function SubmissionListSkeleton() {
 }
 
 export function PostListSkeleton() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.dashboardContainer}>
       <CardSkeleton />
@@ -113,6 +129,8 @@ export function PostListSkeleton() {
 }
 
 export function EventListSkeleton() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.dashboardContainer}>
       <SkeletonItem width={100} height={14} style={{ marginBottom: 8 }} />
@@ -128,6 +146,8 @@ export function EventListSkeleton() {
 }
 
 export function ChatListSkeleton() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.dashboardContainer}>
       {[1, 2, 3, 4, 5].map((i) => (
@@ -139,17 +159,17 @@ export function ChatListSkeleton() {
 
 export { SkeletonItem };
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   skeleton: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.skeleton,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: t.skeletonHighlight,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: t.divider,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -170,7 +190,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: t.skeletonHighlight,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

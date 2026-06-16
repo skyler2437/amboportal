@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000';
 
 export default function ForgotPasswordScreen() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -102,27 +106,27 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  flex: { flex: 1, backgroundColor: t.background },
   container: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 12 },
+  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 12, color: t.textPrimary },
   description: {
     fontSize: 15,
-    color: '#666',
+    color: t.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 22,
   },
   input: {
-    borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: '#fafafa',
+    borderWidth: 1, borderColor: t.border, borderRadius: 8, padding: 14,
+    fontSize: 16, marginBottom: 12, backgroundColor: t.surfaceVariant, color: t.textPrimary,
   },
   button: {
-    backgroundColor: '#005EFF', borderRadius: 8, padding: 16,
+    backgroundColor: t.accentSolid, borderRadius: 8, padding: 16,
     alignItems: 'center', marginTop: 8,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: t.onAccent, fontSize: 16, fontWeight: '600' },
   secondaryButton: {
     alignItems: 'center',
     marginTop: 16,
@@ -130,7 +134,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     fontSize: 15,
-    color: '#6366f1',
+    color: t.secondary,
     fontWeight: '500',
   },
 });

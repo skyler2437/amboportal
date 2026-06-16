@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl, Pressable, Alert } from 'react-native';
 import { Avatar, Text, FAB } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -10,6 +10,8 @@ import { SwipeableChatRow } from '@/components/SwipeableChatRow';
 import { ChatListSkeleton } from '@/components/SkeletonLoader';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 function getGroupDisplayName(group: ChatGroupWithMeta, currentUserId: string): string {
   if (group.name) return group.name;
@@ -32,6 +34,8 @@ function formatDate(dateStr: string): string {
 
 export default function StudentChatList() {
   const router = useRouter();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { groups, loading, error, refetch, toggleStar, deleteChat } = useChatGroups(userId);
@@ -81,7 +85,7 @@ export default function StudentChatList() {
           )}
           <View style={styles.groupInfo}>
             <View style={styles.groupNameRow}>
-              {item.starred && <Star size={13} color="#f59e0b" fill="#f59e0b" />}
+              {item.starred && <Star size={13} color={tokens.statusWarnFg} fill={tokens.statusWarnFg} />}
               <Text variant="bodyLarge" style={[styles.groupName, hasUnread && styles.groupNameUnread]} numberOfLines={1}>
                 {displayName}
               </Text>
@@ -112,20 +116,20 @@ export default function StudentChatList() {
         refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} />}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
       />
-      <FAB icon="plus" color="#fff" style={styles.fab} onPress={() => router.push('/(student)/chat/new')} accessibilityLabel="Start new chat" />
+      <FAB icon="plus" color={tokens.onAccent} style={styles.fab} onPress={() => router.push('/(student)/chat/new')} accessibilityLabel="Start new chat" />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   groupRow: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     gap: 12,
   },
-  avatarFallback: { backgroundColor: '#e5e7eb' },
+  avatarFallback: { backgroundColor: t.surfaceVariant },
   groupInfo: { flex: 1 },
   groupNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   groupName: { fontWeight: '600', flex: 1 },
@@ -134,17 +138,17 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#005EFF',
+    backgroundColor: t.accentSolid,
   },
-  lastMessage: { color: '#6b7280', marginTop: 2 },
-  lastMessageUnread: { color: '#374151', fontWeight: '600' },
-  time: { color: '#9ca3af' },
-  separator: { height: 1, backgroundColor: '#f3f4f6', marginLeft: 72 },
+  lastMessage: { color: t.textSecondary, marginTop: 2 },
+  lastMessageUnread: { color: t.textPrimary, fontWeight: '600' },
+  time: { color: t.textMuted },
+  separator: { height: 1, backgroundColor: t.divider, marginLeft: 72 },
   emptyContainer: { flex: 1 },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: '#005EFF',
+    backgroundColor: t.accentSolid,
   },
 });

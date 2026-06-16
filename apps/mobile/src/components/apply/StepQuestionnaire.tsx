@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 const QUESTIONS: { field: keyof ApplicationData; label: string }[] = [
   { field: 'q_involvement', label: 'Please list your current or past involvement...' },
@@ -21,6 +23,8 @@ interface StepQuestionnaireProps {
 }
 
 export default function StepQuestionnaire({ data, onChange }: StepQuestionnaireProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.container}>
       {QUESTIONS.map(({ field, label }) => (
@@ -39,7 +43,7 @@ export default function StepQuestionnaire({ data, onChange }: StepQuestionnaireP
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { gap: 12 },
-  input: { backgroundColor: '#fff', minHeight: 80 },
+  input: { backgroundColor: t.surface, minHeight: 80 },
 });

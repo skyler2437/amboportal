@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Text, Button, ActivityIndicator } from 'react-native-paper';
 import * as DocumentPicker from 'expo-document-picker';
 import { Check, Upload, FileText, X } from 'lucide-react-native';
 import type { ApplicationData } from '@ambo/database/application-types';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || '';
 
@@ -13,6 +15,8 @@ interface StepAcademicProps {
 }
 
 export default function StepAcademic({ data, onChange }: StepAcademicProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [uploading, setUploading] = useState(false);
 
   const handlePickFile = async () => {
@@ -79,12 +83,12 @@ export default function StepAcademic({ data, onChange }: StepAcademicProps) {
 
       {data.transcript_url ? (
         <View style={styles.uploadedRow}>
-          <FileText size={20} color="#111827" />
+          <FileText size={20} color={tokens.textPrimary} />
           <Text variant="bodyMedium" style={styles.uploadedText}>Transcript Uploaded</Text>
           <Button
             mode="text"
             compact
-            textColor="#ef4444"
+            textColor={tokens.statusBadFg}
             onPress={() => onChange('transcript_url', '')}
           >
             Remove
@@ -93,7 +97,7 @@ export default function StepAcademic({ data, onChange }: StepAcademicProps) {
       ) : (
         <Button
           mode="outlined"
-          icon={() => uploading ? <ActivityIndicator size={16} /> : <Upload size={16} color="#374151" />}
+          icon={() => uploading ? <ActivityIndicator size={16} /> : <Upload size={16} color={tokens.textSecondary} />}
           onPress={handlePickFile}
           disabled={uploading}
           style={styles.uploadButton}
@@ -106,21 +110,21 @@ export default function StepAcademic({ data, onChange }: StepAcademicProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { gap: 8 },
-  input: { backgroundColor: '#fff' },
-  hint: { color: '#9ca3af' },
+  input: { backgroundColor: t.surface },
+  hint: { color: t.textMuted },
   sectionLabel: { fontWeight: '600', marginTop: 12 },
   uploadedRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     padding: 12,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: t.surfaceVariant,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: t.border,
   },
   uploadedText: { flex: 1 },
-  uploadButton: { borderColor: '#d1d5db', alignSelf: 'flex-start' },
+  uploadButton: { borderColor: t.border, alignSelf: 'flex-start' },
 });

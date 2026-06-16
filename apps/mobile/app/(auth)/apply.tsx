@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Button, Text, ActivityIndicator } from 'react-native-paper';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ApplicationData } from '@ambo/database/application-types';
+
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 import StepProgress from '@/components/apply/StepProgress';
 import StepContact from '@/components/apply/StepContact';
@@ -85,6 +88,8 @@ function validate(step: number, data: ApplicationData): string | null {
 }
 
 export default function ApplyScreen() {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<ApplicationData>(INITIAL_DATA);
   const [applicationToken, setApplicationToken] = useState<string | null>(null);
@@ -270,7 +275,7 @@ export default function ApplyScreen() {
               mode="outlined"
               onPress={handleBack}
               disabled={saving || submitting}
-              icon={() => <ChevronLeft size={18} color="#374151" />}
+              icon={() => <ChevronLeft size={18} color={tokens.textSecondary} />}
               style={styles.backButton}
             >
               Back
@@ -286,7 +291,7 @@ export default function ApplyScreen() {
               disabled={submitting || saving}
               loading={submitting}
               icon={() =>
-                submitting ? null : <Check size={18} color="#fff" />
+                submitting ? null : <Check size={18} color={tokens.onAccent} />
               }
               style={styles.nextButton}
             >
@@ -299,7 +304,7 @@ export default function ApplyScreen() {
               disabled={saving}
               loading={saving}
               icon={() =>
-                saving ? null : <ChevronRight size={18} color="#fff" />
+                saving ? null : <ChevronRight size={18} color={tokens.onAccent} />
               }
               contentStyle={{ flexDirection: 'row-reverse' }}
               style={styles.nextButton}
@@ -313,22 +318,23 @@ export default function ApplyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
-  scroll: { flexGrow: 1, padding: 20, paddingBottom: 40 },
-  formCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    padding: 20,
-    marginBottom: 20,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  backButton: { borderColor: '#d1d5db' },
-  nextButton: { borderRadius: 8, minWidth: 120 },
-});
+const makeStyles = (t: SemanticTokens) =>
+  StyleSheet.create({
+    flex: { flex: 1, backgroundColor: t.background },
+    scroll: { flexGrow: 1, padding: 20, paddingBottom: 40 },
+    formCard: {
+      backgroundColor: t.surface,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: t.border,
+      padding: 20,
+      marginBottom: 20,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    backButton: { borderColor: t.border },
+    nextButton: { borderRadius: 8, minWidth: 120 },
+  });

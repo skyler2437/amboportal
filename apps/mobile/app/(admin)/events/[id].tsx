@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   ScrollView,
@@ -27,6 +27,8 @@ import { supabase } from '@/lib/supabase';
 import { createChatGroup } from '@/lib/chat';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EventDateTimePicker } from '@/components/EventDateTimePicker';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 import type { EventDetails, RSVPStatus } from '@ambo/database';
 
 function formatDateTime(dateStr: string) {
@@ -50,18 +52,20 @@ interface RsvpButtonProps {
 }
 
 function RsvpButton({ label, icon, selected, color, bgColor, borderColor, count, onPress }: RsvpButtonProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <Pressable
       onPress={onPress}
       style={[
         styles.rsvpBtn,
-        { borderColor: selected ? borderColor : '#e5e7eb', backgroundColor: selected ? bgColor : '#fff' },
+        { borderColor: selected ? borderColor : tokens.border, backgroundColor: selected ? bgColor : tokens.surface },
       ]}
     >
-      <MaterialCommunityIcons name={icon as any} size={18} color={selected ? color : '#6b7280'} />
+      <MaterialCommunityIcons name={icon as any} size={18} color={selected ? color : tokens.textSecondary} />
       <Text
         variant="bodySmall"
-        style={[styles.rsvpBtnText, { color: selected ? color : '#374151', fontWeight: selected ? '700' : '500' }]}
+        style={[styles.rsvpBtnText, { color: selected ? color : tokens.textPrimary, fontWeight: selected ? '700' : '500' }]}
       >
         {label}{count !== undefined && count > 0 ? ` (${count})` : ''}
       </Text>
@@ -78,6 +82,8 @@ interface RsvpOptionChipProps {
 }
 
 function RsvpOptionChip({ label, selected, count, onPress }: RsvpOptionChipProps) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <Pressable
       onPress={onPress}
@@ -86,7 +92,7 @@ function RsvpOptionChip({ label, selected, count, onPress }: RsvpOptionChipProps
         selected && styles.optionChipSelected,
       ]}
     >
-      {selected && <MaterialCommunityIcons name="check" size={14} color="#15803d" />}
+      {selected && <MaterialCommunityIcons name="check" size={14} color={tokens.statusGoodFg} />}
       <Text
         variant="bodySmall"
         style={[styles.optionChipText, selected && styles.optionChipTextSelected]}
@@ -121,6 +127,8 @@ export default function AdminEventDetail() {
   const [editAllDay, setEditAllDay] = useState(false);
 
   const insets = useSafeAreaInsets();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const { comments, rsvps, rsvpOptions, myRsvp, myRsvpOptionId, loading, updateRsvp, postComment } = useEventDetail(id, userId);
 
   useEffect(() => {
@@ -316,7 +324,7 @@ export default function AdminEventDetail() {
               icon="delete"
               mode="outlined"
               size={20}
-              iconColor="#ef4444"
+              iconColor={tokens.statusBadFg}
               onPress={handleDelete}
               accessibilityLabel="Delete event"
             />
@@ -393,17 +401,17 @@ export default function AdminEventDetail() {
               <Text variant="headlineSmall" style={styles.title}>{event.title}</Text>
 
               <View style={styles.infoRow}>
-                <MaterialCommunityIcons name="calendar" size={18} color="#111827" />
+                <MaterialCommunityIcons name="calendar" size={18} color={tokens.textPrimary} />
                 <Text variant="bodyMedium">{start.date}</Text>
               </View>
               <View style={styles.infoRow}>
-                <MaterialCommunityIcons name="clock-outline" size={18} color="#111827" />
+                <MaterialCommunityIcons name="clock-outline" size={18} color={tokens.textPrimary} />
                 <Text variant="bodyMedium">{start.time} - {end.time}</Text>
               </View>
               {event.uniform && (
                 <Card elevation={0} style={styles.uniformCard}>
                   <Card.Content style={styles.uniformContent}>
-                    <MaterialCommunityIcons name="tshirt-crew-outline" size={18} color="#111827" />
+                    <MaterialCommunityIcons name="tshirt-crew-outline" size={18} color={tokens.textPrimary} />
                     <Text variant="bodyMedium" style={styles.uniformText}>Uniform: {event.uniform}</Text>
                   </Card.Content>
                 </Card>
@@ -445,9 +453,9 @@ export default function AdminEventDetail() {
                   label="Maybe"
                   icon="help-circle-outline"
                   selected={myRsvp === 'maybe'}
-                  color="#92400e"
-                  bgColor="#fffbeb"
-                  borderColor="#fde68a"
+                  color={tokens.statusWarnFg}
+                  bgColor={tokens.statusWarnBg}
+                  borderColor={tokens.statusWarnBorder}
                   count={maybeCount}
                   onPress={() => updateRsvp('maybe' as RSVPStatus)}
                 />
@@ -455,9 +463,9 @@ export default function AdminEventDetail() {
                   label="Can't Go"
                   icon="close-circle-outline"
                   selected={myRsvp === 'no'}
-                  color="#6b7280"
-                  bgColor="#f9fafb"
-                  borderColor="#d1d5db"
+                  color={tokens.textMuted}
+                  bgColor={tokens.surfaceVariant}
+                  borderColor={tokens.border}
                   onPress={() => updateRsvp('no' as RSVPStatus)}
                 />
               </View>
@@ -468,9 +476,9 @@ export default function AdminEventDetail() {
                 label="Going"
                 icon="check-circle-outline"
                 selected={myRsvp === 'going'}
-                color="#15803d"
-                bgColor="#f0fdf4"
-                borderColor="#86efac"
+                color={tokens.statusGoodFg}
+                bgColor={tokens.statusGoodBg}
+                borderColor={tokens.statusGoodBorder}
                 count={goingCount}
                 onPress={() => updateRsvp('going' as RSVPStatus)}
               />
@@ -478,9 +486,9 @@ export default function AdminEventDetail() {
                 label="Maybe"
                 icon="help-circle-outline"
                 selected={myRsvp === 'maybe'}
-                color="#92400e"
-                bgColor="#fffbeb"
-                borderColor="#fde68a"
+                color={tokens.statusWarnFg}
+                bgColor={tokens.statusWarnBg}
+                borderColor={tokens.statusWarnBorder}
                 count={maybeCount}
                 onPress={() => updateRsvp('maybe' as RSVPStatus)}
               />
@@ -488,9 +496,9 @@ export default function AdminEventDetail() {
                 label="Can't Go"
                 icon="close-circle-outline"
                 selected={myRsvp === 'no'}
-                color="#6b7280"
-                bgColor="#f9fafb"
-                borderColor="#d1d5db"
+                color={tokens.textMuted}
+                bgColor={tokens.surfaceVariant}
+                borderColor={tokens.border}
                 onPress={() => updateRsvp('no' as RSVPStatus)}
               />
             </View>
@@ -593,26 +601,26 @@ export default function AdminEventDetail() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   content: { padding: 16, paddingBottom: 16 },
   adminActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
   actionSpacer: { flex: 1 },
   editSection: { gap: 12, marginBottom: 8 },
-  editInput: { backgroundColor: '#fff' },
+  editInput: { backgroundColor: t.surface },
   saveButton: { borderRadius: 12, marginTop: 4 },
   title: { fontWeight: '700', marginBottom: 12 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 },
-  uniformCard: { backgroundColor: '#eff6ff', marginTop: 12 },
+  uniformCard: { backgroundColor: t.accentContainer, marginTop: 12 },
   uniformContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  uniformText: { color: '#1d4ed8' },
+  uniformText: { color: t.accent },
   divider: { marginVertical: 16 },
-  description: { color: '#374151', lineHeight: 22 },
+  description: { color: t.textSecondary, lineHeight: 22 },
   sectionTitle: { fontWeight: '600', marginBottom: 12 },
 
   // RSVP section
   rsvpSection: { gap: 12, marginBottom: 12 },
-  rsvpGroupLabel: { color: '#6b7280', fontWeight: '500' },
+  rsvpGroupLabel: { color: t.textSecondary, fontWeight: '500' },
   rsvpBtnRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   rsvpBtn: {
     flex: 1,
@@ -636,28 +644,28 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
+    borderColor: t.border,
+    backgroundColor: t.surface,
   },
   optionChipSelected: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#86efac',
+    backgroundColor: t.statusGoodBg,
+    borderColor: t.statusGoodBorder,
   },
-  optionChipText: { fontSize: 13, color: '#374151', fontWeight: '500' },
-  optionChipTextSelected: { color: '#15803d', fontWeight: '700' },
+  optionChipText: { fontSize: 13, color: t.textPrimary, fontWeight: '500' },
+  optionChipTextSelected: { color: t.statusGoodFg, fontWeight: '700' },
 
   // Attendees
   attendeesSection: { gap: 6, marginBottom: 4 },
   attendeeGroup: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
-  attendeesLabel: { fontWeight: '600', color: '#374151' },
-  attendeesText: { color: '#6b7280', flex: 1 },
+  attendeesLabel: { fontWeight: '600', color: t.textSecondary },
+  attendeesText: { color: t.textSecondary, flex: 1 },
 
   // Comments
   comment: { flexDirection: 'row', gap: 10, marginBottom: 12 },
-  commentAvatar: { backgroundColor: '#e5e7eb' },
+  commentAvatar: { backgroundColor: t.surfaceVariant },
   commentBody: { flex: 1 },
   commentAuthor: { fontWeight: '600', marginBottom: 2 },
-  commentTime: { color: '#9ca3af', marginTop: 4 },
-  commentInput: { flexDirection: 'row', alignItems: 'flex-end', gap: 4, paddingHorizontal: 8, paddingTop: 8, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e5e7eb' },
-  commentTextInput: { flex: 1, backgroundColor: '#fff', maxHeight: 100 },
+  commentTime: { color: t.textMuted, marginTop: 4 },
+  commentInput: { flexDirection: 'row', alignItems: 'flex-end', gap: 4, paddingHorizontal: 8, paddingTop: 8, backgroundColor: t.surface, borderTopWidth: 1, borderTopColor: t.border },
+  commentTextInput: { flex: 1, backgroundColor: t.surface, maxHeight: 100 },
 });

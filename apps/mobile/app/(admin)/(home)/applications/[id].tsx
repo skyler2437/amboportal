@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Linking } from 'react-native';
 import { Text, Card, Button, Divider, Dialog, Portal, TextInput } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import { getApplicationStatusStyles } from '@/lib/theme';
+import type { SemanticTokens } from '@/lib/theme';
 import type { Application, ApplicationStatus } from '@/hooks/useApplications';
 
 const QUESTION_LABELS = [
@@ -19,14 +22,10 @@ const QUESTION_LABELS = [
   'Is there anything else you would like us to know?',
 ];
 
-const statusStyles: Record<ApplicationStatus, { bg: string; text: string; icon: string }> = {
-  submitted: { bg: '#eff6ff', text: '#3b82f6', icon: 'file-document-outline' },
-  approved: { bg: '#ecfdf5', text: '#10b981', icon: 'check-circle-outline' },
-  rejected: { bg: '#fef2f2', text: '#ef4444', icon: 'close-circle-outline' },
-  draft: { bg: '#f5f5f5', text: '#6b7280', icon: 'pencil-outline' },
-};
-
 export default function ApplicationDetail() {
+  const { tokens, mode } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const statusStyles = getApplicationStatusStyles(mode);
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [application, setApplication] = useState<Application | null>(null);
@@ -91,7 +90,7 @@ export default function ApplicationDetail() {
   if (!application) {
     return (
       <View style={styles.errorContainer}>
-        <MaterialCommunityIcons name="alert-circle-outline" size={48} color="#9ca3af" />
+        <MaterialCommunityIcons name="alert-circle-outline" size={48} color={tokens.textMuted} />
         <Text variant="bodyLarge" style={styles.errorText}>Application not found</Text>
         <Button mode="outlined" onPress={() => router.back()}>Go Back</Button>
       </View>
@@ -140,7 +139,7 @@ export default function ApplicationDetail() {
             <Button onPress={() => setConfirmAction(null)}>Cancel</Button>
             <Button
               onPress={executeStatusUpdate}
-              textColor={confirmAction === 'approved' ? '#10b981' : '#ef4444'}
+              textColor={confirmAction === 'approved' ? tokens.statusGoodFg : tokens.statusBadFg}
             >
               {confirmAction === 'approved' ? 'Approve' : 'Reject'}
             </Button>
@@ -187,7 +186,7 @@ export default function ApplicationDetail() {
               <>
                 <Divider style={styles.rowDivider} />
                 <View style={styles.infoRow}>
-                  <MaterialCommunityIcons name="file-document" size={20} color="#6b7280" />
+                  <MaterialCommunityIcons name="file-document" size={20} color={tokens.textSecondary} />
                   <View style={{ flex: 1 }}>
                     <Text variant="labelSmall" style={styles.infoLabel}>Transcript</Text>
                     <Button
@@ -249,8 +248,8 @@ export default function ApplicationDetail() {
               <Button
                 mode="contained"
                 icon="check-circle-outline"
-                buttonColor="#10b981"
-                textColor="#fff"
+                buttonColor={tokens.statusGoodFg}
+                textColor={tokens.onAccent}
                 onPress={() => setConfirmAction('approved')}
                 loading={updating}
                 disabled={updating}
@@ -263,8 +262,8 @@ export default function ApplicationDetail() {
               <Button
                 mode="contained"
                 icon="close-circle-outline"
-                buttonColor="#ef4444"
-                textColor="#fff"
+                buttonColor={tokens.statusBadFg}
+                textColor={tokens.onAccent}
                 onPress={() => setConfirmAction('rejected')}
                 loading={updating}
                 disabled={updating}
@@ -297,9 +296,11 @@ export default function ApplicationDetail() {
 }
 
 function InfoRow({ icon, label, value }: { icon: string; label: string; value: string }) {
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   return (
     <View style={styles.infoRow}>
-      <MaterialCommunityIcons name={icon as any} size={20} color="#6b7280" />
+      <MaterialCommunityIcons name={icon as any} size={20} color={tokens.textSecondary} />
       <View style={{ flex: 1 }}>
         <Text variant="labelSmall" style={styles.infoLabel}>{label}</Text>
         <Text variant="bodyMedium">{value}</Text>
@@ -308,30 +309,30 @@ function InfoRow({ icon, label, value }: { icon: string; label: string; value: s
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
   content: { padding: 16, paddingBottom: 40 },
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  errorText: { color: '#6b7280' },
+  errorText: { color: t.textSecondary },
   statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
   statusText: { fontSize: 13, fontWeight: '600' },
-  date: { color: '#9ca3af' },
+  date: { color: t.textMuted },
   sectionLabel: {
-    color: '#9ca3af',
+    color: t.textMuted,
     fontWeight: '600',
     letterSpacing: 0.8,
     marginTop: 16,
     marginBottom: 8,
   },
-  card: { backgroundColor: '#fff', marginBottom: 4 },
+  card: { backgroundColor: t.surface, marginBottom: 4 },
   infoContent: { gap: 0 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  infoLabel: { color: '#9ca3af', marginBottom: 2 },
-  rowDivider: { backgroundColor: '#f3f4f6' },
+  infoLabel: { color: t.textMuted, marginBottom: 2 },
+  rowDivider: { backgroundColor: t.divider },
   linkButton: { alignSelf: 'flex-start', marginTop: -4, marginLeft: -8 },
-  questionCard: { backgroundColor: '#fff', marginBottom: 8 },
-  questionLabel: { color: '#6b7280', marginBottom: 6 },
+  questionCard: { backgroundColor: t.surface, marginBottom: 8 },
+  questionLabel: { color: t.textSecondary, marginBottom: 6 },
   answer: { lineHeight: 20 },
   actionDivider: { marginVertical: 20 },
   actionsRow: { flexDirection: 'row', gap: 12 },
@@ -340,5 +341,5 @@ const styles = StyleSheet.create({
   actionButtonLabel: { fontSize: 16, fontWeight: '600' },
   reviewedNote: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 20, justifyContent: 'center' },
   dialogText: { marginBottom: 12 },
-  rejectInput: { backgroundColor: '#fff' },
+  rejectInput: { backgroundColor: t.surface },
 });
