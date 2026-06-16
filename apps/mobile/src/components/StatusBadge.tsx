@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { SubmissionStatus } from '@ambo/database';
-import { statusColors } from '@/lib/theme';
+import { getStatusColors } from '@/lib/theme';
+import { useAppTheme } from '@/lib/ThemeProvider';
 
 interface StatusBadgeProps {
   status: SubmissionStatus;
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const colors = statusColors[status];
+  const { mode } = useAppTheme();
+  const colors = getStatusColors(mode)[status];
 
   return (
     <View

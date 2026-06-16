@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, ScrollView, StyleSheet, ViewStyle, StyleProp } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Text, useTheme, type MD3Theme } from 'react-native-paper';
 import { MemberPill, MemberPillUser } from '@/components/MemberPill';
-import { theme } from '@/lib/theme';
 
 export type MemberUser = MemberPillUser;
 
@@ -22,6 +21,8 @@ export function MemberPickerGrid({
   excludeUserId,
   style,
 }: MemberPickerGridProps) {
+  const paper = useTheme();
+  const styles = useMemo(() => makeStyles(paper), [paper]);
   const selectedSet = new Set(selectedIds);
   const visibleUsers = excludeUserId ? users.filter((u) => u.id !== excludeUserId) : users;
   const count = visibleUsers.filter((u) => selectedSet.has(u.id)).length;
@@ -45,13 +46,14 @@ export function MemberPickerGrid({
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 16, paddingBottom: 8 },
-  count: {
-    color: theme.colors.onSurfaceVariant,
-    fontWeight: '500',
-    paddingHorizontal: 16,
-    minHeight: 18,
-  },
-});
+const makeStyles = (paper: MD3Theme) =>
+  StyleSheet.create({
+    container: { flex: 1 },
+    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 16, paddingBottom: 8 },
+    count: {
+      color: paper.colors.onSurfaceVariant,
+      fontWeight: '500',
+      paddingHorizontal: 16,
+      minHeight: 18,
+    },
+  });

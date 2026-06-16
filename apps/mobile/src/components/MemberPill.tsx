@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Pressable, View, StyleSheet } from 'react-native';
-import { Avatar, Text } from 'react-native-paper';
+import { Avatar, Text, useTheme, type MD3Theme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '@/lib/theme';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export interface MemberPillUser {
   id: string;
@@ -20,6 +21,9 @@ interface MemberPillProps {
 
 export function MemberPill({ user, selected, onPress }: MemberPillProps) {
   const [imageFailed, setImageFailed] = useState(false);
+  const paper = useTheme();
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(paper, tokens), [paper, tokens]);
   const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
   const name = `${user.first_name} ${user.last_name}`.trim();
   const showImage = !!user.avatar_url && !imageFailed;
@@ -34,7 +38,7 @@ export function MemberPill({ user, selected, onPress }: MemberPillProps) {
     >
       {selected ? (
         <View style={styles.checkCircle}>
-          <MaterialCommunityIcons name="check" size={15} color="#fff" />
+          <MaterialCommunityIcons name="check" size={15} color={tokens.onAccent} />
         </View>
       ) : showImage ? (
         <Avatar.Image
@@ -46,7 +50,7 @@ export function MemberPill({ user, selected, onPress }: MemberPillProps) {
         <Avatar.Text
           size={24}
           label={initials}
-          color={theme.colors.primary}
+          color={paper.colors.primary}
           labelStyle={styles.initialsLabel}
           style={styles.initials}
         />
@@ -61,33 +65,34 @@ export function MemberPill({ user, selected, onPress }: MemberPillProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    paddingLeft: 7,
-  },
-  pillSelected: { backgroundColor: theme.colors.primary },
-  pillUnselected: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.outline,
-  },
-  checkCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initials: { backgroundColor: theme.colors.primaryContainer },
-  initialsLabel: { fontSize: 11 },
-  name: { fontSize: 14 },
-  nameSelected: { color: '#fff', fontWeight: '500' },
-  nameUnselected: { color: theme.colors.onSurface },
-});
+const makeStyles = (paper: MD3Theme, tokens: SemanticTokens) =>
+  StyleSheet.create({
+    pill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      borderRadius: 999,
+      paddingVertical: 6,
+      paddingHorizontal: 14,
+      paddingLeft: 7,
+    },
+    pillSelected: { backgroundColor: paper.colors.primary },
+    pillUnselected: {
+      backgroundColor: paper.colors.surface,
+      borderWidth: 1,
+      borderColor: paper.colors.outline,
+    },
+    checkCircle: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: tokens.onAccentOverlay,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    initials: { backgroundColor: paper.colors.primaryContainer },
+    initialsLabel: { fontSize: 11 },
+    name: { fontSize: 14 },
+    nameSelected: { color: tokens.onAccent, fontWeight: '500' },
+    nameUnselected: { color: paper.colors.onSurface },
+  });
