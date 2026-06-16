@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, Text, IconButton } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import Constants from 'expo-constants';
 import { EventDateTimePicker } from '@/components/EventDateTimePicker';
+import { FormScreen, FormField } from '@/components/ui';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 import type { AppRole } from '@/lib/roles';
 
 /**
@@ -88,8 +89,8 @@ export function NewEventScreen({ role }: { role: AppRole }) {
           if (!syncRes.ok) {
             console.warn('[GCal] Sync failed:', syncRes.status);
           }
-        } catch (err: any) {
-          console.warn('[GCal] Sync error:', err?.message || err);
+        } catch (err: unknown) {
+          console.warn('[GCal] Sync error:', err instanceof Error ? err.message : err);
         }
       }
     }
@@ -101,116 +102,90 @@ export function NewEventScreen({ role }: { role: AppRole }) {
   return (
     <>
       <Stack.Screen options={{ title: 'Create Event' }} />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
-          <TextInput
-            mode="outlined"
-            label="Title *"
-            value={title}
-            onChangeText={setTitle}
-            dense
-            style={styles.input}
-          />
-          <TextInput
-            mode="outlined"
-            label="Description"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            numberOfLines={4}
-            dense
-            style={styles.input}
-          />
-          <TextInput
-            mode="outlined"
-            label="Uniform"
-            value={uniform}
-            onChangeText={setUniform}
-            dense
-            style={styles.input}
-          />
+      <FormScreen>
+        <FormField label="Title *" value={title} onChangeText={setTitle} />
+        <FormField
+          label="Description"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={4}
+        />
+        <FormField label="Uniform" value={uniform} onChangeText={setUniform} />
 
-          <Text variant="labelMedium" style={[styles.dateLabel, labelColor]}>Date & Time</Text>
-          <EventDateTimePicker
-            startDate={startDate}
-            endDate={endDate}
-            allDay={allDay}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-            onAllDayChange={setAllDay}
-          />
+        <Text variant="labelMedium" style={[styles.dateLabel, labelColor]}>Date & Time</Text>
+        <EventDateTimePicker
+          startDate={startDate}
+          endDate={endDate}
+          allDay={allDay}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          onAllDayChange={setAllDay}
+        />
 
-          <Text variant="labelMedium" style={[styles.sectionLabel, sectionLabelColor]}>RSVP Options (optional)</Text>
-          <Text variant="bodySmall" style={styles.rsvpHint}>
-            Add custom RSVP options. Leave empty for default Going/Maybe/Can't Go.
-          </Text>
-          {rsvpOptions.map((opt, idx) => (
-            <View key={idx} style={styles.rsvpOptionRow}>
-              <TextInput
-                mode="outlined"
-                value={opt}
-                onChangeText={(text) => {
-                  const updated = [...rsvpOptions];
-                  updated[idx] = text;
-                  setRsvpOptions(updated);
-                }}
-                placeholder={`Option ${idx + 1}`}
-                dense
-                style={styles.rsvpOptionInput}
-              />
-              <IconButton
-                icon="close"
-                size={18}
-                onPress={() => setRsvpOptions(rsvpOptions.filter((_, i) => i !== idx))}
-              />
-            </View>
-          ))}
-          {rsvpOptions.length < 10 && (
-            <Button
-              mode="text"
-              icon="plus"
-              onPress={() => setRsvpOptions([...rsvpOptions, ''])}
-              compact
-              style={styles.addOptionButton}
-            >
-              Add RSVP Option
-            </Button>
-          )}
-
+        <Text variant="labelMedium" style={[styles.sectionLabel, sectionLabelColor]}>RSVP Options (optional)</Text>
+        <Text variant="bodySmall" style={styles.rsvpHint}>
+          Add custom RSVP options. Leave empty for default Going/Maybe/Can't Go.
+        </Text>
+        {rsvpOptions.map((opt, idx) => (
+          <View key={idx} style={styles.rsvpOptionRow}>
+            <TextInput
+              mode="outlined"
+              value={opt}
+              onChangeText={(text) => {
+                const updated = [...rsvpOptions];
+                updated[idx] = text;
+                setRsvpOptions(updated);
+              }}
+              placeholder={`Option ${idx + 1}`}
+              dense
+              style={styles.rsvpOptionInput}
+            />
+            <IconButton
+              icon="close"
+              size={18}
+              onPress={() => setRsvpOptions(rsvpOptions.filter((_, i) => i !== idx))}
+            />
+          </View>
+        ))}
+        {rsvpOptions.length < 10 && (
           <Button
-            mode="contained"
-            onPress={handleCreate}
-            loading={creating}
-            disabled={!title.trim() || creating}
-            style={styles.createButton}
+            mode="text"
+            icon="plus"
+            onPress={() => setRsvpOptions([...rsvpOptions, ''])}
+            compact
+            style={styles.addOptionButton}
           >
-            Create Event
+            Add RSVP Option
           </Button>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        )}
+
+        <Button
+          mode="contained"
+          onPress={handleCreate}
+          loading={creating}
+          disabled={!title.trim() || creating}
+          style={styles.createButton}
+        >
+          Create Event
+        </Button>
+      </FormScreen>
     </>
   );
 }
 
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: t.background },
-    content: { padding: 16, paddingBottom: 40 },
-    input: { backgroundColor: t.surface, marginBottom: 12 },
-    dateLabel: { fontWeight: '600', marginBottom: 4, marginTop: 4 },
-    sectionLabel: { fontWeight: '600', marginBottom: 8, marginTop: 16 },
+    dateLabel: { fontWeight: fontWeight.semibold, marginBottom: space.xs, marginTop: space.xs },
+    sectionLabel: { fontWeight: fontWeight.semibold, marginBottom: space.sm, marginTop: space.lg },
     // Role-specific label colors (admin: textPrimary, student: textSecondary)
     dateLabelAdmin: { color: t.textPrimary },
     dateLabelStudent: { color: t.textSecondary },
     sectionLabelAdmin: { color: t.textPrimary },
     sectionLabelStudent: { color: t.textSecondary },
-    rsvpHint: { color: t.textMuted, marginBottom: 8, marginTop: -4 },
-    rsvpOptionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+    rsvpHint: { color: t.textMuted, marginBottom: space.sm, marginTop: -space.xs },
+    rsvpOptionRow: { flexDirection: 'row', alignItems: 'center', marginBottom: space.xs },
     rsvpOptionInput: { flex: 1, backgroundColor: t.surface },
-    addOptionButton: { alignSelf: 'flex-start', marginBottom: 8 },
-    createButton: { borderRadius: 8, marginTop: 8 },
+    addOptionButton: { alignSelf: 'flex-start', marginBottom: space.sm },
+    createButton: { borderRadius: radius.sm, marginTop: space.sm },
   });

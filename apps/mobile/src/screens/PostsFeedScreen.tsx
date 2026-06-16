@@ -1,16 +1,15 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl } from 'react-native';
-import { FAB } from 'react-native-paper';
+import React, { useRef } from 'react';
+import { FlatList, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 import { usePosts } from '@/hooks/usePosts';
 import { supabase } from '@/lib/supabase';
 import { PostCard } from '@/components/PostCard';
 import { PostListSkeleton } from '@/components/SkeletonLoader';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { Screen, Fab } from '@/components/ui';
+import { useListScreen } from '@/hooks/useListScreen';
+import { space } from '@/lib/theme';
 import type { AppRole } from '@/lib/roles';
 
 /**
@@ -19,10 +18,8 @@ import type { AppRole } from '@/lib/roles';
  */
 export function PostsFeedScreen({ role }: { role: AppRole }) {
   const router = useRouter();
-  const { styles, tokens } = useThemedStyles(makeStyles);
   const { posts, loading, error, hasMore, refetch, fetchMore, toggleLike } = usePosts();
-  const [refreshing, setRefreshing] = useState(false);
-  const initialLoadDone = useRef(false);
+  const { isInitialLoading, listError, refreshControl } = useListScreen({ data: posts, loading, error, refetch });
 
   const viewedRef = useRef<Set<string>>(new Set());
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50, minimumViewTime: 1000 }).current;
@@ -41,28 +38,11 @@ export function PostsFeedScreen({ role }: { role: AppRole }) {
     }
   }).current;
 
-  if (!loading && !initialLoadDone.current) {
-    initialLoadDone.current = true;
-  }
-
-  // Silent refetch when screen regains focus (no spinner)
-  useFocusEffect(useCallback(() => {
-    if (initialLoadDone.current) {
-      refetch();
-    }
-  }, [refetch]));
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }, [refetch]);
-
-  if (loading && posts.length === 0 && !initialLoadDone.current) return <PostListSkeleton />;
-  if (error && posts.length === 0) return <ErrorState message={error} onRetry={refetch} />;
+  if (isInitialLoading) return <PostListSkeleton />;
+  if (listError) return <ErrorState message={listError} onRetry={refetch} />;
 
   return (
-    <View style={styles.container}>
+    <Screen background="surface">
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -89,33 +69,22 @@ export function PostsFeedScreen({ role }: { role: AppRole }) {
             subtitle="Be the first to post something!"
           />
         }
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={refreshControl}
         onEndReached={hasMore ? fetchMore : undefined}
         onEndReachedThreshold={0.5}
         viewabilityConfig={viewabilityConfig}
         onViewableItemsChanged={onViewableItemsChanged}
       />
-      <FAB
+      <Fab
         icon="plus"
-        color={tokens.onAccent}
-        style={styles.fab}
+        label="Create new post"
         onPress={() => router.push(`/(${role})/posts/new` as Parameters<typeof router.push>[0])}
-        accessibilityLabel="Create new post"
       />
-    </View>
+    </Screen>
   );
 }
 
-const makeStyles = (t: SemanticTokens) =>
-  StyleSheet.create({
-    container: { flex: 1, backgroundColor: t.surface },
-    list: { padding: 16 },
-    emptyContainer: { flex: 1, padding: 16 },
-    fab: {
-      position: 'absolute',
-      right: 16,
-      bottom: 16,
-      backgroundColor: t.accentSolid,
-      borderRadius: 16,
-    },
-  });
+const styles = StyleSheet.create({
+  list: { padding: space.lg },
+  emptyContainer: { flex: 1, padding: space.lg },
+});
