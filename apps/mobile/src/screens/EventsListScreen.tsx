@@ -1,13 +1,15 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { SectionList, View, StyleSheet, RefreshControl, Pressable } from 'react-native';
-import { Chip, Text, FAB } from 'react-native-paper';
-import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useState } from 'react';
+import { SectionList, View, StyleSheet, Pressable } from 'react-native';
+import { Chip, Text } from 'react-native-paper';
+import { useRouter } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/providers/AuthProvider';
 import { useEvents } from '@/hooks/useEvents';
 import { EventListSkeleton } from '@/components/SkeletonLoader';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { Fab } from '@/components/ui';
+import { useListScreen } from '@/hooks/useListScreen';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getRsvpTint, getDefaultCardTint, space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 import { RSVP_ICON, getRsvpDisplay } from '@/lib/rsvp';
@@ -32,25 +34,7 @@ export function EventsListScreen({ role }: { role: AppRole }) {
   const { events, loading, error, refetch } = useEvents(userId);
   const router = useRouter();
   const [filter, setFilter] = useState<EventFilter>('upcoming');
-  const [refreshing, setRefreshing] = useState(false);
-  const initialLoadDone = useRef(false);
-
-  if (!loading && !initialLoadDone.current) {
-    initialLoadDone.current = true;
-  }
-
-  // Silent refetch when returning from event detail (picks up RSVP changes)
-  useFocusEffect(useCallback(() => {
-    if (initialLoadDone.current) {
-      refetch();
-    }
-  }, [refetch]));
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }, [refetch]);
+  const { isInitialLoading, listError, refreshControl } = useListScreen({ data: events, loading, error, refetch });
 
   const filteredEvents = React.useMemo(() => {
     const now = new Date();
@@ -78,8 +62,8 @@ export function EventsListScreen({ role }: { role: AppRole }) {
     }));
   }, [filteredEvents, filter]);
 
-  if (loading && events.length === 0 && !initialLoadDone.current) return <EventListSkeleton />;
-  if (error && events.length === 0) return <ErrorState message={error} onRetry={refetch} />;
+  if (isInitialLoading) return <EventListSkeleton />;
+  if (listError) return <ErrorState message={listError} onRetry={refetch} />;
 
   return (
     <View style={styles.outerContainer}>
@@ -101,7 +85,7 @@ export function EventsListScreen({ role }: { role: AppRole }) {
         contentContainerStyle={styles.content}
         sections={sections}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={refreshControl}
         renderSectionHeader={({ section }) => (
           <Text variant="titleSmall" style={styles.sectionHeader}>{section.title}</Text>
         )}
@@ -164,12 +148,10 @@ export function EventsListScreen({ role }: { role: AppRole }) {
         }
       />
 
-      <FAB
+      <Fab
         icon="plus"
-        color={tokens.onAccent}
-        style={styles.fab}
+        label="Create new event"
         onPress={() => router.push(`/(${role})/events/new` as Parameters<typeof router.push>[0])}
-        accessibilityLabel="Create new event"
       />
     </View>
   );
@@ -204,11 +186,4 @@ const makeStyles = (t: SemanticTokens) =>
     myRsvpRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginTop: space.xs },
     myRsvpText: { fontWeight: fontWeight.semibold, fontSize: fontSize.xs },
     eventDescription: { color: t.textMuted, marginTop: space.xxs },
-    fab: {
-      position: 'absolute',
-      right: 16,
-      bottom: 16,
-      backgroundColor: t.accentSolid,
-      borderRadius: radius.lg,
-    },
   });
