@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Linking } from 'react-native';
 import { Text, Card, Button, Divider, Dialog, Portal, TextInput } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getApplicationStatusStyles } from '@/lib/theme';
 import type { SemanticTokens } from '@/lib/theme';
 import type { Application, ApplicationStatus } from '@/hooks/useApplications';
@@ -23,8 +23,7 @@ const QUESTION_LABELS = [
 ];
 
 export default function ApplicationDetail() {
-  const { tokens, mode } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens, mode } = useThemedStyles(makeStyles);
   const statusStyles = getApplicationStatusStyles(mode);
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -296,8 +295,7 @@ export default function ApplicationDetail() {
 }
 
 function InfoRow({ icon, label, value }: { icon: string; label: string; value: string }) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   return (
     <View style={styles.infoRow}>
       <MaterialCommunityIcons name={icon as any} size={20} color={tokens.textSecondary} />

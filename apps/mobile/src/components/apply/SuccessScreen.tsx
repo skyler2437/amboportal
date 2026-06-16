@@ -1,15 +1,14 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet, Linking } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { Check } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function SuccessScreen() {
   const router = useRouter();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <View style={styles.container}>

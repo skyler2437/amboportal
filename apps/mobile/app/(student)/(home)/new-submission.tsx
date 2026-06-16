@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { TextInput, Button, Text, Menu, Divider, Card } from 'react-native-paper';
 import { useRouter, Stack } from 'expo-router';
@@ -7,14 +7,13 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { SERVICE_TYPES } from '@ambo/database';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function NewSubmission() {
   const { session } = useAuth();
   const router = useRouter();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const [serviceType, setServiceType] = useState('Family Tour');
   const [menuVisible, setMenuVisible] = useState(false);
   const [hours, setHours] = useState('1');

@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Icon } from 'react-native-paper';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface ComingSoonProps {
@@ -9,8 +9,7 @@ interface ComingSoonProps {
 }
 
 export function ComingSoon({ feature = 'This feature' }: ComingSoonProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <View style={styles.container}>

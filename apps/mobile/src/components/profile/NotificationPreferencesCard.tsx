@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
 import { Card, Text, Divider, Switch } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 import type { NotificationPreferences } from '@/hooks/useNotificationPreferences';
 
@@ -24,8 +24,7 @@ export function NotificationPreferencesCard({
   updatePref,
   cardStyle,
 }: NotificationPreferencesCardProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <Card elevation={0} style={cardStyle}>

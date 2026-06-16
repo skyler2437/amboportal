@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Alert } from 'react-native';
 import { Avatar, ActivityIndicator } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { File } from 'expo-file-system';
 import { supabase } from '@/lib/supabase';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface AvatarUploadProps {
@@ -16,8 +16,7 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ userId, avatarUrl, initials, size = 80, onUploaded }: AvatarUploadProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   const [uploading, setUploading] = useState(false);
 
   const handlePress = async () => {

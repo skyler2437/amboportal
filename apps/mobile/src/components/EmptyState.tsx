@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Icon } from 'react-native-paper';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface EmptyStateProps {
@@ -11,8 +11,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ icon, title, subtitle }: EmptyStateProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <View style={styles.container} accessible={true} accessibilityLabel={`${title}${subtitle ? `. ${subtitle}` : ''}`} accessibilityRole="text">

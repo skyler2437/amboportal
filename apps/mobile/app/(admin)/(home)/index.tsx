@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text, ActivityIndicator } from 'react-native-paper';
 import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { supabase } from '@/lib/supabase';
 import { CheddarRain } from '@/components/CheddarRain';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const [pendingCount, setPendingCount] = useState(0);
   const [userCount, setUserCount] = useState(0);
   const [applicationCount, setApplicationCount] = useState(0);

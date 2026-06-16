@@ -10,7 +10,7 @@ import { DashboardSkeleton } from '@/components/SkeletonLoader';
 import { hapticMedium } from '@/lib/haptics';
 import { ErrorState } from '@/components/ErrorState';
 import { CheddarRain } from '@/components/CheddarRain';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface UpcomingEvent {
@@ -20,8 +20,7 @@ interface UpcomingEvent {
 }
 
 export default function StudentDashboard() {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { submissions, loading, error, refetch } = useSubmissions(userId);

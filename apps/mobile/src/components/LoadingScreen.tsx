@@ -1,12 +1,11 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 export function LoadingScreen() {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
 
   return (
     <View style={styles.container}>

@@ -5,16 +5,16 @@ import { useRouter } from 'expo-router';
 import { useApplications, Application, ApplicationStatus } from '@/hooks/useApplications';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getApplicationStatusStyles } from '@/lib/theme';
+import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 
 const STATUS_FILTERS: ApplicationStatus[] = ['submitted', 'approved', 'rejected', 'draft'];
 
 export default function ApplicationsList() {
   const router = useRouter();
-  const { tokens, mode } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, mode } = useThemedStyles(makeStyles);
   const statusStyles = getApplicationStatusStyles(mode);
   const { applications, loading, refetch } = useApplications();
   const [searchQuery, setSearchQuery] = useState('');
@@ -41,7 +41,7 @@ export default function ApplicationsList() {
   if (loading && applications.length === 0) return <LoadingScreen />;
 
   const renderApplication = ({ item }: { item: Application }) => {
-    const initials = `${item.first_name?.[0] || ''}${item.last_name?.[0] || ''}`;
+    const initials = getInitials(item.first_name, item.last_name);
     const colors = statusStyles[item.status] || statusStyles.draft;
     const date = new Date(item.created_at).toLocaleDateString();
 

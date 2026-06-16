@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet, Linking } from 'react-native';
 import { Card, Text, IconButton } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface ResourceCardProps {
@@ -46,8 +46,7 @@ export function ResourceCard({
   showDelete,
   onDelete,
 }: ResourceCardProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const iconName = getFileIcon(fileType) as React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   const date = new Date(createdAt).toLocaleDateString();
 

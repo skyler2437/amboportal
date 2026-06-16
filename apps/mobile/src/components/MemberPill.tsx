@@ -3,6 +3,7 @@ import { Pressable, View, StyleSheet } from 'react-native';
 import { Avatar, Text, useTheme, type MD3Theme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/lib/ThemeProvider';
+import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 
 export interface MemberPillUser {
@@ -24,7 +25,7 @@ export function MemberPill({ user, selected, onPress }: MemberPillProps) {
   const paper = useTheme();
   const { tokens } = useAppTheme();
   const styles = useMemo(() => makeStyles(paper, tokens), [paper, tokens]);
-  const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
+  const initials = getInitials(user.first_name, user.last_name);
   const name = `${user.first_name} ${user.last_name}`.trim();
   const showImage = !!user.avatar_url && !imageFailed;
 

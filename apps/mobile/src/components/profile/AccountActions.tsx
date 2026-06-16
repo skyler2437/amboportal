@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 /**
@@ -16,8 +16,7 @@ interface AccountActionsProps {
 }
 
 export function AccountActions({ onSignOut, onDeleteAccount, deleting }: AccountActionsProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <>

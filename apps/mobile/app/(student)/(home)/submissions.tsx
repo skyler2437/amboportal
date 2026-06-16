@@ -9,15 +9,14 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 import type { SubmissionStatus } from '@ambo/database';
 
 const FILTERS: SubmissionStatus[] = ['Approved', 'Pending', 'Denied'];
 
 export default function StudentSubmissions() {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { submissions, loading, refreshing, error, hasMore, refetch, silentRefresh, fetchMore } =

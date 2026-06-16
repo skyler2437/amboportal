@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { View, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import { Text, Switch } from 'react-native-paper';
 import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 type ActiveField =
@@ -46,8 +46,7 @@ export function EventDateTimePicker({
   onEndDateChange,
   onAllDayChange,
 }: EventDateTimePickerProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   const [activeField, setActiveField] = useState<ActiveField>(null);
 
   const toggleField = (field: ActiveField) => {

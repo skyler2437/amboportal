@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
 import { Portal, Dialog, Avatar, Text, Button, ActivityIndicator } from 'react-native-paper';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 
 export interface DialogUser {
@@ -19,8 +20,7 @@ interface UserListDialogProps {
 }
 
 export function UserListDialog({ visible, title, users, onDismiss }: UserListDialogProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onDismiss}>
@@ -33,7 +33,7 @@ export function UserListDialog({ visible, title, users, onDismiss }: UserListDia
           ) : (
             <ScrollView style={{ maxHeight: 320 }}>
               {users.map((u) => {
-                const initials = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`;
+                const initials = getInitials(u.first_name, u.last_name);
                 return (
                   <View key={u.id} style={styles.row}>
                     {u.avatar_url ? (

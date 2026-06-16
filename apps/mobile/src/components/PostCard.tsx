@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet, Pressable, Share } from 'react-native';
 import { Avatar, Text, IconButton, Icon } from 'react-native-paper';
 import type { UserRole } from '@ambo/database';
 import { PostAttachments } from '@/components/PostAttachments';
 import type { Attachment } from '@/hooks/usePosts';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface PostCardProps {
@@ -41,9 +42,8 @@ function formatTimeAgo(dateStr: string): string {
 }
 
 export function PostCard({ content, createdAt, author, commentCount, likeCount, viewCount, liked, attachments, onToggleLike, onPress }: PostCardProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
-  const initials = `${author.first_name?.[0] || ''}${author.last_name?.[0] || ''}`;
+  const { styles, tokens } = useThemedStyles(makeStyles);
+  const initials = getInitials(author.first_name, author.last_name);
 
   return (
     <Pressable onPress={onPress} style={styles.card} accessibilityLabel={`Post by ${author.first_name} ${author.last_name}, ${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}`} accessibilityRole="button">

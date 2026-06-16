@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || '';
@@ -21,8 +21,7 @@ const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || '';
 export default function RegisterScreen() {
   const { signIn } = useAuth();
   const router = useRouter();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Card, TextInput, Button, Divider, Avatar } from 'react-native-paper';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
@@ -6,7 +6,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { supabase } from '@/lib/supabase';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 import type { Submission, SubmissionStatus } from '@ambo/database';
 
@@ -17,8 +18,7 @@ interface SubmissionDetail extends Submission {
 export default function SubmissionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState('');
@@ -62,7 +62,7 @@ export default function SubmissionDetailPage() {
     ? `${submission.users.first_name} ${submission.users.last_name}`
     : 'Unknown';
   const initials = submission.users
-    ? `${submission.users.first_name?.[0] || ''}${submission.users.last_name?.[0] || ''}`
+    ? getInitials(submission.users.first_name, submission.users.last_name)
     : '?';
   const currentStatus = submission.status;
   const serviceDate = new Date(submission.service_date).toLocaleDateString([], {

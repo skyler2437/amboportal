@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Text, Divider } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface StepReferencesProps {
@@ -11,8 +11,7 @@ interface StepReferencesProps {
 }
 
 export default function StepReferences({ data, onChange }: StepReferencesProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   return (
     <View style={styles.container}>
       <Text variant="titleSmall" style={styles.sectionTitle}>Academic Reference</Text>

@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Image, StyleSheet, Pressable, Linking } from 'react-native';
 import { Text } from 'react-native-paper';
 import { FileText, Paperclip } from 'lucide-react-native';
 import { isImageAttachment } from '@/lib/attachments';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 import type { Attachment } from '@/hooks/usePosts';
 
@@ -13,8 +13,7 @@ interface PostAttachmentsProps {
 }
 
 export function PostAttachments({ attachments, variant = 'full' }: PostAttachmentsProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   if (!attachments || attachments.length === 0) return null;
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { FlatList, View, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text, Avatar } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -6,14 +6,14 @@ import { useUsers } from '@/hooks/useUsers';
 import { RoleBadge } from '@/components/RoleBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminUsers() {
   const { users, loading, refetch } = useUsers();
   const router = useRouter();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
 
   if (loading && users.length === 0) return <LoadingScreen />;
 
@@ -25,7 +25,7 @@ export default function AdminUsers() {
       keyExtractor={(item) => item.id}
       refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} />}
       renderItem={({ item }) => {
-        const initials = `${item.first_name?.[0] || ''}${item.last_name?.[0] || ''}`;
+        const initials = getInitials(item.first_name, item.last_name);
         return (
           <Pressable
             onPress={() => router.push({ pathname: '/(admin)/(home)/users/[id]', params: { id: item.id } })}

@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { Avatar, Icon, Text } from 'react-native-paper';
 import type { MessageStatus } from '@/hooks/useChatMessages';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface MessageBubbleProps {
@@ -19,8 +19,7 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ content, createdAt, senderName, senderAvatar, isOwn, status, onRetry, likeCount = 0, liked = false, onToggleLike }: MessageBubbleProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const time = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const initials = senderName
     .split(' ')
@@ -103,8 +102,7 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
 
 /** Renders a date separator header between message groups */
 export function DateSeparator({ date }: { date: string }) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   return (
     <View style={styles.dateSeparator}>
       <View style={styles.dateLine} />
@@ -116,8 +114,7 @@ export function DateSeparator({ date }: { date: string }) {
 
 /** Renders a "typing" indicator bubble */
 export function TypingIndicator({ names }: { names: string[] }) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   if (names.length === 0) return null;
 
   const label =

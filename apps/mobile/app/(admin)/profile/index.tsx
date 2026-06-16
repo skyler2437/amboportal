@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, Alert, Linking, Platform, ActionSheetIOS, Share } from 'react-native';
 import { Text, Divider } from 'react-native-paper';
 import { useAuth } from '@/providers/AuthProvider';
@@ -12,7 +12,8 @@ import { supabase } from '@/lib/supabase';
 import Constants from 'expo-constants';
 import { ChangePasswordCard } from '@/components/ChangePasswordCard';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 import { ProfileFieldsForm } from '@/components/profile/ProfileFieldsForm';
 import { PushNotificationsCard } from '@/components/profile/PushNotificationsCard';
@@ -22,8 +23,7 @@ import { SupportCard } from '@/components/profile/SupportCard';
 import { AccountActions } from '@/components/profile/AccountActions';
 
 export default function AdminProfile() {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   const { session, signOut } = useAuth();
   const userId = session?.user?.id || '';
   const { user, loading, refetch } = useProfile(userId);
@@ -218,7 +218,7 @@ export default function AdminProfile() {
   if (loading) return <LoadingScreen />;
 
   const initials = user
-    ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`
+    ? getInitials(user.first_name, user.last_name)
     : '?';
 
   const displayAvatar = avatarUrl || user?.avatar_url;

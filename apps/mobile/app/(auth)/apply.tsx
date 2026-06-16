@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Button, Text, ActivityIndicator } from 'react-native-paper';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ApplicationData } from '@ambo/database/application-types';
 
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 import StepProgress from '@/components/apply/StepProgress';
@@ -88,8 +88,7 @@ function validate(step: number, data: ApplicationData): string | null {
 }
 
 export default function ApplyScreen() {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<ApplicationData>(INITIAL_DATA);
   const [applicationToken, setApplicationToken] = useState<string | null>(null);

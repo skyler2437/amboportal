@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { FAB, Portal, Dialog, TextInput, Button, Text, ProgressBar } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -8,12 +8,11 @@ import { useResources, Resource } from '@/hooks/useResources';
 import { ResourceCard } from '@/components/ResourceCard';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminResources() {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { resources, loading, refetch, uploadResource, deleteResource } = useResources();

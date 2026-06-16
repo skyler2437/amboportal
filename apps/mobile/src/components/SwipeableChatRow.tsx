@@ -1,7 +1,7 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Star, StarOff, Trash2 } from 'lucide-react-native';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 const STAR_W = 76;
@@ -33,8 +33,7 @@ interface Props {
  * while taps and vertical scrolls still pass through.
  */
 export function SwipeableChatRow({ starred, onToggleStar, onDelete, children }: Props) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const translateX = useRef(new Animated.Value(0)).current;
   const restOffset = useRef(0); // 0 = closed, -OPEN_WIDTH = open
   const [open, setOpen] = useState(false);

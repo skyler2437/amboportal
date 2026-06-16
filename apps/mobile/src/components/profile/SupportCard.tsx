@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { StyleSheet, Pressable, Linking, type ViewStyle } from 'react-native';
 import { Card, Text } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { openExternalLink } from '@/lib/openExternalLink';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 /**
@@ -19,8 +19,7 @@ interface SupportCardProps {
 }
 
 export function SupportCard({ cardStyle }: SupportCardProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <Card elevation={0} style={cardStyle}>

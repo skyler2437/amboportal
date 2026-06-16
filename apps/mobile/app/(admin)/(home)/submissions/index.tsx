@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { FlatList, View, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text } from 'react-native-paper';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -6,14 +6,13 @@ import { useSubmissions } from '@/hooks/useSubmissions';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminSubmissions() {
   const { submissions, loading, refreshing, hasMore, refetch, silentRefresh, fetchMore } = useSubmissions();
   const router = useRouter();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
 
   // Silently refresh data when screen regains focus (no spinner flash)
   useFocusEffect(useCallback(() => { silentRefresh(); }, [silentRefresh]));

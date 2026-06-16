@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet, Pressable, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
@@ -12,7 +12,7 @@ import {
   formatBytes,
   type PickedAsset,
 } from '@/lib/attachments';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface PostAttachmentBarProps {
@@ -21,8 +21,7 @@ interface PostAttachmentBarProps {
 }
 
 export function PostAttachmentBar({ attachments, onChange }: PostAttachmentBarProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   const add = (asset: PickedAsset) => {
     if (attachments.length >= MAX_POST_ATTACHMENTS) {

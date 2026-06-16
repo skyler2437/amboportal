@@ -1,9 +1,9 @@
-import React, { Component, useMemo, type ErrorInfo, type ReactNode } from 'react';
+import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Button, Icon } from 'react-native-paper';
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface Props {
@@ -78,8 +78,7 @@ interface ErrorFallbackProps {
 }
 
 function ErrorFallback({ error, signingOut, onReset, onSignOut }: ErrorFallbackProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <View style={styles.container}>

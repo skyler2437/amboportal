@@ -1,9 +1,9 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, StyleSheet, TextInput, TextInput as RNTextInput } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hapticLight } from '@/lib/haptics';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 interface ChatInputProps {
@@ -13,8 +13,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const insets = useSafeAreaInsets();

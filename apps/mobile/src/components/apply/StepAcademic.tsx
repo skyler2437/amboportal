@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Text, Button, ActivityIndicator } from 'react-native-paper';
 import * as DocumentPicker from 'expo-document-picker';
 import { Check, Upload, FileText, X } from 'lucide-react-native';
 import type { ApplicationData } from '@ambo/database/application-types';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || '';
@@ -15,8 +15,7 @@ interface StepAcademicProps {
 }
 
 export default function StepAcademic({ data, onChange }: StepAcademicProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const [uploading, setUploading] = useState(false);
 
   const handlePickFile = async () => {

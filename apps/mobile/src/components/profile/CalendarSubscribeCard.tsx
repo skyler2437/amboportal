@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 /**
@@ -18,8 +18,7 @@ interface CalendarSubscribeCardProps {
 }
 
 export function CalendarSubscribeCard({ onSubscribe, cardStyle }: CalendarSubscribeCardProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <Card elevation={0} style={cardStyle}>

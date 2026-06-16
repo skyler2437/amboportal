@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, View, StyleSheet, Alert } from 'react-native';
 import { Text, Card, Avatar, Divider, TextInput, Button, SegmentedButtons, Dialog, Portal } from 'react-native-paper';
 import { useLocalSearchParams, Stack } from 'expo-router';
@@ -8,7 +8,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import { RoleBadge } from '@/components/RoleBadge';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 import type { User, UserRole, SubmissionStatus } from '@ambo/database';
 
@@ -28,8 +29,7 @@ interface SubmissionSummary {
 
 export default function UserDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const { userRole: currentUserRole } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +163,7 @@ export default function UserDetail() {
 
   if (loading || !user) return <LoadingScreen />;
 
-  const initials = `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`;
+  const initials = getInitials(user.first_name, user.last_name);
   const totalHours = submissions.reduce((sum, s) => sum + Number(s.hours), 0);
   const approvedCount = submissions.filter((s) => s.status === 'Approved').length;
 

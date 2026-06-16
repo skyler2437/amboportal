@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Text, Menu, Button } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 const GRADE_OPTIONS = [
@@ -18,8 +18,7 @@ interface StepPersonalProps {
 }
 
 export default function StepPersonal({ data, onChange }: StepPersonalProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   const [menuVisible, setMenuVisible] = useState(false);
   const selectedLabel = GRADE_OPTIONS.find((o) => o.value === data.grade_current)?.label || 'Select...';
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Alert, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, Avatar } from 'react-native-paper';
 import { Stack, useRouter } from 'expo-router';
@@ -9,7 +9,8 @@ import { usePosts } from '@/hooks/usePosts';
 import { supabase } from '@/lib/supabase';
 import { PostAttachmentBar } from '@/components/PostAttachmentBar';
 import { type PickedAsset } from '@/lib/attachments';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { getInitials } from '@/lib/format';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function NewPost() {
@@ -18,8 +19,7 @@ export default function NewPost() {
   const userId = session?.user?.id || '';
   const { createPost } = usePosts();
   const insets = useSafeAreaInsets();
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<PickedAsset[]>([]);
@@ -51,7 +51,7 @@ export default function NewPost() {
     }
   };
 
-  const initials = `${me?.first_name?.[0] || ''}${me?.last_name?.[0] || ''}`.toUpperCase();
+  const initials = getInitials(me?.first_name, me?.last_name);
 
   return (
     <KeyboardAvoidingView

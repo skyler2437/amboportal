@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, ProgressBar } from 'react-native-paper';
-import { useAppTheme } from '@/lib/ThemeProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
 import type { SemanticTokens } from '@/lib/theme';
 
 const STEP_LABELS = ['Contact Info', 'Personal Info', 'Academic Info', 'References', 'Questionnaire'];
@@ -12,8 +12,7 @@ interface StepProgressProps {
 }
 
 export default function StepProgress({ currentStep, totalSteps }: StepProgressProps) {
-  const { tokens } = useAppTheme();
-  const styles = useMemo(() => makeStyles(tokens), [tokens]);
+  const { styles } = useThemedStyles(makeStyles);
   const progress = currentStep / totalSteps;
 
   return (
