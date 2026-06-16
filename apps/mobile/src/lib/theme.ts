@@ -146,10 +146,6 @@ function buildPaperTheme(base: MD3Theme, t: SemanticTokens): MD3Theme {
 export const paperLight: MD3Theme = buildPaperTheme(MD3LightTheme, lightTokens);
 export const paperDark: MD3Theme = buildPaperTheme(MD3DarkTheme, darkTokens);
 
-/** Backward-compatible alias for screens not yet migrated off the static theme.
- * Removed in the Phase 5 cleanup once every consumer reads tokens. */
-export const theme = paperLight;
-
 // --- Navigation chrome (headers, tab bars) ------------------------------------
 const { LightTheme: adaptedLight, DarkTheme: adaptedDark } = adaptNavigationTheme({
   reactNavigationLight: NavigationDefaultTheme,
@@ -246,8 +242,3 @@ export function getApplicationStatusStyles(
     draft: { bg: t.surfaceVariant, text: t.textSecondary, icon: 'pencil-outline' },
   };
 }
-
-/** Deprecated light-only aliases kept until every consumer reads the mode-aware
- * getters above. Removed in Phase 5 cleanup. */
-export const statusColors = getStatusColors('light');
-export const roleColors = getRoleColors('light');

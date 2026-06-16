@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, Divider } from 'react-native-paper';
 import { useRouter } from 'expo-router';
@@ -6,13 +6,16 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useChatGroups } from '@/hooks/useChatGroups';
 import { supabase } from '@/lib/supabase';
 import { MemberPickerGrid, MemberUser } from '@/components/MemberPickerGrid';
-import { theme } from '@/lib/theme';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function StudentNewChat() {
   const router = useRouter();
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { createGroup } = useChatGroups(userId);
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
   const [users, setUsers] = useState<MemberUser[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [groupName, setGroupName] = useState('');
@@ -85,15 +88,15 @@ export default function StudentNewChat() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.surface },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   header: { padding: 16, paddingBottom: 8 },
-  nameInput: { backgroundColor: theme.colors.surface },
+  nameInput: { backgroundColor: t.surface },
   footer: {
     padding: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: t.surface,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.outline,
+    borderTopColor: t.border,
   },
   createButton: { borderRadius: 8 },
 });

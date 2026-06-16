@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { Text, TextInput, Button, Divider } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -7,13 +7,16 @@ import { supabase } from '@/lib/supabase';
 import { MemberPickerGrid, MemberUser } from '@/components/MemberPickerGrid';
 import { computeMembershipDelta } from '@/lib/membership';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { theme } from '@/lib/theme';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import type { SemanticTokens } from '@/lib/theme';
 
 export default function StudentChatEdit() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { session } = useAuth();
   const userId = session?.user?.id || '';
+  const { tokens } = useAppTheme();
+  const styles = useMemo(() => makeStyles(tokens), [tokens]);
 
   const [groupName, setGroupName] = useState('');
   const [originalIds, setOriginalIds] = useState<string[]>([]);
@@ -148,16 +151,16 @@ export default function StudentChatEdit() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.surface },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
   header: { padding: 16, paddingBottom: 8 },
   sectionTitle: { fontWeight: '700', marginBottom: 8 },
-  nameInput: { backgroundColor: theme.colors.surface },
+  nameInput: { backgroundColor: t.surface },
   footer: {
     padding: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: t.surface,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.outline,
+    borderTopColor: t.border,
   },
   saveButton: { borderRadius: 8 },
 });
