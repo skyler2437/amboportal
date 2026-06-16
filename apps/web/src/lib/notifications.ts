@@ -122,9 +122,10 @@ export async function sendNotificationToUser(
 
             try {
                 await webpush.sendNotification(pushSubscription, payloadString);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error(`[Push] Failed to send to ${sub.id}:`, err);
-                if (err.statusCode === 410 || err.statusCode === 404) {
+                const statusCode = (err as { statusCode?: number })?.statusCode;
+                if (statusCode === 410 || statusCode === 404) {
                     console.log(`[Push] Deleting expired subscription ${sub.id}`);
                     await supabase.from("push_subscriptions").delete().eq("id", sub.id);
                 }
@@ -222,14 +223,15 @@ export async function sendNotificationToRole(
                         message: "Push sent successfully",
                         data: { endpoint: sub.endpoint, userId: sub.user_id },
                     });
-                } catch (err: any) {
+                } catch (err: unknown) {
+                    const statusCode = (err as { statusCode?: number })?.statusCode;
                     await supabase.from("debug_logs").insert({
                         level: "error",
                         message: "Push failed",
-                        data: { endpoint: sub.endpoint, error: err.toString(), statusCode: err.statusCode },
+                        data: { endpoint: sub.endpoint, error: String(err), statusCode },
                     });
 
-                    if (err.statusCode === 410 || err.statusCode === 404) {
+                    if (statusCode === 410 || statusCode === 404) {
                         await supabase.from("push_subscriptions").delete().eq("id", sub.id);
                     }
                 }

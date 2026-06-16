@@ -96,7 +96,7 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ resource });
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("Upload error:", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }

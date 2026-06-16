@@ -82,7 +82,7 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ avatar_url: avatarUrl });
-    } catch (err: any) {
+    } catch (err: unknown) {
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

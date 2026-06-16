@@ -15,9 +15,9 @@ export async function GET() {
     try {
         const url = getAuthUrl();
         return NextResponse.redirect(url);
-    } catch (error: any) {
+    } catch (error: unknown) {
         return NextResponse.json(
-            { error: error.message || "Google Calendar is not configured." },
+            { error: (error instanceof Error ? error.message : String(error)) || "Google Calendar is not configured." },
             { status: 500 }
         );
     }

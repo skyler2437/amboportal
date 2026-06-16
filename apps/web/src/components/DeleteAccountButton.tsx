@@ -33,8 +33,8 @@ export function DeleteAccountButton() {
       toast.success("Account deleted successfully");
       router.push("/login");
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete account");
+    } catch (err: unknown) {
+      toast.error((err instanceof Error ? err.message : String(err)) || "Failed to delete account");
     } finally {
       setDeleting(false);
     }

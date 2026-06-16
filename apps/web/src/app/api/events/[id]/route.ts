@@ -141,8 +141,8 @@ export async function PUT(
     try {
         const { syncEventToGoogle } = await import("@/lib/googleCalendar");
         gcalSync = await syncEventToGoogle(updated.id);
-    } catch (err: any) {
-        gcalSync = { synced: false, reason: `Import/call error: ${err?.message || err}` };
+    } catch (err: unknown) {
+        gcalSync = { synced: false, reason: `Import/call error: ${err instanceof Error ? err.message : String(err)}` };
         console.error("[Events PUT] GCal sync failed:", err);
     }
 

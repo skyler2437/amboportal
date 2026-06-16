@@ -149,7 +149,7 @@ export default function FormBuilder() {
                             </div>
                             <div className="mt-4 text-center">
                                 <button className="text-sm text-muted-foreground hover:text-brand flex items-center justify-center w-full py-2 border border-dashed rounded-md hover:border-brand/50 hover:bg-brand/5 transition-colors">
-                                    <Plus className="w-4 h-4 mr-2" /> Add a step/page (TODO)
+                                    <Plus className="w-4 h-4 mr-2" /> Add a step/page
                                 </button>
                             </div>
                         </div>
