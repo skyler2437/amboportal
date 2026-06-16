@@ -8,6 +8,26 @@ import {
 export type ThemeMode = 'light' | 'dark';
 
 /**
+ * Non-color design tokens. Mode-independent. Components reference these instead
+ * of raw numbers, the same way they reference color tokens — `space.lg`,
+ * `radius.md`, `fontSize.lg`, `fontWeight.semibold`. Off-scale strays snap to
+ * the nearest step; an intentional one-off keeps its literal with a
+ * `// eslint-disable-next-line no-restricted-syntax -- intentional` comment.
+ *
+ * Note: Paper `<Text variant="...">` remains the primary text-styling system;
+ * the fontSize/fontWeight tokens are only for raw fontSize in StyleSheets.
+ */
+export const space = { xxs: 2, xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
+export const radius = { sm: 8, md: 12, lg: 16, pill: 999 } as const;
+export const fontSize = { xs: 12, sm: 13, md: 14, lg: 16, xl: 20, xxl: 28 } as const;
+export const fontWeight = {
+  regular: '400',
+  medium: '500',
+  semibold: '600',
+  bold: '700',
+} as const;
+
+/**
  * Semantic color tokens — the single vocabulary every component reads from.
  * `lightTokens` and `darkTokens` share the exact same shape (enforced by the
  * `SemanticTokens` interface), so a forgotten dark value is a compile error
