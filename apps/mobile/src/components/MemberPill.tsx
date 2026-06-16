@@ -4,7 +4,7 @@ import { Avatar, Text, useTheme, type MD3Theme } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppTheme } from '@/lib/ThemeProvider';
 import { getInitials } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export interface MemberPillUser {
   id: string;
@@ -71,11 +71,11 @@ const makeStyles = (paper: MD3Theme, tokens: SemanticTokens) =>
     pill: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
-      borderRadius: 999,
-      paddingVertical: 6,
-      paddingHorizontal: 14,
-      paddingLeft: 7,
+      gap: space.sm,
+      borderRadius: radius.pill,
+      paddingVertical: space.sm,
+      paddingHorizontal: space.lg,
+      paddingLeft: space.sm,
     },
     pillSelected: { backgroundColor: paper.colors.primary },
     pillUnselected: {
@@ -86,14 +86,14 @@ const makeStyles = (paper: MD3Theme, tokens: SemanticTokens) =>
     checkCircle: {
       width: 24,
       height: 24,
-      borderRadius: 12,
+      borderRadius: radius.md,
       backgroundColor: tokens.onAccentOverlay,
       alignItems: 'center',
       justifyContent: 'center',
     },
     initials: { backgroundColor: paper.colors.primaryContainer },
-    initialsLabel: { fontSize: 11 },
-    name: { fontSize: 14 },
-    nameSelected: { color: tokens.onAccent, fontWeight: '500' },
+    initialsLabel: { fontSize: fontSize.xxs },
+    name: { fontSize: fontSize.md },
+    nameSelected: { color: tokens.onAccent, fontWeight: fontWeight.medium },
     nameUnselected: { color: paper.colors.onSurface },
   });

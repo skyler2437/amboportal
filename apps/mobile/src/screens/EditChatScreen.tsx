@@ -8,7 +8,7 @@ import { MemberPickerGrid, MemberUser } from '@/components/MemberPickerGrid';
 import { computeMembershipDelta } from '@/lib/membership';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 /**
  * Edit-chat screen body shared by the admin and student routes. Identical for
@@ -157,14 +157,14 @@ export function EditChatScreen() {
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: t.surface },
-    header: { padding: 16, paddingBottom: 8 },
-    sectionTitle: { fontWeight: '700', marginBottom: 8 },
+    header: { padding: space.lg, paddingBottom: space.sm },
+    sectionTitle: { fontWeight: fontWeight.bold, marginBottom: space.sm },
     nameInput: { backgroundColor: t.surface },
     footer: {
-      padding: 16,
+      padding: space.lg,
       backgroundColor: t.surface,
       borderTopWidth: 1,
       borderTopColor: t.border,
     },
-    saveButton: { borderRadius: 8 },
+    saveButton: { borderRadius: radius.sm },
   });

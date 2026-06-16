@@ -6,6 +6,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { supabase } from '@/lib/supabase';
 import { CheddarRain } from '@/components/CheddarRain';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontSize, fontWeight } from '@/lib/theme';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminDashboard() {
@@ -133,14 +134,14 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: t.background, justifyContent: 'center', alignItems: 'center' },
   container: { flex: 1, backgroundColor: t.background },
   flex: { flex: 1 },
-  cheddarEmoji: { fontSize: 20, marginRight: 4 },
-  content: { padding: 16, paddingBottom: 32 },
-  statsGrid: { gap: 12 },
-  statCard: { backgroundColor: t.surface, borderWidth: 1, borderColor: t.border, borderRadius: 12, overflow: 'hidden' },
+  cheddarEmoji: { fontSize: fontSize.xl, marginRight: space.xs },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  statsGrid: { gap: space.md },
+  statCard: { backgroundColor: t.surface, borderWidth: 1, borderColor: t.border, borderRadius: radius.md, overflow: 'hidden' },
   cardInner: { backgroundColor: 'transparent' },
   pendingCard: { backgroundColor: t.statusWarnBg },
   applicationCard: { backgroundColor: t.statusInfoBg },
-  statContent: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 16 },
-  statValue: { fontWeight: '700' },
-  statLabel: { flex: 1, color: t.textPrimary, fontWeight: '500' },
+  statContent: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.lg },
+  statValue: { fontWeight: fontWeight.bold },
+  statLabel: { flex: 1, color: t.textPrimary, fontWeight: fontWeight.medium },
 });

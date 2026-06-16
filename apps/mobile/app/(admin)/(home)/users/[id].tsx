@@ -10,6 +10,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials } from '@/lib/format';
+import { space, radius, fontWeight } from '@/lib/theme';
 import type { SemanticTokens } from '@/lib/theme';
 import type { User, UserRole, SubmissionStatus } from '@ambo/database';
 
@@ -338,44 +339,44 @@ export default function UserDetail() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  content: { padding: 16, paddingBottom: 40 },
-  avatarSection: { alignItems: 'center', gap: 8, paddingVertical: 16 },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  avatarSection: { alignItems: 'center', gap: space.sm, paddingVertical: space.lg },
   avatar: { backgroundColor: t.surfaceVariant },
-  bold: { fontWeight: '700' },
-  warningText: { color: t.statusWarnFg, marginTop: 8 },
-  divider: { marginVertical: 16 },
+  bold: { fontWeight: fontWeight.bold },
+  warningText: { color: t.statusWarnFg, marginTop: space.sm },
+  divider: { marginVertical: space.lg },
   sectionLabel: {
     color: t.textMuted,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     letterSpacing: 0.8,
-    marginBottom: 12,
+    marginBottom: space.md,
   },
-  formSection: { gap: 12 },
+  formSection: { gap: space.md },
   input: { backgroundColor: t.surface },
-  roleButtons: { marginBottom: 4 },
-  saveButton: { marginTop: 16, borderRadius: 12 },
+  roleButtons: { marginBottom: space.xs },
+  saveButton: { marginTop: space.lg, borderRadius: radius.md },
   summaryCard: { backgroundColor: t.surface },
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  summaryLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  summaryTitle: { fontWeight: '600' },
+  summaryLeft: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  summaryTitle: { fontWeight: fontWeight.semibold },
   submissionsCard: { backgroundColor: t.surface, marginTop: 1, borderTopLeftRadius: 0, borderTopRightRadius: 0 },
-  noData: { color: t.textMuted, paddingVertical: 8 },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12 },
+  noData: { color: t.textMuted, paddingVertical: space.sm },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: space.md },
   statItem: { alignItems: 'center' },
-  statNumber: { fontWeight: '700', color: t.textPrimary },
-  statUnit: { color: t.textMuted, marginTop: 2 },
-  rowDivider: { backgroundColor: t.divider, marginVertical: 8 },
+  statNumber: { fontWeight: fontWeight.bold, color: t.textPrimary },
+  statUnit: { color: t.textMuted, marginTop: space.xxs },
+  rowDivider: { backgroundColor: t.divider, marginVertical: space.sm },
   subRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: space.sm,
   },
-  subInfo: { flex: 1, marginRight: 12 },
-  subType: { fontWeight: '500' },
-  subDate: { color: t.textMuted, marginTop: 2 },
+  subInfo: { flex: 1, marginRight: space.md },
+  subType: { fontWeight: fontWeight.medium },
+  subDate: { color: t.textMuted, marginTop: space.xxs },
 });

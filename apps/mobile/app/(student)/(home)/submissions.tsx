@@ -10,7 +10,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 import type { SubmissionStatus } from '@ambo/database';
 
 const FILTERS: SubmissionStatus[] = ['Approved', 'Pending', 'Denied'];
@@ -109,15 +109,15 @@ export default function StudentSubmissions() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  content: { padding: 16, paddingBottom: 32 },
-  emptyContent: { flexGrow: 1, padding: 16 },
-  filterRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-  chip: { borderRadius: 16 },
-  submissionCard: { marginBottom: 8, backgroundColor: t.surface, borderWidth: 1, borderColor: t.border },
-  submissionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  submissionType: { fontWeight: '600', flex: 1, marginRight: 8 },
-  submissionDetails: { flexDirection: 'row', gap: 16 },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  emptyContent: { flexGrow: 1, padding: space.lg },
+  filterRow: { flexDirection: 'row', gap: space.sm, marginBottom: space.lg },
+  chip: { borderRadius: radius.lg },
+  submissionCard: { marginBottom: space.sm, backgroundColor: t.surface, borderWidth: 1, borderColor: t.border },
+  submissionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: space.sm },
+  submissionType: { fontWeight: fontWeight.semibold, flex: 1, marginRight: space.sm },
+  submissionDetails: { flexDirection: 'row', gap: space.lg },
   detailText: { color: t.textSecondary },
-  feedbackRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: t.divider },
+  feedbackRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.sm, marginTop: space.sm, paddingTop: space.sm, borderTopWidth: 1, borderTopColor: t.divider },
   feedbackText: { color: t.textSecondary, flex: 1 },
 });

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useNetwork } from '@/providers/NetworkProvider';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export function OfflineBanner() {
   const { isOffline } = useNetwork();
@@ -22,14 +22,14 @@ export function OfflineBanner() {
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   banner: {
     backgroundColor: t.statusWarnFg,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: space.sm,
+    paddingHorizontal: space.lg,
     alignItems: 'center',
   },
   text: {
     color: t.onAccent,
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
     textAlign: 'center',
   },
 });

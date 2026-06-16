@@ -3,7 +3,7 @@ import { View, StyleSheet, Linking, Platform, type ViewStyle } from 'react-nativ
 import { Card, Text, Button, ActivityIndicator } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 /**
  * Presentational push-notification permission card. The permission status and
@@ -87,12 +87,12 @@ export function PushNotificationsCard({
 
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
-    pushHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+    pushHeader: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.md },
     pushInfo: { flex: 1 },
-    pushTitle: { fontWeight: '600' },
+    pushTitle: { fontWeight: fontWeight.semibold },
     pushSubtitle: { color: t.textSecondary },
-    pushLoader: { marginVertical: 8 },
-    pushStatus: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    pushStatusText: { color: t.statusGoodFg, fontWeight: '600' },
-    pushEnableButton: { borderRadius: 8 },
+    pushLoader: { marginVertical: space.sm },
+    pushStatus: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+    pushStatusText: { color: t.statusGoodFg, fontWeight: fontWeight.semibold },
+    pushEnableButton: { borderRadius: radius.sm },
   });

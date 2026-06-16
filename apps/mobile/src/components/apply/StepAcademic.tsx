@@ -5,7 +5,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Check, Upload, FileText, X } from 'lucide-react-native';
 import type { ApplicationData } from '@ambo/database/application-types';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || '';
 
@@ -110,17 +110,17 @@ export default function StepAcademic({ data, onChange }: StepAcademicProps) {
 }
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
-  container: { gap: 8 },
+  container: { gap: space.sm },
   input: { backgroundColor: t.surface },
   hint: { color: t.textMuted },
-  sectionLabel: { fontWeight: '600', marginTop: 12 },
+  sectionLabel: { fontWeight: fontWeight.semibold, marginTop: space.md },
   uploadedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    padding: 12,
+    gap: space.md,
+    padding: space.md,
     backgroundColor: t.surfaceVariant,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     borderWidth: 1,
     borderColor: t.border,
   },

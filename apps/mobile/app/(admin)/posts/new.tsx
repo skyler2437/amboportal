@@ -11,7 +11,7 @@ import { PostAttachmentBar } from '@/components/PostAttachmentBar';
 import { type PickedAsset } from '@/lib/attachments';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export default function NewPost() {
   const router = useRouter();
@@ -61,7 +61,7 @@ export default function NewPost() {
     >
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + space.sm }]}>
         <Pressable onPress={() => router.back()} hitSlop={8} accessibilityLabel="Go back" style={styles.backBtn}>
           <ChevronLeft size={28} color={tokens.accent} />
         </Pressable>
@@ -104,15 +104,15 @@ const makeStyles = (t: SemanticTokens) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: 12,
-      paddingBottom: 8,
+      paddingHorizontal: space.md,
+      paddingBottom: space.sm,
       backgroundColor: t.surfaceElevated,
     },
-    backBtn: { padding: 4 },
-    postBtn: { backgroundColor: t.accentSolid, borderRadius: 999, paddingHorizontal: 18, paddingVertical: 6 },
+    backBtn: { padding: space.xs },
+    postBtn: { backgroundColor: t.accentSolid, borderRadius: radius.pill, paddingHorizontal: space.lg, paddingVertical: space.sm },
     postBtnDisabled: { opacity: 0.4 },
-    postBtnText: { color: t.onAccent, fontWeight: '600', fontSize: 14 },
-    body: { flex: 1, flexDirection: 'row', gap: 10, padding: 16 },
+    postBtnText: { color: t.onAccent, fontWeight: fontWeight.semibold, fontSize: fontSize.md },
+    body: { flex: 1, flexDirection: 'row', gap: space.md, padding: space.lg },
     avatarFallback: { backgroundColor: t.surfaceVariant },
-    input: { flex: 1, fontSize: 16, color: t.textPrimary, paddingTop: 6, textAlignVertical: 'top' },
+    input: { flex: 1, fontSize: fontSize.lg, color: t.textPrimary, paddingTop: space.sm, textAlignVertical: 'top' },
   });

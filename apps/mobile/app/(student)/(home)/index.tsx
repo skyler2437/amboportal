@@ -11,7 +11,7 @@ import { hapticMedium } from '@/lib/haptics';
 import { ErrorState } from '@/components/ErrorState';
 import { CheddarRain } from '@/components/CheddarRain';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface UpcomingEvent {
   id: string;
@@ -196,25 +196,25 @@ export default function StudentDashboard() {
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
   flex: { flex: 1 },
-  cheddarEmoji: { fontSize: 20, marginRight: 4 },
-  content: { padding: 16, paddingBottom: 32 },
-  header: { gap: 16, marginBottom: 8 },
-  statsGrid: { gap: 12 },
-  statCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: t.surface, borderWidth: 1, borderColor: t.border, borderRadius: 12, paddingVertical: 16, paddingHorizontal: 16, overflow: 'hidden' },
-  statValue: { fontWeight: '700' },
-  statLabel: { flex: 1, color: t.textPrimary, fontWeight: '500' },
-  actionButton: { borderRadius: 12 },
-  divider: { marginVertical: 4 },
+  cheddarEmoji: { fontSize: fontSize.xl, marginRight: space.xs },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  header: { gap: space.lg, marginBottom: space.sm },
+  statsGrid: { gap: space.md },
+  statCard: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: t.surface, borderWidth: 1, borderColor: t.border, borderRadius: radius.md, paddingVertical: space.lg, paddingHorizontal: space.lg, overflow: 'hidden' },
+  statValue: { fontWeight: fontWeight.bold },
+  statLabel: { flex: 1, color: t.textPrimary, fontWeight: fontWeight.medium },
+  actionButton: { borderRadius: radius.md },
+  divider: { marginVertical: space.xs },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { fontWeight: '600' },
-  seeAllText: { color: t.accent, fontWeight: '500' },
-  eventCard: { marginBottom: 8, backgroundColor: t.surface, borderWidth: 1, borderColor: t.border },
-  eventContent: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sectionTitle: { fontWeight: fontWeight.semibold },
+  seeAllText: { color: t.accent, fontWeight: fontWeight.medium },
+  eventCard: { marginBottom: space.sm, backgroundColor: t.surface, borderWidth: 1, borderColor: t.border },
+  eventContent: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   eventDate: { alignItems: 'center', width: 44 },
-  eventMonth: { color: t.statusBadFg, fontSize: 11, fontWeight: '700' },
-  eventDay: { fontWeight: '700', color: t.textPrimary, lineHeight: 28 },
+  eventMonth: { color: t.statusBadFg, fontSize: fontSize.xxs, fontWeight: fontWeight.bold },
+  eventDay: { fontWeight: fontWeight.bold, color: t.textPrimary, lineHeight: 28 },
   eventInfo: { flex: 1 },
-  eventTitle: { fontWeight: '600', marginBottom: 4 },
-  eventMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  eventTitle: { fontWeight: fontWeight.semibold, marginBottom: space.xs },
+  eventMeta: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   eventMetaText: { color: t.textSecondary },
 });

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, ScrollView, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 import { Text, useTheme, type MD3Theme } from 'react-native-paper';
 import { MemberPill, MemberPillUser } from '@/components/MemberPill';
+import { space, fontWeight } from '@/lib/theme';
 
 export type MemberUser = MemberPillUser;
 
@@ -49,11 +50,11 @@ export function MemberPickerGrid({
 const makeStyles = (paper: MD3Theme) =>
   StyleSheet.create({
     container: { flex: 1 },
-    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 16, paddingBottom: 8 },
+    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, padding: space.lg, paddingBottom: space.sm },
     count: {
       color: paper.colors.onSurfaceVariant,
-      fontWeight: '500',
-      paddingHorizontal: 16,
+      fontWeight: fontWeight.medium,
+      paddingHorizontal: space.lg,
       minHeight: 18,
     },
   });

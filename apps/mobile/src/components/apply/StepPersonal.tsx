@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { TextInput, Text, Menu, Button } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, type SemanticTokens } from '@/lib/theme';
 
 const GRADE_OPTIONS = [
   { label: 'Freshman (9th)', value: '9' },
@@ -88,9 +88,9 @@ export default function StepPersonal({ data, onChange }: StepPersonalProps) {
 }
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
-  container: { gap: 10 },
+  container: { gap: space.md },
   input: { backgroundColor: t.surface },
-  label: { color: t.textSecondary, marginTop: 4 },
+  label: { color: t.textSecondary, marginTop: space.xs },
   menuButton: { justifyContent: 'flex-start' },
   menuButtonOuter: { borderColor: t.border },
 });

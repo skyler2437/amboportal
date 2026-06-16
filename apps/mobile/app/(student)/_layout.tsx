@@ -3,6 +3,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useBadgeCounts } from '@/hooks/useBadgeCounts';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useAppTheme } from '@/lib/ThemeProvider';
+import { fontSize } from '@/lib/theme';
 import { LayoutDashboard, Calendar, MessageSquare, MessageCircle, UserCircle } from 'lucide-react-native';
 
 export default function StudentLayout() {
@@ -80,7 +81,7 @@ export default function StudentLayout() {
             <MessageCircle size={size} color={color} />
           ),
           tabBarBadge: unreadChats > 0 ? unreadChats : undefined,
-          tabBarBadgeStyle: { backgroundColor: tokens.accentSolid, fontSize: 10 },
+          tabBarBadgeStyle: { backgroundColor: tokens.accentSolid, fontSize: fontSize.xxs },
         }}
       />
       <Tabs.Screen

@@ -16,7 +16,7 @@ import { useChatReadStore } from '@/stores/chatReadStore';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { formatMessageDateLabel, getMessageDateKey } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 import type { AppRole } from '@/lib/roles';
 
 type ListItem =
@@ -287,16 +287,16 @@ export function ChatThreadScreen({ role }: { role: AppRole }) {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.surface },
-  list: { paddingVertical: 12 },
+  list: { paddingVertical: space.md },
   emptyContainer: { flex: 1 },
   loadOlderBtn: {
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: space.md,
   },
   loadOlderText: {
     color: t.accent,
-    fontWeight: '600',
-    fontSize: 13,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.sm,
   },
   scrollToBottomBtn: {
     position: 'absolute',
@@ -304,7 +304,7 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     bottom: 80,
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: radius.lg,
     backgroundColor: t.accentSolid,
     alignItems: 'center',
     justifyContent: 'center',

@@ -4,7 +4,7 @@ import { Card, Text, TextInput, Button } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { supabase } from '@/lib/supabase';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL;
 
@@ -140,10 +140,10 @@ export function ChangePasswordCard() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   card: { backgroundColor: t.surfaceVariant },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.lg },
   headerInfo: { flex: 1 },
-  title: { fontWeight: '600' },
+  title: { fontWeight: fontWeight.semibold },
   subtitle: { color: t.textSecondary },
-  input: { backgroundColor: t.surface, marginBottom: 10 },
-  button: { borderRadius: 8, marginTop: 4 },
+  input: { backgroundColor: t.surface, marginBottom: space.md },
+  button: { borderRadius: radius.sm, marginTop: space.xs },
 });

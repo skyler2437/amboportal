@@ -6,7 +6,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, type SemanticTokens } from '@/lib/theme';
 
 export default function StudentResources() {
   const { resources, loading, error, refetch } = useResources();
@@ -40,6 +40,6 @@ export default function StudentResources() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  list: { padding: 16 },
-  emptyContainer: { flex: 1, padding: 16 },
+  list: { padding: space.lg },
+  emptyContainer: { flex: 1, padding: space.lg },
 });

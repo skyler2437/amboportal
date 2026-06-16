@@ -9,7 +9,7 @@ import { EventListSkeleton } from '@/components/SkeletonLoader';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import { getRsvpTint, getDefaultCardTint, type SemanticTokens } from '@/lib/theme';
+import { getRsvpTint, getDefaultCardTint, space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 import { RSVP_ICON, getRsvpDisplay } from '@/lib/rsvp';
 import { formatEventDate, formatEventTime } from '@/lib/format';
 import type { AppRole } from '@/lib/roles';
@@ -178,37 +178,37 @@ export function EventsListScreen({ role }: { role: AppRole }) {
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
     outerContainer: { flex: 1, backgroundColor: t.background },
-    filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 },
+    filterRow: { flexDirection: 'row', gap: space.sm, paddingHorizontal: space.lg, paddingTop: space.md, paddingBottom: space.xs },
     filterChip: {},
-    content: { padding: 16, paddingBottom: 32 },
+    content: { padding: space.lg, paddingBottom: space.xxl },
     sectionHeader: {
-      fontWeight: '600',
+      fontWeight: fontWeight.semibold,
       color: t.textPrimary,
-      paddingVertical: 8,
+      paddingVertical: space.sm,
       backgroundColor: t.background,
     },
     eventCard: {
-      marginBottom: 10,
+      marginBottom: space.md,
       borderWidth: 1,
-      borderRadius: 12,
+      borderRadius: radius.md,
       overflow: 'hidden',
       flexDirection: 'row',
     },
     accentStripe: { width: 4 },
-    eventCardInner: { flex: 1, padding: 14 },
-    eventCardWithAccent: { paddingLeft: 12 },
-    eventTitle: { fontWeight: '600', marginBottom: 6 },
-    eventMeta: { flexDirection: 'row', gap: 16, marginBottom: 4 },
-    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    eventCardInner: { flex: 1, padding: space.lg },
+    eventCardWithAccent: { paddingLeft: space.md },
+    eventTitle: { fontWeight: fontWeight.semibold, marginBottom: space.sm },
+    eventMeta: { flexDirection: 'row', gap: space.lg, marginBottom: space.xs },
+    metaItem: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
     metaText: { color: t.textSecondary },
-    myRsvpRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
-    myRsvpText: { fontWeight: '600', fontSize: 12 },
-    eventDescription: { color: t.textMuted, marginTop: 2 },
+    myRsvpRow: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginTop: space.xs },
+    myRsvpText: { fontWeight: fontWeight.semibold, fontSize: fontSize.xs },
+    eventDescription: { color: t.textMuted, marginTop: space.xxs },
     fab: {
       position: 'absolute',
       right: 16,
       bottom: 16,
       backgroundColor: t.accentSolid,
-      borderRadius: 16,
+      borderRadius: radius.lg,
     },
   });

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, type SemanticTokens } from '@/lib/theme';
 
 /**
  * Presentational form for the editable profile fields (first/last name, email,
@@ -93,7 +93,7 @@ export function ProfileFieldsForm({
 
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
-    formSection: { gap: 12 },
+    formSection: { gap: space.md },
     input: { backgroundColor: t.surface },
-    saveButton: { borderRadius: 12, marginTop: 4 },
+    saveButton: { borderRadius: radius.md, marginTop: space.xs },
   });

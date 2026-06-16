@@ -16,7 +16,7 @@ import { ChangePasswordCard } from '@/components/ChangePasswordCard';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { getInitials } from '@/lib/format';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, fontWeight, type SemanticTokens } from '@/lib/theme';
 import { ProfileFieldsForm } from '@/components/profile/ProfileFieldsForm';
 import { PushNotificationsCard } from '@/components/profile/PushNotificationsCard';
 import { NotificationPreferencesCard } from '@/components/profile/NotificationPreferencesCard';
@@ -307,11 +307,11 @@ export default function StudentProfile() {
 
       {/* Biometric Lock */}
       {biometricAvailable && (
-        <Card style={[styles.card, { marginTop: 12 }]}>
+        <Card style={[styles.card, { marginTop: space.md }]}>
           <Card.Content>
             <View style={styles.switchRow}>
               <View style={{ flex: 1 }}>
-                <Text variant="bodyMedium" style={{ fontWeight: '600' }}>Biometric Lock</Text>
+                <Text variant="bodyMedium" style={{ fontWeight: fontWeight.semibold }}>Biometric Lock</Text>
                 <Text variant="bodySmall" style={{ color: tokens.textSecondary }}>
                   Require Face ID or fingerprint when returning to the app
                 </Text>
@@ -342,22 +342,23 @@ export default function StudentProfile() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  content: { padding: 16, paddingBottom: 48 },
-  avatarSection: { alignItems: 'center', gap: 8, paddingVertical: 16 },
-  name: { fontWeight: '700' },
-  divider: { marginVertical: 16 },
+  // eslint-disable-next-line no-restricted-syntax -- intentional
+  content: { padding: space.lg, paddingBottom: 48 },
+  avatarSection: { alignItems: 'center', gap: space.sm, paddingVertical: space.lg },
+  name: { fontWeight: fontWeight.bold },
+  divider: { marginVertical: space.lg },
   sectionLabel: {
     color: t.textMuted,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     letterSpacing: 0.8,
-    marginBottom: 12,
+    marginBottom: space.md,
   },
   pushCard: { backgroundColor: t.surface },
-  prefsLabel: { fontWeight: '600', marginBottom: 8, marginTop: 12, color: t.textMuted, letterSpacing: 0.8 },
+  prefsLabel: { fontWeight: fontWeight.semibold, marginBottom: space.sm, marginTop: space.md, color: t.textMuted, letterSpacing: 0.8 },
   prefsCard: { backgroundColor: t.surface },
   gcalCard: { backgroundColor: t.surface },
-  switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   card: { backgroundColor: t.surface },
   supportCard: { backgroundColor: t.surface },
-  versionText: { color: t.textMuted, textAlign: 'center', marginTop: 16 },
+  versionText: { color: t.textMuted, textAlign: 'center', marginTop: space.lg },
 });

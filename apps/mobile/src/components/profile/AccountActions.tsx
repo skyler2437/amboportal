@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, type SemanticTokens } from '@/lib/theme';
 
 /**
  * Presentational Sign Out + Delete Account button block. The actual sign-out and
@@ -47,6 +47,6 @@ export function AccountActions({ onSignOut, onDeleteAccount, deleting }: Account
 
 const makeStyles = (_t: SemanticTokens) =>
   StyleSheet.create({
-    signOutButton: { borderRadius: 12 },
-    deleteButton: { marginTop: 12 },
+    signOutButton: { borderRadius: radius.md },
+    deleteButton: { marginTop: space.md },
   });

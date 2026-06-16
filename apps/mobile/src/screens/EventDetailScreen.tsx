@@ -29,7 +29,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { EventDateTimePicker } from '@/components/EventDateTimePicker';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 import type { AppRole } from '@/lib/roles';
 import type { EventDetails, RSVPStatus } from '@ambo/database';
 
@@ -70,7 +70,7 @@ function RsvpButton({ label, icon, selected, color, bgColor, borderColor, count,
       <MaterialCommunityIcons name={icon as any} size={18} color={selected ? color : tokens.textSecondary} />
       <Text
         variant="bodySmall"
-        style={[styles.rsvpBtnText, { color: selected ? color : unselectedColor, fontWeight: selected ? '700' : '500' }]}
+        style={[styles.rsvpBtnText, { color: selected ? color : unselectedColor, fontWeight: selected ? fontWeight.bold : fontWeight.medium }]}
       >
         {label}{count !== undefined && count > 0 ? ` (${count})` : ''}
       </Text>
@@ -319,7 +319,7 @@ export function EventDetailScreen({ role }: { role: AppRole }) {
     <View
       style={[
         isAdmin ? styles.commentInputDocked : styles.commentInputInline,
-        isAdmin && { paddingBottom: Math.max(8, insets.bottom) },
+        isAdmin && { paddingBottom: Math.max(space.sm, insets.bottom) },
       ]}
     >
       <TextInput
@@ -658,48 +658,48 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   containerAdmin: { flex: 1, backgroundColor: t.surface },
   containerStudent: { flex: 1, backgroundColor: t.background },
   // content paddingBottom drifted (admin: 16, student: 32); preserved per-role.
-  contentAdmin: { padding: 16, paddingBottom: 16 },
-  contentStudent: { padding: 16, paddingBottom: 32 },
-  adminActions: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
+  contentAdmin: { padding: space.lg, paddingBottom: space.lg },
+  contentStudent: { padding: space.lg, paddingBottom: space.xxl },
+  adminActions: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.lg },
   actionSpacer: { flex: 1 },
-  actionRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 4 },
-  editSection: { gap: 12, marginBottom: 8 },
+  actionRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: space.xs },
+  editSection: { gap: space.md, marginBottom: space.sm },
   editInput: { backgroundColor: t.surface },
-  saveButton: { borderRadius: 12, marginTop: 4 },
-  title: { fontWeight: '700', marginBottom: 12 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 },
-  uniformCard: { backgroundColor: t.accentContainer, marginTop: 12 },
-  uniformContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  saveButton: { borderRadius: radius.md, marginTop: space.xs },
+  title: { fontWeight: fontWeight.bold, marginBottom: space.md },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.sm },
+  uniformCard: { backgroundColor: t.accentContainer, marginTop: space.md },
+  uniformContent: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   uniformText: { color: t.accent },
-  divider: { marginVertical: 16 },
+  divider: { marginVertical: space.lg },
   description: { color: t.textSecondary, lineHeight: 22 },
-  sectionTitle: { fontWeight: '600', marginBottom: 12 },
+  sectionTitle: { fontWeight: fontWeight.semibold, marginBottom: space.md },
 
   // RSVP section
-  rsvpSection: { gap: 12, marginBottom: 12 },
-  rsvpGroupLabel: { color: t.textSecondary, fontWeight: '500' },
-  rsvpBtnRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  rsvpSection: { gap: space.md, marginBottom: space.md },
+  rsvpGroupLabel: { color: t.textSecondary, fontWeight: fontWeight.medium },
+  rsvpBtnRow: { flexDirection: 'row', gap: space.sm, marginBottom: space.md },
   rsvpBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
-    borderRadius: 10,
+    gap: space.sm,
+    paddingVertical: space.md,
+    borderRadius: radius.md,
     borderWidth: 1.5,
   },
-  rsvpBtnText: { fontSize: 13 },
+  rsvpBtnText: { fontSize: fontSize.sm },
 
   // Custom option chips
-  optionChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  optionChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   optionChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    gap: space.xs,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    borderRadius: radius.lg,
     borderWidth: 1.5,
     borderColor: t.border,
     backgroundColor: t.surface,
@@ -708,25 +708,25 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     backgroundColor: t.statusGoodBg,
     borderColor: t.statusGoodBorder,
   },
-  optionChipText: { fontSize: 13, fontWeight: '500' },
-  optionChipTextSelected: { color: t.statusGoodFg, fontWeight: '700' },
+  optionChipText: { fontSize: fontSize.sm, fontWeight: fontWeight.medium },
+  optionChipTextSelected: { color: t.statusGoodFg, fontWeight: fontWeight.bold },
 
   // Attendees
-  attendeesSection: { gap: 6, marginBottom: 4 },
-  attendeeGroup: { flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
-  attendeesLabel: { fontWeight: '600', color: t.textSecondary },
+  attendeesSection: { gap: space.sm, marginBottom: space.xs },
+  attendeeGroup: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
+  attendeesLabel: { fontWeight: fontWeight.semibold, color: t.textSecondary },
   attendeesText: { color: t.textSecondary, flex: 1 },
 
   // Comments
-  comment: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  comment: { flexDirection: 'row', gap: space.md, marginBottom: space.md },
   commentAvatar: { backgroundColor: t.surfaceVariant },
   commentBody: { flex: 1 },
-  commentAuthor: { fontWeight: '600', marginBottom: 2 },
-  commentTime: { color: t.textMuted, marginTop: 4 },
+  commentAuthor: { fontWeight: fontWeight.semibold, marginBottom: space.xxs },
+  commentTime: { color: t.textMuted, marginTop: space.xs },
   // Admin: sticky footer that docks to the keyboard (rendered outside ScrollView).
-  commentInputDocked: { flexDirection: 'row', alignItems: 'flex-end', gap: 4, paddingHorizontal: 8, paddingTop: 8, backgroundColor: t.surface, borderTopWidth: 1, borderTopColor: t.border },
+  commentInputDocked: { flexDirection: 'row', alignItems: 'flex-end', gap: space.xs, paddingHorizontal: space.sm, paddingTop: space.sm, backgroundColor: t.surface, borderTopWidth: 1, borderTopColor: t.border },
   commentTextInputDocked: { flex: 1, backgroundColor: t.surface, maxHeight: 100 },
   // Student: inline input at the end of the ScrollView.
-  commentInputInline: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
+  commentInputInline: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginTop: space.sm },
   commentTextInput: { flex: 1, backgroundColor: t.surface },
 });

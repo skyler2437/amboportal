@@ -3,7 +3,7 @@ import { View, StyleSheet, type ViewStyle } from 'react-native';
 import { Card, Text, Button } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 /**
  * Presentational "Subscribe to Calendar" card. The subscribe handler (which
@@ -45,9 +45,9 @@ export function CalendarSubscribeCard({ onSubscribe, cardStyle }: CalendarSubscr
 
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
-    gcalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
+    gcalHeader: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.md },
     gcalInfo: { flex: 1 },
-    gcalTitle: { fontWeight: '600' },
+    gcalTitle: { fontWeight: fontWeight.semibold },
     gcalSubtitle: { color: t.textSecondary },
-    gcalConnectButton: { borderRadius: 8 },
+    gcalConnectButton: { borderRadius: radius.sm },
   });

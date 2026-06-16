@@ -3,7 +3,7 @@ import { View, StyleSheet, type ViewStyle } from 'react-native';
 import { Card, Text, Divider, Switch } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, type SemanticTokens } from '@/lib/theme';
 import type { NotificationPreferences } from '@/hooks/useNotificationPreferences';
 
 /**
@@ -90,12 +90,12 @@ export function NotificationPreferencesCard({
 
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
-    prefsContent: { gap: 4 },
+    prefsContent: { gap: space.xs },
     prefRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 8,
+      paddingVertical: space.sm,
     },
-    prefInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    prefInfo: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   });

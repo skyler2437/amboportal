@@ -13,7 +13,7 @@ import {
   type PickedAsset,
 } from '@/lib/attachments';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, type SemanticTokens } from '@/lib/theme';
 
 interface PostAttachmentBarProps {
   attachments: PickedAsset[];
@@ -106,10 +106,10 @@ export function PostAttachmentBar({ attachments, onChange }: PostAttachmentBarPr
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { borderTopWidth: 1, borderTopColor: t.border, backgroundColor: t.surface },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12, paddingBottom: 0 },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: '100%', backgroundColor: t.surfaceVariant, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, padding: space.md, paddingBottom: 0 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: space.sm, maxWidth: '100%', backgroundColor: t.surfaceVariant, borderRadius: radius.sm, paddingHorizontal: space.sm, paddingVertical: space.xs },
   chipText: { color: t.textSecondary, flexShrink: 1 },
   chipSize: { color: t.textMuted },
-  bar: { flexDirection: 'row', alignItems: 'center', gap: 20, paddingHorizontal: 16, paddingVertical: 12 },
+  bar: { flexDirection: 'row', alignItems: 'center', gap: space.xl, paddingHorizontal: space.lg, paddingVertical: space.md },
   iconBtn: {},
 });

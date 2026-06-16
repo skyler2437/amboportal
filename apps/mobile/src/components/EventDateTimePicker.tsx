@@ -5,7 +5,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 type ActiveField =
   | 'startDate'
@@ -270,27 +270,27 @@ export function EventDateTimePicker({
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
     container: {
-      marginVertical: 8,
+      marginVertical: space.sm,
     },
     row: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 12,
+      paddingVertical: space.md,
     },
     label: {
-      fontWeight: '600',
+      fontWeight: fontWeight.semibold,
       color: t.textPrimary,
     },
     pills: {
       flexDirection: 'row',
-      gap: 8,
+      gap: space.sm,
     },
     pill: {
       backgroundColor: t.surfaceVariant,
-      borderRadius: 8,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
+      borderRadius: radius.sm,
+      paddingHorizontal: space.lg,
+      paddingVertical: space.sm,
       borderWidth: 1,
       borderColor: t.border,
     },
@@ -299,9 +299,9 @@ const makeStyles = (t: SemanticTokens) =>
       borderColor: t.accentSolid,
     },
     pillText: {
-      fontSize: 15,
+      fontSize: fontSize.lg,
       color: t.textPrimary,
-      fontWeight: '500',
+      fontWeight: fontWeight.medium,
     },
     pillTextActive: {
       color: t.onAccent,
@@ -312,7 +312,7 @@ const makeStyles = (t: SemanticTokens) =>
     },
     pickerContainer: {
       alignItems: 'center',
-      paddingVertical: 8,
+      paddingVertical: space.sm,
     },
     iosPicker: {
       height: 'auto' as any,

@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { Users, FileText, Clock, LogOut } from 'lucide-react-native';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export default function WelcomeScreen() {
   const { userRole, signOut, refreshRole } = useAuth();
@@ -103,77 +103,77 @@ export default function WelcomeScreen() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: t.background },
-  container: { flexGrow: 1, padding: 24, paddingTop: 48 },
+  container: { flexGrow: 1, padding: space.xl, paddingTop: space.xxl },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
+    fontSize: fontSize.xxl,
+    fontWeight: fontWeight.bold,
     textAlign: 'center',
     color: t.textPrimary,
-    marginBottom: 8,
+    marginBottom: space.sm,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: fontSize.lg,
     color: t.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: space.xxl,
   },
   card: {
     backgroundColor: t.surface,
-    borderRadius: 12,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: t.border,
-    padding: 20,
-    marginBottom: 16,
+    padding: space.xl,
+    marginBottom: space.lg,
   },
   cardIcon: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: radius.lg,
     backgroundColor: t.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: space.md,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.semibold,
     color: t.textPrimary,
-    marginBottom: 8,
+    marginBottom: space.sm,
   },
   cardBody: {
-    fontSize: 15,
+    fontSize: fontSize.lg,
     color: t.textSecondary,
     lineHeight: 22,
   },
   contactText: {
-    fontSize: 15,
+    fontSize: fontSize.lg,
     color: t.secondary,
-    fontWeight: '600',
-    marginTop: 8,
+    fontWeight: fontWeight.semibold,
+    marginTop: space.sm,
   },
   applyButton: {
     backgroundColor: t.accentSolid,
-    borderRadius: 8,
-    padding: 14,
+    borderRadius: radius.sm,
+    padding: space.lg,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: space.lg,
   },
   applyButtonText: {
     color: t.onAccent,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
   },
   signOutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 24,
-    padding: 12,
+    gap: space.sm,
+    marginTop: space.xl,
+    padding: space.md,
   },
   signOutText: {
-    fontSize: 15,
+    fontSize: fontSize.lg,
     color: t.textSecondary,
-    fontWeight: '500',
+    fontWeight: fontWeight.medium,
   },
 });

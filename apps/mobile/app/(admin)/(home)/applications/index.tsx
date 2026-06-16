@@ -6,7 +6,7 @@ import { useApplications, Application, ApplicationStatus } from '@/hooks/useAppl
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import { getApplicationStatusStyles } from '@/lib/theme';
+import { getApplicationStatusStyles, space, radius, fontSize, fontWeight } from '@/lib/theme';
 import { getInitials } from '@/lib/format';
 import type { SemanticTokens } from '@/lib/theme';
 
@@ -118,20 +118,20 @@ export default function ApplicationsList() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  header: { backgroundColor: t.surfaceElevated, padding: 16, gap: 12, borderBottomWidth: 1, borderBottomColor: t.border },
+  header: { backgroundColor: t.surfaceElevated, padding: space.lg, gap: space.md, borderBottomWidth: 1, borderBottomColor: t.border },
   searchInput: { backgroundColor: t.surface },
-  filters: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  list: { padding: 16 },
-  emptyContainer: { flex: 1, padding: 16 },
-  card: { marginBottom: 10 },
+  filters: { flexDirection: 'row', gap: space.sm, flexWrap: 'wrap' },
+  list: { padding: space.lg },
+  emptyContainer: { flex: 1, padding: space.lg },
+  card: { marginBottom: space.md },
   cardPressed: { opacity: 0.7 },
   cardInner: { backgroundColor: t.surface },
-  cardContent: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cardContent: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   avatar: { backgroundColor: t.surfaceVariant },
   cardInfo: { flex: 1 },
-  name: { fontWeight: '600' },
+  name: { fontWeight: fontWeight.semibold },
   email: { color: t.textSecondary },
-  date: { color: t.textMuted, marginTop: 2 },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  statusText: { fontSize: 12, fontWeight: '600' },
+  date: { color: t.textMuted, marginTop: space.xxs },
+  statusBadge: { paddingHorizontal: space.md, paddingVertical: space.xs, borderRadius: radius.md },
+  statusText: { fontSize: fontSize.xs, fontWeight: fontWeight.semibold },
 });

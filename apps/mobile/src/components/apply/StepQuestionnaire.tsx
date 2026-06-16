@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, type SemanticTokens } from '@/lib/theme';
 
 const QUESTIONS: { field: keyof ApplicationData; label: string }[] = [
   { field: 'q_involvement', label: 'Please list your current or past involvement...' },
@@ -43,6 +43,6 @@ export default function StepQuestionnaire({ data, onChange }: StepQuestionnaireP
 }
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
-  container: { gap: 12 },
+  container: { gap: space.md },
   input: { backgroundColor: t.surface, minHeight: 80 },
 });

@@ -5,7 +5,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '@/providers/AuthProvider';
 import { CheddarRain } from '@/components/CheddarRain';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export default function LoginScreen() {
   const { signIn, signInWithApple } = useAuth();
@@ -143,41 +143,41 @@ export default function LoginScreen() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   flex: { flex: 1, backgroundColor: t.background },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 28, fontWeight: '700', textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: t.textSecondary, textAlign: 'center', marginBottom: 32 },
+  container: { flexGrow: 1, justifyContent: 'center', padding: space.xl },
+  title: { fontSize: fontSize.xxl, fontWeight: fontWeight.bold, textAlign: 'center', marginBottom: space.sm },
+  subtitle: { fontSize: fontSize.lg, color: t.textSecondary, textAlign: 'center', marginBottom: space.xxl },
   input: {
-    borderWidth: 1, borderColor: t.border, borderRadius: 8, padding: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: t.surface,
+    borderWidth: 1, borderColor: t.border, borderRadius: radius.sm, padding: space.lg,
+    fontSize: fontSize.lg, marginBottom: space.md, backgroundColor: t.surface,
   },
   button: {
-    backgroundColor: t.accentSolid, borderRadius: 8, padding: 16,
-    alignItems: 'center', marginTop: 8,
+    backgroundColor: t.accentSolid, borderRadius: radius.sm, padding: space.lg,
+    alignItems: 'center', marginTop: space.sm,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: t.onAccent, fontSize: 16, fontWeight: '600' },
+  buttonText: { color: t.onAccent, fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
-    marginBottom: 4,
+    marginBottom: space.xs,
   },
   forgotPasswordText: {
-    fontSize: 14,
+    fontSize: fontSize.md,
     color: t.secondary,
   },
   createAccountButton: {
     alignItems: 'center',
-    marginTop: 20,
-    padding: 8,
+    marginTop: space.xl,
+    padding: space.sm,
   },
   createAccountText: {
-    fontSize: 15,
+    fontSize: fontSize.lg,
     color: t.secondary,
-    fontWeight: '500',
+    fontWeight: fontWeight.medium,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: space.xl,
   },
   dividerLine: {
     flex: 1,
@@ -185,8 +185,8 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     backgroundColor: t.border,
   },
   dividerText: {
-    marginHorizontal: 12,
-    fontSize: 13,
+    marginHorizontal: space.md,
+    fontSize: fontSize.sm,
     color: t.textMuted,
     textTransform: 'uppercase',
   },
@@ -196,11 +196,11 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   },
   cheddarButton: {
     alignItems: 'center',
-    marginTop: 16,
-    padding: 8,
+    marginTop: space.lg,
+    padding: space.sm,
   },
   cheddarText: {
-    fontSize: 14,
+    fontSize: fontSize.md,
     color: t.textMuted,
   },
 });

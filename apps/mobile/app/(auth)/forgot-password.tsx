@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000';
 
@@ -107,33 +107,33 @@ export default function ForgotPasswordScreen() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   flex: { flex: 1, backgroundColor: t.background },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 12, color: t.textPrimary },
+  container: { flexGrow: 1, justifyContent: 'center', padding: space.xl },
+  title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, textAlign: 'center', marginBottom: space.md, color: t.textPrimary },
   description: {
-    fontSize: 15,
+    fontSize: fontSize.lg,
     color: t.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: space.xl,
     lineHeight: 22,
   },
   input: {
-    borderWidth: 1, borderColor: t.border, borderRadius: 8, padding: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: t.surfaceVariant, color: t.textPrimary,
+    borderWidth: 1, borderColor: t.border, borderRadius: radius.sm, padding: space.lg,
+    fontSize: fontSize.lg, marginBottom: space.md, backgroundColor: t.surfaceVariant, color: t.textPrimary,
   },
   button: {
-    backgroundColor: t.accentSolid, borderRadius: 8, padding: 16,
-    alignItems: 'center', marginTop: 8,
+    backgroundColor: t.accentSolid, borderRadius: radius.sm, padding: space.lg,
+    alignItems: 'center', marginTop: space.sm,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: t.onAccent, fontSize: 16, fontWeight: '600' },
+  buttonText: { color: t.onAccent, fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
   secondaryButton: {
     alignItems: 'center',
-    marginTop: 16,
-    padding: 12,
+    marginTop: space.lg,
+    padding: space.md,
   },
   secondaryButtonText: {
-    fontSize: 15,
+    fontSize: fontSize.lg,
     color: t.secondary,
-    fontWeight: '500',
+    fontWeight: fontWeight.medium,
   },
 });

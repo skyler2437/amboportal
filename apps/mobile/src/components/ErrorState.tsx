@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button, Icon } from 'react-native-paper';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface ErrorStateProps {
   message?: string;
@@ -38,11 +38,11 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-    gap: 12,
+    padding: space.xxl,
+    gap: space.md,
   },
   title: {
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     color: t.textPrimary,
     textAlign: 'center',
   },
@@ -51,7 +51,7 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: 8,
-    borderRadius: 8,
+    marginTop: space.sm,
+    borderRadius: radius.sm,
   },
 });

@@ -7,7 +7,7 @@ import { useChatGroups } from '@/hooks/useChatGroups';
 import { supabase } from '@/lib/supabase';
 import { MemberPickerGrid, MemberUser } from '@/components/MemberPickerGrid';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, type SemanticTokens } from '@/lib/theme';
 import type { AppRole } from '@/lib/roles';
 
 /**
@@ -95,13 +95,13 @@ export function NewChatScreen({ role }: { role: AppRole }) {
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: t.surface },
-    header: { padding: 16, paddingBottom: 8 },
+    header: { padding: space.lg, paddingBottom: space.sm },
     nameInput: { backgroundColor: t.surface },
     footer: {
-      padding: 16,
+      padding: space.lg,
       backgroundColor: t.surface,
       borderTopWidth: 1,
       borderTopColor: t.border,
     },
-    createButton: { borderRadius: 8 },
+    createButton: { borderRadius: radius.sm },
   });

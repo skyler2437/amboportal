@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { TextInput, Text } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface StepContactProps {
   data: ApplicationData;
@@ -33,9 +33,9 @@ export default function StepContact({ data, onChange }: StepContactProps) {
 }
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
-  container: { gap: 8 },
-  heading: { textAlign: 'center', fontWeight: '600' },
-  subtitle: { textAlign: 'center', color: t.textSecondary, marginBottom: 8 },
+  container: { gap: space.sm },
+  heading: { textAlign: 'center', fontWeight: fontWeight.semibold },
+  subtitle: { textAlign: 'center', color: t.textSecondary, marginBottom: space.sm },
   input: { backgroundColor: t.surface },
   hint: { color: t.textMuted },
 });

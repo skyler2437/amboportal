@@ -8,6 +8,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials } from '@/lib/format';
+import { space, radius, fontSize, fontWeight } from '@/lib/theme';
 import type { SemanticTokens } from '@/lib/theme';
 import type { Submission, SubmissionStatus } from '@ambo/database';
 
@@ -189,53 +190,53 @@ export default function SubmissionDetailPage() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  content: { padding: 16, paddingBottom: 40 },
-  studentCard: { backgroundColor: t.surface, marginBottom: 20 },
-  studentContent: { gap: 12 },
-  studentRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  studentCard: { backgroundColor: t.surface, marginBottom: space.xl },
+  studentContent: { gap: space.md },
+  studentRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   avatarFallback: { backgroundColor: t.surfaceVariant },
   studentInfo: { flex: 1 },
-  studentName: { fontWeight: '700' },
-  email: { color: t.textSecondary, marginTop: 2 },
+  studentName: { fontWeight: fontWeight.bold },
+  email: { color: t.textSecondary, marginTop: space.xxs },
   sectionLabel: {
     color: t.textMuted,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     letterSpacing: 0.8,
-    marginBottom: 8,
-    marginTop: 4,
+    marginBottom: space.sm,
+    marginTop: space.xs,
   },
-  detailsCard: { backgroundColor: t.surface, marginBottom: 20 },
+  detailsCard: { backgroundColor: t.surface, marginBottom: space.xl },
   detailsContent: { gap: 0 },
   detailRow: {
-    paddingVertical: 12,
+    paddingVertical: space.md,
   },
-  detailIconRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  detailIconRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginBottom: space.xs },
   detailLabel: { color: t.textMuted },
-  detailValue: { fontWeight: '500', marginLeft: 26 },
+  detailValue: { fontWeight: fontWeight.medium, marginLeft: space.xl },
   rowDivider: { backgroundColor: t.divider },
   statsRow: {
     flexDirection: 'row',
-    paddingTop: 12,
+    paddingTop: space.md,
   },
-  statBox: { flex: 1, alignItems: 'center', paddingVertical: 8 },
+  statBox: { flex: 1, alignItems: 'center', paddingVertical: space.sm },
   statDivider: { width: 1, backgroundColor: t.divider },
-  statNumber: { fontWeight: '700', color: t.textPrimary },
-  statUnit: { color: t.textMuted, marginTop: 2 },
-  feedbackInput: { backgroundColor: t.surface, marginBottom: 8, minHeight: 100 },
+  statNumber: { fontWeight: fontWeight.bold, color: t.textPrimary },
+  statUnit: { color: t.textMuted, marginTop: space.xxs },
+  feedbackInput: { backgroundColor: t.surface, marginBottom: space.sm, minHeight: 100 },
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
+    gap: space.md,
+    marginTop: space.lg,
   },
   actionButton: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: radius.md,
   },
   actionButtonContent: {
-    paddingVertical: 6,
+    paddingVertical: space.sm,
   },
   actionButtonLabel: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
   },
 });

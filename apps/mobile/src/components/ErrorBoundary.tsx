@@ -4,7 +4,7 @@ import { Text, Button, Icon } from 'react-native-paper';
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface Props {
   children: ReactNode;
@@ -131,11 +131,11 @@ const makeStyles = (t: SemanticTokens) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 32,
-      gap: 16,
+      padding: space.xxl,
+      gap: space.lg,
     },
     title: {
-      fontWeight: '700',
+      fontWeight: fontWeight.bold,
       color: t.textPrimary,
       textAlign: 'center',
     },
@@ -146,8 +146,8 @@ const makeStyles = (t: SemanticTokens) =>
     },
     errorDetails: {
       backgroundColor: t.statusBadBg,
-      borderRadius: 8,
-      padding: 12,
+      borderRadius: radius.sm,
+      padding: space.md,
       width: '100%',
     },
     errorText: {
@@ -155,11 +155,11 @@ const makeStyles = (t: SemanticTokens) =>
       fontFamily: 'monospace',
     },
     button: {
-      marginTop: 8,
-      borderRadius: 12,
+      marginTop: space.sm,
+      borderRadius: radius.md,
     },
     secondaryButton: {
-      marginTop: 4,
-      borderRadius: 12,
+      marginTop: space.xs,
+      borderRadius: radius.md,
     },
   });

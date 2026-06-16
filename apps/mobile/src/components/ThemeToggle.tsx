@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { Card, Text, SegmentedButtons } from 'react-native-paper';
 import { useThemeStore, type ThemePref } from '@/stores/themeStore';
 import { useAppTheme } from '@/lib/ThemeProvider';
+import { space, fontWeight } from '@/lib/theme';
 
 const OPTIONS: { value: ThemePref; label: string; icon: string }[] = [
   { value: 'system', label: 'System', icon: 'cellphone' },
@@ -39,7 +40,7 @@ export function ThemeToggle() {
 }
 
 const styles = StyleSheet.create({
-  card: { marginTop: 12 },
-  title: { fontWeight: '600', marginBottom: 2 },
-  subtitle: { marginBottom: 12 },
+  card: { marginTop: space.md },
+  title: { fontWeight: fontWeight.semibold, marginBottom: space.xxs },
+  subtitle: { marginBottom: space.md },
 });

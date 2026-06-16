@@ -4,7 +4,7 @@ import { Card, Text } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { openExternalLink } from '@/lib/openExternalLink';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, type SemanticTokens } from '@/lib/theme';
 
 /**
  * Presentational support/about card: Contact Support, Privacy Policy, Terms of
@@ -56,5 +56,5 @@ export function SupportCard({ cardStyle }: SupportCardProps) {
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
     supportContent: { gap: 0 },
-    supportRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+    supportRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md },
   });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { UserRole } from '@ambo/database';
-import { getRoleColors } from '@/lib/theme';
+import { getRoleColors, space, radius, fontSize, fontWeight } from '@/lib/theme';
 import { useAppTheme } from '@/lib/ThemeProvider';
 
 interface RoleBadgeProps {
@@ -29,13 +29,13 @@ export function RoleBadge({ role }: RoleBadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+    borderRadius: radius.md,
     alignSelf: 'flex-start',
   },
   text: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
   },
 });

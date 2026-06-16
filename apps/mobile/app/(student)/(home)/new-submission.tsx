@@ -8,7 +8,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { SERVICE_TYPES } from '@ambo/database';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export default function NewSubmission() {
   const { session } = useAuth();
@@ -199,20 +199,20 @@ export default function NewSubmission() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  content: { padding: 16, gap: 12 },
-  description: { color: t.textSecondary, marginBottom: 4 },
+  content: { padding: space.lg, gap: space.md },
+  description: { color: t.textSecondary, marginBottom: space.xs },
   input: { backgroundColor: t.surface },
-  row: { flexDirection: 'row', gap: 12 },
+  row: { flexDirection: 'row', gap: space.md },
   halfInput: { flex: 1 },
   notesInput: { minHeight: 100 },
   menu: { width: '92%' },
   menuScroll: { maxHeight: 300 },
-  divider: { marginVertical: 8 },
-  submitButton: { borderRadius: 12 },
-  successContainer: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: t.background, gap: 24 },
+  divider: { marginVertical: space.sm },
+  submitButton: { borderRadius: radius.md },
+  successContainer: { flex: 1, justifyContent: 'center', padding: space.xl, backgroundColor: t.background, gap: space.xl },
   successCard: { backgroundColor: t.statusGoodBg },
-  successContent: { alignItems: 'center', gap: 12, paddingVertical: 24 },
-  successTitle: { fontWeight: '700', color: t.statusGoodFg },
+  successContent: { alignItems: 'center', gap: space.md, paddingVertical: space.xl },
+  successTitle: { fontWeight: fontWeight.bold, color: t.statusGoodFg },
   successSubtitle: { color: t.textSecondary, textAlign: 'center' },
-  successActions: { gap: 12 },
+  successActions: { gap: space.md },
 });

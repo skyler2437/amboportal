@@ -6,7 +6,7 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import { getApplicationStatusStyles } from '@/lib/theme';
+import { getApplicationStatusStyles, space, radius, fontSize, fontWeight } from '@/lib/theme';
 import type { SemanticTokens } from '@/lib/theme';
 import type { Application, ApplicationStatus } from '@/hooks/useApplications';
 
@@ -309,35 +309,35 @@ function InfoRow({ icon, label, value }: { icon: string; label: string; value: s
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  content: { padding: 16, paddingBottom: 40 },
-  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: space.md },
   errorText: { color: t.textSecondary },
-  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
-  statusText: { fontSize: 13, fontWeight: '600' },
+  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space.xl },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md, paddingVertical: space.sm, borderRadius: radius.md },
+  statusText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
   date: { color: t.textMuted },
   sectionLabel: {
     color: t.textMuted,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     letterSpacing: 0.8,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: space.lg,
+    marginBottom: space.sm,
   },
-  card: { backgroundColor: t.surface, marginBottom: 4 },
+  card: { backgroundColor: t.surface, marginBottom: space.xs },
   infoContent: { gap: 0 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  infoLabel: { color: t.textMuted, marginBottom: 2 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md },
+  infoLabel: { color: t.textMuted, marginBottom: space.xxs },
   rowDivider: { backgroundColor: t.divider },
-  linkButton: { alignSelf: 'flex-start', marginTop: -4, marginLeft: -8 },
-  questionCard: { backgroundColor: t.surface, marginBottom: 8 },
-  questionLabel: { color: t.textSecondary, marginBottom: 6 },
+  linkButton: { alignSelf: 'flex-start', marginTop: -space.xs, marginLeft: -space.sm },
+  questionCard: { backgroundColor: t.surface, marginBottom: space.sm },
+  questionLabel: { color: t.textSecondary, marginBottom: space.sm },
   answer: { lineHeight: 20 },
-  actionDivider: { marginVertical: 20 },
-  actionsRow: { flexDirection: 'row', gap: 12 },
-  actionButton: { flex: 1, borderRadius: 12 },
-  actionButtonContent: { paddingVertical: 6 },
-  actionButtonLabel: { fontSize: 16, fontWeight: '600' },
-  reviewedNote: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 20, justifyContent: 'center' },
-  dialogText: { marginBottom: 12 },
+  actionDivider: { marginVertical: space.xl },
+  actionsRow: { flexDirection: 'row', gap: space.md },
+  actionButton: { flex: 1, borderRadius: radius.md },
+  actionButtonContent: { paddingVertical: space.sm },
+  actionButtonLabel: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+  reviewedNote: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.xl, justifyContent: 'center' },
+  dialogText: { marginBottom: space.md },
   rejectInput: { backgroundColor: t.surface },
 });

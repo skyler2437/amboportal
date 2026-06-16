@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ApplicationData } from '@ambo/database/application-types';
 
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, type SemanticTokens } from '@/lib/theme';
 
 import StepProgress from '@/components/apply/StepProgress';
 import StepContact from '@/components/apply/StepContact';
@@ -320,14 +320,14 @@ export default function ApplyScreen() {
 const makeStyles = (t: SemanticTokens) =>
   StyleSheet.create({
     flex: { flex: 1, backgroundColor: t.background },
-    scroll: { flexGrow: 1, padding: 20, paddingBottom: 40 },
+    scroll: { flexGrow: 1, padding: space.xl, paddingBottom: space.xxl },
     formCard: {
       backgroundColor: t.surface,
-      borderRadius: 12,
+      borderRadius: radius.md,
       borderWidth: 1,
       borderColor: t.border,
-      padding: 20,
-      marginBottom: 20,
+      padding: space.xl,
+      marginBottom: space.xl,
     },
     footer: {
       flexDirection: 'row',
@@ -335,5 +335,5 @@ const makeStyles = (t: SemanticTokens) =>
       alignItems: 'center',
     },
     backButton: { borderColor: t.border },
-    nextButton: { borderRadius: 8, minWidth: 120 },
+    nextButton: { borderRadius: radius.sm, minWidth: 120 },
   });

@@ -30,7 +30,7 @@ import { UserListDialog, DialogUser } from '@/components/UserListDialog';
 import { supabase } from '@/lib/supabase';
 import { getInitials } from '@/lib/format';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 import type { UserRole } from '@ambo/database';
 import type { AppRole } from '@/lib/roles';
 
@@ -372,7 +372,7 @@ export function PostDetailScreen({ role }: { role: AppRole }) {
                       size={32}
                       label={commentInitials}
                       style={styles.commentAvatar}
-                      labelStyle={{ fontSize: 12 }}
+                      labelStyle={{ fontSize: fontSize.xs }}
                     />
                   )}
                   <View style={styles.commentBody}>
@@ -413,7 +413,7 @@ export function PostDetailScreen({ role }: { role: AppRole }) {
                         </View>
                       </View>
                     ) : (
-                      <Text variant="bodyMedium" style={{ fontSize: 14 }}>{comment.content}</Text>
+                      <Text variant="bodyMedium" style={{ fontSize: fontSize.md }}>{comment.content}</Text>
                     )}
                   </View>
                   {canActOnComment && !isEditingThis && (
@@ -442,7 +442,7 @@ export function PostDetailScreen({ role }: { role: AppRole }) {
 
         {/* Sticky comment input */}
         <View
-          style={[styles.commentInput, { paddingBottom: Math.max(8, insets.bottom) }]}
+          style={[styles.commentInput, { paddingBottom: Math.max(space.sm, insets.bottom) }]}
         >
           <TextInput
             ref={commentInputRef as any}
@@ -472,59 +472,59 @@ export function PostDetailScreen({ role }: { role: AppRole }) {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.surface },
-  scrollContent: { padding: 16, paddingBottom: 16 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 16 },
+  scrollContent: { padding: space.lg, paddingBottom: space.lg },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: space.lg },
   notFoundText: { color: t.textSecondary },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 16,
+    gap: space.md,
+    marginBottom: space.lg,
   },
   avatarFallback: { backgroundColor: t.surfaceVariant },
-  authorInfo: { gap: 2, flex: 1 },
-  authorName: { fontWeight: '700' },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  timestamp: { color: t.textMuted, fontSize: 12 },
-  adminActions: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  authorInfo: { gap: space.xxs, flex: 1 },
+  authorName: { fontWeight: fontWeight.bold },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  timestamp: { color: t.textMuted, fontSize: fontSize.xs },
+  adminActions: { flexDirection: 'row', gap: space.sm, marginBottom: space.lg },
   content: { lineHeight: 24, color: t.textPrimary },
-  editSection: { gap: 8 },
+  editSection: { gap: space.sm },
   editInput: { backgroundColor: t.surface },
-  editActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
-  divider: { marginVertical: 20 },
-  sectionTitle: { fontWeight: '600', marginBottom: 12 },
-  loadingText: { color: t.textMuted, paddingVertical: 8 },
-  noComments: { color: t.textMuted, paddingVertical: 8 },
+  editActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: space.sm },
+  divider: { marginVertical: space.xl },
+  sectionTitle: { fontWeight: fontWeight.semibold, marginBottom: space.md },
+  loadingText: { color: t.textMuted, paddingVertical: space.sm },
+  noComments: { color: t.textMuted, paddingVertical: space.sm },
   commentRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
-    marginBottom: 12,
+    gap: space.sm,
+    marginBottom: space.md,
   },
   commentAvatar: { backgroundColor: t.surfaceVariant },
   commentBody: { flex: 1 },
   commentHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 2,
+    gap: space.sm,
+    marginBottom: space.xxs,
   },
-  commentAuthor: { fontWeight: '600' },
+  commentAuthor: { fontWeight: fontWeight.semibold },
   commentActions: { flexDirection: 'row' },
   commentInput: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingTop: 8,
+    gap: space.xs,
+    paddingHorizontal: space.sm,
+    paddingTop: space.sm,
     backgroundColor: t.surface,
     borderTopWidth: 1,
     borderTopColor: t.border,
   },
   commentTextInput: { flex: 1, backgroundColor: t.surface, maxHeight: 100 },
-  engagementRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  engagementRow: { flexDirection: 'row', alignItems: 'center', marginTop: space.sm },
   engagementText: { color: t.textSecondary },
   // Cancels part of the IconButton's internal padding so the count hugs the heart
-  likeCountTight: { marginLeft: -4 },
-  engagementViews: { flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 16 },
+  likeCountTight: { marginLeft: -space.xs },
+  engagementViews: { flexDirection: 'row', alignItems: 'center', gap: space.xs, marginLeft: space.lg },
 });

@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface BiometricLockScreenProps {
   onUnlock: () => Promise<boolean>;
@@ -40,18 +40,18 @@ const makeStyles = (t: SemanticTokens) =>
       backgroundColor: t.background,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 24,
-      gap: 12,
+      padding: space.xl,
+      gap: space.md,
     },
     title: {
-      fontWeight: '700',
-      marginTop: 8,
+      fontWeight: fontWeight.bold,
+      marginTop: space.sm,
     },
     subtitle: {
       color: t.textSecondary,
     },
     button: {
-      marginTop: 16,
-      borderRadius: 8,
+      marginTop: space.lg,
+      borderRadius: radius.sm,
     },
   });

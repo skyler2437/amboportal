@@ -4,7 +4,7 @@ import { IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hapticLight } from '@/lib/haptics';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, type SemanticTokens } from '@/lib/theme';
 
 interface ChatInputProps {
   onSend: (text: string) => Promise<void>;
@@ -44,7 +44,7 @@ export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: Math.max(8, insets.bottom) }]}>
+    <View style={[styles.container, { paddingBottom: Math.max(space.sm, insets.bottom) }]}>
       <TextInput
         ref={inputRef}
         placeholder="Type a message..."
@@ -72,21 +72,21 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 8,
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingHorizontal: space.sm,
+    paddingTop: space.sm,
+    paddingBottom: space.sm,
     backgroundColor: t.surface,
     borderTopWidth: 1,
     borderTopColor: t.border,
-    gap: 4,
+    gap: space.xs,
   },
   input: {
     flex: 1,
     backgroundColor: t.surfaceVariant,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    fontSize: fontSize.lg,
     maxHeight: 100,
     color: t.textPrimary,
   },

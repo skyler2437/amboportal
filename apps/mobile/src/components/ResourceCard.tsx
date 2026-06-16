@@ -3,7 +3,7 @@ import { View, StyleSheet, Linking } from 'react-native';
 import { Card, Text, IconButton } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { type SemanticTokens, space, radius, fontWeight } from '@/lib/theme';
 
 interface ResourceCardProps {
   title: string;
@@ -90,26 +90,26 @@ export function ResourceCard({
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   card: {
-    marginBottom: 10,
+    marginBottom: space.md,
     backgroundColor: t.surface,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: space.md,
   },
   iconContainer: {
     width: 44,
     height: 44,
-    borderRadius: 10,
+    borderRadius: radius.md,
     backgroundColor: t.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
   },
   info: { flex: 1 },
-  title: { fontWeight: '600' },
-  description: { color: t.textSecondary, marginTop: 2 },
-  meta: { flexDirection: 'row', gap: 12, marginTop: 4 },
+  title: { fontWeight: fontWeight.semibold },
+  description: { color: t.textSecondary, marginTop: space.xxs },
+  meta: { flexDirection: 'row', gap: space.md, marginTop: space.xs },
   metaText: { color: t.textMuted },
   actions: { flexDirection: 'row' },
 });

@@ -3,7 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { Avatar, Icon, Text } from 'react-native-paper';
 import type { MessageStatus } from '@/hooks/useChatMessages';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface MessageBubbleProps {
   content: string;
@@ -53,7 +53,7 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
           {senderAvatar ? (
             <Avatar.Image size={28} source={{ uri: senderAvatar }} />
           ) : (
-            <Avatar.Text size={28} label={initials} style={styles.avatarFallback} labelStyle={{ fontSize: 11 }} />
+            <Avatar.Text size={28} label={initials} style={styles.avatarFallback} labelStyle={{ fontSize: fontSize.xxs }} />
           )}
         </View>
       )}
@@ -145,8 +145,8 @@ export function TypingIndicator({ names }: { names: string[] }) {
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
     flexDirection: 'row',
-    marginVertical: 4,
-    paddingHorizontal: 12,
+    marginVertical: space.xs,
+    paddingHorizontal: space.md,
   },
   ownContainer: {
     justifyContent: 'flex-end',
@@ -155,27 +155,27 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     justifyContent: 'flex-start',
   },
   avatarCol: {
-    marginRight: 8,
+    marginRight: space.sm,
     alignSelf: 'flex-end',
-    marginBottom: 16,
+    marginBottom: space.lg,
   },
   avatarFallback: { backgroundColor: t.surfaceVariant },
   messageCol: {
     maxWidth: '75%',
   },
   bubble: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    borderRadius: radius.lg,
   },
   ownBubble: {
     backgroundColor: t.accentSolid,
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: radius.sm,
     alignSelf: 'flex-end',
   },
   otherBubble: {
     backgroundColor: t.surfaceVariant,
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: radius.sm,
     alignSelf: 'flex-start',
   },
   failedBubble: {
@@ -183,10 +183,10 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   },
   senderName: {
     color: t.textSecondary,
-    fontWeight: '600',
-    fontSize: 11,
-    marginBottom: 2,
-    marginLeft: 4,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.xxs,
+    marginBottom: space.xxs,
+    marginLeft: space.xs,
   },
   ownText: {
     color: t.onAccent,
@@ -197,9 +197,9 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
-    paddingHorizontal: 4,
+    gap: space.sm,
+    marginTop: space.xxs,
+    paddingHorizontal: space.xs,
   },
   ownMeta: {
     justifyContent: 'flex-end',
@@ -208,25 +208,25 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     justifyContent: 'flex-start',
   },
   timeOutside: {
-    fontSize: 10,
+    fontSize: fontSize.xxs,
     color: t.textMuted,
   },
   statusText: {
-    fontSize: 10,
+    fontSize: fontSize.xxs,
     color: t.textMuted,
   },
   failedText: {
-    fontSize: 11,
+    fontSize: fontSize.xxs,
     color: t.statusBadFg,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
   },
   // Date separator
   dateSeparator: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 16,
-    paddingHorizontal: 20,
-    gap: 12,
+    marginVertical: space.lg,
+    paddingHorizontal: space.xl,
+    gap: space.md,
   },
   dateLine: {
     flex: 1,
@@ -235,27 +235,28 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   },
   dateText: {
     color: t.textMuted,
-    fontWeight: '600',
-    fontSize: 11,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.xxs,
   },
   // Typing indicator
   typingBubble: {
-    paddingVertical: 14,
-    paddingHorizontal: 18,
+    paddingVertical: space.lg,
+    paddingHorizontal: space.lg,
   },
   typingLabel: {
-    fontSize: 10,
+    fontSize: fontSize.xxs,
     color: t.textMuted,
-    marginTop: 2,
+    marginTop: space.xxs,
   },
   dotsRow: {
     flexDirection: 'row',
-    gap: 4,
+    gap: space.xs,
     alignItems: 'center',
   },
   dot: {
     width: 7,
     height: 7,
+    // eslint-disable-next-line no-restricted-syntax -- intentional
     borderRadius: 3.5,
     backgroundColor: t.textMuted,
     opacity: 0.4,
@@ -267,16 +268,16 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: 3,
+    gap: space.xs,
     backgroundColor: t.surface,
     borderColor: t.border,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 6,
+    borderRadius: radius.md,
+    paddingHorizontal: space.sm,
     paddingVertical: 1,
-    marginTop: -6,
+    marginTop: -space.sm,
   },
   likeBadgeOwn: { alignSelf: 'flex-end' },
   likeBadgeOther: { alignSelf: 'flex-start' },
-  likeBadgeText: { fontSize: 11, color: t.textSecondary, fontWeight: '600' },
+  likeBadgeText: { fontSize: fontSize.xxs, color: t.textSecondary, fontWeight: fontWeight.semibold },
 });

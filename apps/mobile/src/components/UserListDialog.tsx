@@ -3,7 +3,7 @@ import { ScrollView, View, StyleSheet } from 'react-native';
 import { Portal, Dialog, Avatar, Text, Button, ActivityIndicator } from 'react-native-paper';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { type SemanticTokens, space, fontSize } from '@/lib/theme';
 
 export interface DialogUser {
   id: string;
@@ -27,7 +27,7 @@ export function UserListDialog({ visible, title, users, onDismiss }: UserListDia
         <Dialog.Title>{title}</Dialog.Title>
         <Dialog.Content>
           {users === null ? (
-            <ActivityIndicator style={{ marginVertical: 16 }} />
+            <ActivityIndicator style={{ marginVertical: space.lg }} />
           ) : users.length === 0 ? (
             <Text style={styles.empty}>No one yet.</Text>
           ) : (
@@ -39,7 +39,7 @@ export function UserListDialog({ visible, title, users, onDismiss }: UserListDia
                     {u.avatar_url ? (
                       <Avatar.Image size={32} source={{ uri: u.avatar_url }} />
                     ) : (
-                      <Avatar.Text size={32} label={initials} style={styles.fallback} labelStyle={{ fontSize: 12 }} />
+                      <Avatar.Text size={32} label={initials} style={styles.fallback} labelStyle={{ fontSize: fontSize.xs }} />
                     )}
                     <Text style={styles.name}>{u.first_name} {u.last_name}</Text>
                   </View>
@@ -57,8 +57,8 @@ export function UserListDialog({ visible, title, users, onDismiss }: UserListDia
 }
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
   fallback: { backgroundColor: t.surfaceVariant },
-  name: { fontSize: 15 },
-  empty: { color: t.textMuted, paddingVertical: 8 },
+  name: { fontSize: fontSize.lg },
+  empty: { color: t.textMuted, paddingVertical: space.sm },
 });

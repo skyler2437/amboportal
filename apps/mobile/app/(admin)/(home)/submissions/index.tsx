@@ -7,6 +7,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontWeight } from '@/lib/theme';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminSubmissions() {
@@ -60,14 +61,14 @@ export default function AdminSubmissions() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.surface },
-  content: { padding: 16, paddingBottom: 32 },
-  emptyContent: { flex: 1, padding: 16 },
-  card: { marginBottom: 12 },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  emptyContent: { flex: 1, padding: space.lg },
+  card: { marginBottom: space.md },
   cardPressed: { opacity: 0.7 },
-  cardInner: { backgroundColor: t.surface, borderWidth: 1, borderColor: t.border, borderRadius: 12 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  studentName: { fontWeight: '700', flex: 1, marginRight: 8 },
-  serviceType: { color: t.textSecondary, marginBottom: 6 },
-  cardDetails: { flexDirection: 'row', gap: 16 },
+  cardInner: { backgroundColor: t.surface, borderWidth: 1, borderColor: t.border, borderRadius: radius.md },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: space.xs },
+  studentName: { fontWeight: fontWeight.bold, flex: 1, marginRight: space.sm },
+  serviceType: { color: t.textSecondary, marginBottom: space.sm },
+  cardDetails: { flexDirection: 'row', gap: space.lg },
   detailText: { color: t.textMuted },
 });

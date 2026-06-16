@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials, formatChatListDate } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 import type { AppRole } from '@/lib/roles';
 
 function getGroupDisplayName(group: ChatGroupWithMeta, currentUserId: string): string {
@@ -135,23 +135,25 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   groupRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 12,
+    padding: space.lg,
+    gap: space.md,
   },
   avatarFallback: { backgroundColor: t.surfaceVariant },
   groupInfo: { flex: 1 },
-  groupNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  groupName: { fontWeight: '600', flex: 1 },
+  groupNameRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  groupName: { fontWeight: fontWeight.semibold, flex: 1 },
+  // eslint-disable-next-line no-restricted-syntax -- intentional: extra-bold unread emphasis has no token step
   groupNameUnread: { fontWeight: '800' },
   unreadDot: {
     width: 10,
     height: 10,
-    borderRadius: 5,
+    borderRadius: radius.sm,
     backgroundColor: t.accentSolid,
   },
-  lastMessage: { color: t.textSecondary, marginTop: 2 },
-  lastMessageUnread: { color: t.textPrimary, fontWeight: '600' },
+  lastMessage: { color: t.textSecondary, marginTop: space.xxs },
+  lastMessageUnread: { color: t.textPrimary, fontWeight: fontWeight.semibold },
   time: { color: t.textMuted },
+  // eslint-disable-next-line no-restricted-syntax -- intentional: aligns separator with avatar+gutter width, not a spacing step
   separator: { height: 1, backgroundColor: t.divider, marginLeft: 72 },
   emptyContainer: { flex: 1 },
   fab: {

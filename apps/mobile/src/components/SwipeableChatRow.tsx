@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Animated, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Star, StarOff, Trash2 } from 'lucide-react-native';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { type SemanticTokens, space, fontSize, fontWeight } from '@/lib/theme';
 
 const STAR_W = 76;
 const DELETE_W = 76;
@@ -142,8 +142,8 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     width: OPEN_WIDTH,
     flexDirection: 'row',
   },
-  action: { width: STAR_W, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  action: { width: STAR_W, alignItems: 'center', justifyContent: 'center', gap: space.xxs },
   starAction: { backgroundColor: t.statusWarnFg },
   deleteAction: { backgroundColor: t.statusBadFg, width: DELETE_W },
-  actionText: { color: t.onAccent, fontSize: 12, fontWeight: '600' },
+  actionText: { color: t.onAccent, fontSize: fontSize.xs, fontWeight: fontWeight.semibold },
 });

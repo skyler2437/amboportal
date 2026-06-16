@@ -4,7 +4,7 @@ import { Text } from 'react-native-paper';
 import { FileText, Paperclip } from 'lucide-react-native';
 import { isImageAttachment } from '@/lib/attachments';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, radius, type SemanticTokens } from '@/lib/theme';
 import type { Attachment } from '@/hooks/usePosts';
 
 interface PostAttachmentsProps {
@@ -71,17 +71,17 @@ export function PostAttachments({ attachments, variant = 'full' }: PostAttachmen
 }
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
-  compactRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
-  compactThumb: { width: 64, height: 64, borderRadius: 8, backgroundColor: t.surfaceVariant },
-  fileChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: t.surfaceVariant, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  compactRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.md },
+  compactThumb: { width: 64, height: 64, borderRadius: radius.sm, backgroundColor: t.surfaceVariant },
+  fileChip: { flexDirection: 'row', alignItems: 'center', gap: space.xs, backgroundColor: t.surfaceVariant, paddingHorizontal: space.sm, paddingVertical: space.xs, borderRadius: radius.sm },
   fileChipText: { color: t.textSecondary },
-  fullContainer: { marginTop: 12, gap: 8 },
+  fullContainer: { marginTop: space.md, gap: space.sm },
   singleImageWrap: {},
   singleImagePress: { width: '100%' },
-  singleImage: { width: '100%', height: 240, borderRadius: 12, backgroundColor: t.surfaceVariant },
-  imageGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  singleImage: { width: '100%', height: 240, borderRadius: radius.md, backgroundColor: t.surfaceVariant },
+  imageGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   gridImagePress: { width: '49%' },
-  gridImage: { width: '100%', height: 150, borderRadius: 10, backgroundColor: t.surfaceVariant },
-  fileRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderWidth: 1, borderColor: t.border, borderRadius: 10 },
+  gridImage: { width: '100%', height: 150, borderRadius: radius.md, backgroundColor: t.surfaceVariant },
+  fileRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, padding: space.md, borderWidth: 1, borderColor: t.border, borderRadius: radius.md },
   fileName: { flex: 1, color: t.textPrimary },
 });

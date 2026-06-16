@@ -9,6 +9,7 @@ import { ResourceCard } from '@/components/ResourceCard';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontWeight } from '@/lib/theme';
 import type { SemanticTokens } from '@/lib/theme';
 
 export default function AdminResources() {
@@ -164,25 +165,25 @@ function formatFileSize(bytes: number): string {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  list: { padding: 16 },
-  emptyContainer: { flex: 1, padding: 16 },
+  list: { padding: space.lg },
+  emptyContainer: { flex: 1, padding: space.lg },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
     backgroundColor: t.accentSolid,
   },
-  dialogContent: { gap: 12 },
+  dialogContent: { gap: space.md },
   filePreview: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: space.md,
     backgroundColor: t.surfaceVariant,
-    padding: 10,
-    borderRadius: 8,
+    padding: space.md,
+    borderRadius: radius.sm,
   },
   fileInfo: { flex: 1 },
-  fileName: { fontWeight: '600', color: t.textPrimary },
+  fileName: { fontWeight: fontWeight.semibold, color: t.textPrimary },
   fileSize: { color: t.textMuted },
-  progressBar: { borderRadius: 4 },
+  progressBar: { borderRadius: radius.sm },
 });

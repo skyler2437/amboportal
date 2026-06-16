@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { type SemanticTokens, space, radius } from '@/lib/theme';
 
 interface SkeletonProps {
   width?: number | string;
@@ -44,11 +44,11 @@ export function CardSkeleton() {
         <SkeletonItem width={40} height={40} borderRadius={20} />
         <View style={styles.cardHeaderText}>
           <SkeletonItem width={120} height={14} />
-          <SkeletonItem width={80} height={10} style={{ marginTop: 6 }} />
+          <SkeletonItem width={80} height={10} style={{ marginTop: space.sm }} />
         </View>
       </View>
-      <SkeletonItem height={14} style={{ marginTop: 12 }} />
-      <SkeletonItem width="75%" height={14} style={{ marginTop: 8 }} />
+      <SkeletonItem height={14} style={{ marginTop: space.md }} />
+      <SkeletonItem width="75%" height={14} style={{ marginTop: space.sm }} />
     </View>
   );
 }
@@ -60,7 +60,7 @@ export function ListItemSkeleton() {
       <SkeletonItem width={36} height={36} borderRadius={18} />
       <View style={styles.listItemText}>
         <SkeletonItem width={140} height={14} />
-        <SkeletonItem width={200} height={10} style={{ marginTop: 6 }} />
+        <SkeletonItem width={200} height={10} style={{ marginTop: space.sm }} />
       </View>
     </View>
   );
@@ -71,8 +71,8 @@ export function StatCardSkeleton() {
   return (
     <View style={styles.statCard}>
       <SkeletonItem width={24} height={24} borderRadius={4} />
-      <SkeletonItem width={48} height={28} style={{ marginTop: 8 }} />
-      <SkeletonItem width={64} height={10} style={{ marginTop: 6 }} />
+      <SkeletonItem width={48} height={28} style={{ marginTop: space.sm }} />
+      <SkeletonItem width={64} height={10} style={{ marginTop: space.sm }} />
     </View>
   );
 }
@@ -82,12 +82,12 @@ export function DashboardSkeleton() {
   return (
     <View style={styles.dashboardContainer}>
       <SkeletonItem width={180} height={24} />
-      <SkeletonItem width={240} height={14} style={{ marginTop: 8 }} />
+      <SkeletonItem width={240} height={14} style={{ marginTop: space.sm }} />
       <View style={styles.statsRow}>
         <StatCardSkeleton />
         <StatCardSkeleton />
       </View>
-      <SkeletonItem width={120} height={18} style={{ marginTop: 24 }} />
+      <SkeletonItem width={120} height={18} style={{ marginTop: space.xl }} />
       <CardSkeleton />
       <CardSkeleton />
       <CardSkeleton />
@@ -125,12 +125,12 @@ export function EventListSkeleton() {
   const { styles } = useThemedStyles(makeStyles);
   return (
     <View style={styles.dashboardContainer}>
-      <SkeletonItem width={100} height={14} style={{ marginBottom: 8 }} />
+      <SkeletonItem width={100} height={14} style={{ marginBottom: space.sm }} />
       {[1, 2, 3].map((i) => (
         <View key={i} style={styles.card}>
           <SkeletonItem width="60%" height={16} />
-          <SkeletonItem width="40%" height={12} style={{ marginTop: 8 }} />
-          <SkeletonItem width="80%" height={12} style={{ marginTop: 6 }} />
+          <SkeletonItem width="40%" height={12} style={{ marginTop: space.sm }} />
+          <SkeletonItem width="80%" height={12} style={{ marginTop: space.sm }} />
         </View>
       ))}
     </View>
@@ -156,16 +156,16 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   },
   card: {
     backgroundColor: t.skeletonHighlight,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: radius.md,
+    padding: space.lg,
+    marginBottom: space.md,
     borderWidth: 1,
     borderColor: t.divider,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: space.md,
   },
   cardHeaderText: {
     flex: 1,
@@ -173,8 +173,8 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 10,
+    gap: space.md,
+    paddingVertical: space.md,
   },
   listItemText: {
     flex: 1,
@@ -182,16 +182,16 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: t.skeletonHighlight,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: radius.md,
+    padding: space.lg,
     alignItems: 'center',
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
+    gap: space.md,
+    marginTop: space.lg,
   },
   dashboardContainer: {
-    padding: 16,
+    padding: space.lg,
   },
 });

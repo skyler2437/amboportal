@@ -6,7 +6,7 @@ import { PostAttachments } from '@/components/PostAttachments';
 import type { Attachment } from '@/hooks/usePosts';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { type SemanticTokens, space, radius, fontSize, fontWeight } from '@/lib/theme';
 
 interface PostCardProps {
   id: string;
@@ -110,9 +110,9 @@ export function PostCard({ content, createdAt, author, commentCount, likeCount, 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   card: {
     backgroundColor: t.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: radius.md,
+    padding: space.lg,
+    marginBottom: space.md,
     borderWidth: 1,
     borderColor: t.border,
     shadowColor: '#000',
@@ -124,22 +124,22 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: space.md,
   },
   avatarFallback: { backgroundColor: t.surfaceVariant },
-  authorInfo: { gap: 2, flex: 1 },
-  authorName: { fontWeight: '600' },
-  timestamp: { color: t.textMuted, fontSize: 12 },
-  content: { marginTop: 10, lineHeight: 20 },
-  footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
-  footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  authorInfo: { gap: space.xxs, flex: 1 },
+  authorName: { fontWeight: fontWeight.semibold },
+  timestamp: { color: t.textMuted, fontSize: fontSize.xs },
+  content: { marginTop: space.md, lineHeight: 20 },
+  footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: space.sm },
+  footerLeft: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   // The IconButton renders the 18px heart in a 34px touch target (8px of
   // internal padding per side); the negative margin pulls the count back
   // against the glyph so it reads as one unit, separate from the comments.
   likeGroup: { flexDirection: 'row', alignItems: 'center' },
-  likeCountText: { color: t.textSecondary, marginLeft: -6 },
-  footerRight: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  likeCountText: { color: t.textSecondary, marginLeft: -space.sm },
+  footerRight: { flexDirection: 'row', alignItems: 'center', gap: space.xs },
   iconBtn: { margin: 0 },
   metaText: { color: t.textSecondary },
-  commentCount: { color: t.textSecondary, fontWeight: '500' },
+  commentCount: { color: t.textSecondary, fontWeight: fontWeight.medium },
 });

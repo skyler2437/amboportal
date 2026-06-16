@@ -14,7 +14,7 @@ import { ChangePasswordCard } from '@/components/ChangePasswordCard';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, fontWeight, type SemanticTokens } from '@/lib/theme';
 import { ProfileFieldsForm } from '@/components/profile/ProfileFieldsForm';
 import { PushNotificationsCard } from '@/components/profile/PushNotificationsCard';
 import { NotificationPreferencesCard } from '@/components/profile/NotificationPreferencesCard';
@@ -312,14 +312,14 @@ export default function AdminProfile() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
-  content: { padding: 16, paddingBottom: 48 },
-  avatarSection: { alignItems: 'center', gap: 8, paddingVertical: 16 },
-  divider: { marginVertical: 16 },
-  sectionTitle: { fontWeight: '600', marginBottom: 12 },
-  pushCard: { backgroundColor: t.surfaceVariant, marginBottom: 12 },
-  prefsLabel: { fontWeight: '600', marginBottom: 8, color: t.textSecondary },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  avatarSection: { alignItems: 'center', gap: space.sm, paddingVertical: space.lg },
+  divider: { marginVertical: space.lg },
+  sectionTitle: { fontWeight: fontWeight.semibold, marginBottom: space.md },
+  pushCard: { backgroundColor: t.surfaceVariant, marginBottom: space.md },
+  prefsLabel: { fontWeight: fontWeight.semibold, marginBottom: space.sm, color: t.textSecondary },
   prefsCard: { backgroundColor: t.surfaceVariant },
   gcalCard: { backgroundColor: t.surfaceVariant },
   supportCard: { backgroundColor: t.surfaceVariant },
-  versionText: { color: t.textMuted, textAlign: 'center', marginTop: 16 },
+  versionText: { color: t.textMuted, textAlign: 'center', marginTop: space.lg },
 });

@@ -8,7 +8,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { getInitials } from '@/lib/format';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export default function AdminUsers() {
   const { users, loading, refetch } = useUsers();
@@ -59,13 +59,13 @@ export default function AdminUsers() {
 
 const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.surface },
-  content: { padding: 16, paddingBottom: 32 },
-  card: { marginBottom: 8 },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  card: { marginBottom: space.sm },
   cardPressed: { opacity: 0.7 },
   cardInner: { backgroundColor: t.surface },
-  cardContent: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cardContent: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   avatar: { backgroundColor: t.surfaceVariant },
   cardInfo: { flex: 1 },
-  name: { fontWeight: '600' },
+  name: { fontWeight: fontWeight.semibold },
   email: { color: t.textSecondary },
 });

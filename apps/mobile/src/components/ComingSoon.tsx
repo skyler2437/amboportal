@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
-import type { SemanticTokens } from '@/lib/theme';
+import { space, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface ComingSoonProps {
   feature?: string;
@@ -25,17 +25,17 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-    gap: 12,
+    padding: space.xxl,
+    gap: space.md,
     backgroundColor: t.surface,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
     color: t.textPrimary,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: fontSize.md,
     color: t.textMuted,
     textAlign: 'center',
   },
