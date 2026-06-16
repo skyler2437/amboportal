@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { Card, Text, SegmentedButtons } from 'react-native-paper';
 import { useThemeStore, type ThemePref } from '@/stores/themeStore';
 import { useAppTheme } from '@/lib/ThemeProvider';
@@ -15,13 +15,13 @@ const OPTIONS: { value: ThemePref; label: string; icon: string }[] = [
  * App appearance picker (System / Light / Dark). Writes to the persisted theme
  * preference; 'system' follows the OS. Lives in each profile's settings.
  */
-export function ThemeToggle() {
+export function ThemeToggle({ cardStyle }: { cardStyle?: StyleProp<ViewStyle> }) {
   const pref = useThemeStore((s) => s.pref);
   const setPref = useThemeStore((s) => s.setPref);
   const { tokens } = useAppTheme();
 
   return (
-    <Card elevation={0} style={[styles.card, { backgroundColor: tokens.surface }]}>
+    <Card elevation={0} style={[styles.card, { backgroundColor: tokens.surface }, cardStyle]}>
       <Card.Content>
         <Text variant="bodyMedium" style={styles.title}>
           Appearance

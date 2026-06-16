@@ -284,7 +284,7 @@ export default function AdminProfile() {
 
       {/* Appearance */}
       <Text variant="titleMedium" style={styles.sectionTitle}>Appearance</Text>
-      <ThemeToggle />
+      <ThemeToggle cardStyle={styles.appearanceCard} />
 
       <Divider style={styles.divider} />
 
@@ -320,6 +320,7 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   prefsLabel: { fontWeight: fontWeight.semibold, marginBottom: space.sm, color: t.textSecondary },
   prefsCard: { backgroundColor: t.surfaceVariant },
   gcalCard: { backgroundColor: t.surfaceVariant },
+  appearanceCard: { backgroundColor: t.surfaceVariant },
   supportCard: { backgroundColor: t.surfaceVariant },
   versionText: { color: t.textMuted, textAlign: 'center', marginTop: space.lg },
 });
