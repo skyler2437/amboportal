@@ -20,7 +20,7 @@ export function ThemeToggle() {
   const { tokens } = useAppTheme();
 
   return (
-    <Card style={styles.card}>
+    <Card elevation={0} style={[styles.card, { backgroundColor: tokens.surface }]}>
       <Card.Content>
         <Text variant="bodyMedium" style={styles.title}>
           Appearance
