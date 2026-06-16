@@ -2,36 +2,28 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { MotionButton } from "@/components/ui/motion-button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import {
     MessageSquare,
-    Send,
-    Loader2,
     Pencil,
     Trash2,
     X,
     Check,
     Heart,
     Eye,
-    Download,
-    FileText,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FormattedText } from "@/components/FormattedText";
 import { cn } from "@/lib/utils";
+import { PostAttachmentsView } from "@/components/post/PostAttachmentsView";
+import { PostComments } from "@/components/post/PostComments";
+import { PostLikesDialog } from "@/components/post/PostLikesDialog";
+import { PostViewsDialog } from "@/components/post/PostViewsDialog";
 
 type Comment = {
     id: string;
@@ -367,43 +359,10 @@ export function PostItem({ post, currentUserId, currentUserRole }: { post: Post;
                                 </p>
                             )}
 
-                            {imageAttachments.length > 0 && (
-                                <div className={cn(
-                                    "mt-3 grid gap-2",
-                                    imageAttachments.length === 1 ? "grid-cols-1" : "grid-cols-2"
-                                )}>
-                                    {imageAttachments.map((att) => (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <a key={att.id} href={att.file_url} target="_blank" rel="noopener noreferrer" className="block">
-                                            <img
-                                                src={att.file_url}
-                                                alt={att.file_name}
-                                                className="rounded-lg w-full max-h-80 object-cover border"
-                                                loading="lazy"
-                                            />
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
-
-                            {fileAttachments.length > 0 && (
-                                <div className="mt-3 flex flex-col gap-2">
-                                    {fileAttachments.map((att) => (
-                                        <a
-                                            key={att.id}
-                                            href={att.file_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            download={att.file_name}
-                                            className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 hover:bg-muted/70 transition-colors text-sm"
-                                        >
-                                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                                            <span className="flex-1 truncate" title={att.file_name}>{att.file_name}</span>
-                                            <Download className="h-4 w-4 text-muted-foreground shrink-0" />
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
+                            <PostAttachmentsView
+                                imageAttachments={imageAttachments}
+                                fileAttachments={fileAttachments}
+                            />
                         </div>
                     </div>
                 </CardContent>
@@ -466,174 +425,42 @@ export function PostItem({ post, currentUserId, currentUserRole }: { post: Post;
                             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
                             className="overflow-hidden"
                         >
-                            <div className="bg-muted/30 p-4 pt-2 border-t rounded-b-xl">
-                                {loadingComments ? (
-                                    <div className="text-center py-4">
-                                        <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {comments.length > 0 && (
-                                            <div className="space-y-4 mb-4">
-                                                {comments.map((comment) => (
-                                                    <div key={comment.id} className="flex gap-3 group">
-                                                        <Avatar className="h-6 w-6 mt-1">
-                                                            {comment.users?.avatar_url && <AvatarImage src={comment.users.avatar_url} alt={`${comment.users.first_name}'s avatar`} className="object-cover" />}
-                                                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                                                                {getInitials(comment.users?.first_name, comment.users?.last_name)}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="flex-1 space-y-1">
-                                                            <div className="flex items-baseline justify-between">
-                                                                <span className="text-sm font-medium">
-                                                                    {comment.users?.first_name} {comment.users?.last_name}
-                                                                </span>
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-[10px] text-muted-foreground">
-                                                                        {new Date(comment.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                                                                    </span>
-                                                                    {canEditComment(comment) && editingCommentId !== comment.id && (
-                                                                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                            <button onClick={() => { setEditingCommentId(comment.id); setEditCommentContent(comment.content); }} className="text-muted-foreground hover:text-foreground">
-                                                                                <Pencil className="h-3 w-3" />
-                                                                            </button>
-                                                                            <button onClick={() => deleteComment(comment.id)} className="text-muted-foreground hover:text-red-500">
-                                                                                <X className="h-3 w-3" />
-                                                                            </button>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                            {editingCommentId === comment.id ? (
-                                                                <div className="flex gap-2">
-                                                                    <Input
-                                                                        value={editCommentContent}
-                                                                        onChange={e => setEditCommentContent(e.target.value)}
-                                                                        className="h-7 text-sm"
-                                                                    />
-                                                                    <Button size="sm" onClick={() => saveCommentEdit(comment.id)} className="h-7 w-7 p-0">
-                                                                        <Check className="h-3 w-3" />
-                                                                    </Button>
-                                                                    <Button size="sm" variant="ghost" onClick={() => setEditingCommentId(null)} className="h-7 w-7 p-0">
-                                                                        <X className="h-3 w-3" />
-                                                                    </Button>
-                                                                </div>
-                                                            ) : (
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    <FormattedText text={comment.content} />
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {comments.length === 0 && (
-                                            <p className="text-sm text-muted-foreground py-2 text-center italic">
-                                                No comments yet. Start the conversation!
-                                            </p>
-                                        )}
-
-                                        <div className="flex gap-2 items-center">
-                                            <Avatar className="h-8 w-8 hidden sm:block">
-                                                <AvatarFallback className="bg-muted text-muted-foreground">
-                                                    Me
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1 flex gap-2">
-                                                <Input
-                                                    value={newComment}
-                                                    onChange={(e) => setNewComment(e.target.value)}
-                                                    placeholder="Write a comment..."
-                                                    className="h-9"
-                                                    onKeyDown={(e) => e.key === "Enter" && handlePostComment()}
-                                                    enterKeyHint="send"
-                                                    autoComplete="off"
-                                                />
-                                                <Button
-                                                    size="icon"
-                                                    className="h-9 w-9 shrink-0"
-                                                    onClick={handlePostComment}
-                                                    disabled={!newComment.trim() || submitting}
-                                                >
-                                                    {submitting ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                                    ) : (
-                                                        <Send className="h-4 w-4" />
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            <PostComments
+                                comments={comments}
+                                loadingComments={loadingComments}
+                                canEditComment={canEditComment}
+                                editingCommentId={editingCommentId}
+                                editCommentContent={editCommentContent}
+                                setEditCommentContent={setEditCommentContent}
+                                setEditingCommentId={setEditingCommentId}
+                                deleteComment={deleteComment}
+                                saveCommentEdit={saveCommentEdit}
+                                newComment={newComment}
+                                setNewComment={setNewComment}
+                                submitting={submitting}
+                                handlePostComment={handlePostComment}
+                                getInitials={getInitials}
+                            />
                         </motion.div>
                     )}
                 </AnimatePresence>
             </Card>
 
-            <Dialog open={likesDialogOpen} onOpenChange={setLikesDialogOpen}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Liked by {likeCount}</DialogTitle>
-                    </DialogHeader>
-                    <div className="max-h-96 overflow-y-auto space-y-2">
-                        {likesList === null ? (
-                            <div className="text-center py-6">
-                                <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
-                            </div>
-                        ) : likesList.length === 0 ? (
-                            <p className="text-sm text-muted-foreground py-4 text-center">No likes yet.</p>
-                        ) : (
-                            likesList.map((row) => (
-                                <div key={row.user_id} className="flex items-center gap-3 py-1">
-                                    <Avatar className="h-8 w-8">
-                                        {row.users?.avatar_url && <AvatarImage src={row.users.avatar_url} alt="" className="object-cover" />}
-                                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                            {getInitials(row.users?.first_name, row.users?.last_name)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm">
-                                        {row.users?.first_name} {row.users?.last_name}
-                                    </span>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <PostLikesDialog
+                open={likesDialogOpen}
+                onOpenChange={setLikesDialogOpen}
+                likeCount={likeCount}
+                likesList={likesList}
+                getInitials={getInitials}
+            />
 
-            <Dialog open={viewsDialogOpen} onOpenChange={setViewsDialogOpen}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Seen by {viewCount}</DialogTitle>
-                    </DialogHeader>
-                    <div className="max-h-96 overflow-y-auto space-y-2">
-                        {viewsList === null ? (
-                            <div className="text-center py-6">
-                                <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
-                            </div>
-                        ) : viewsList.length === 0 ? (
-                            <p className="text-sm text-muted-foreground py-4 text-center">No views yet.</p>
-                        ) : (
-                            viewsList.map((row) => (
-                                <div key={row.user_id} className="flex items-center gap-3 py-1">
-                                    <Avatar className="h-8 w-8">
-                                        {row.users?.avatar_url && <AvatarImage src={row.users.avatar_url} alt="" className="object-cover" />}
-                                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                            {getInitials(row.users?.first_name, row.users?.last_name)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm">
-                                        {row.users?.first_name} {row.users?.last_name}
-                                    </span>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <PostViewsDialog
+                open={viewsDialogOpen}
+                onOpenChange={setViewsDialogOpen}
+                viewCount={viewCount}
+                viewsList={viewsList}
+                getInitials={getInitials}
+            />
 
             <ConfirmDialog
                 open={showDeleteConfirm}

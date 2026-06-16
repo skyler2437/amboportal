@@ -12,11 +12,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, Clock, Shirt, Send, Loader2, Pencil, Trash2, X, Check, Paperclip, FileText, Download } from "lucide-react";
+import { Calendar, Clock, Shirt, Loader2, Pencil, Trash2, X, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -30,8 +29,10 @@ import {
     DrawerFooter,
     DrawerClose
 } from "@/components/ui/drawer";
-import { Plus } from "lucide-react";
 import type { EventDetails, EventComment, EventRSVP, EventRSVPOption, UserRole } from "@ambo/database/types";
+import { EventRsvpSection } from "@/components/event/EventRsvpSection";
+import { EventAttachmentsSection } from "@/components/event/EventAttachmentsSection";
+import { EventCommentSection, EventCommentInput } from "@/components/event/EventCommentSection";
 
 export function EventModal({
     event,
@@ -458,353 +459,62 @@ export function EventModal({
                     </div>
 
                     {/* RSVP Section */}
-                    <div className="space-y-4">
-                        {isEditing ? (
-                            <>
-                                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">RSVP Options</h3>
-                                <p className="text-xs text-muted-foreground">Add custom RSVP options (leave empty for default Going/Maybe/Can&apos;t go).</p>
-                                <div className="space-y-2">
-                                    {editRsvpOptions.map((opt, idx) => (
-                                        <div key={idx} className="flex gap-2">
-                                            <Input
-                                                value={opt}
-                                                onChange={(e) => {
-                                                    const updated = [...editRsvpOptions];
-                                                    updated[idx] = e.target.value;
-                                                    setEditRsvpOptions(updated);
-                                                }}
-                                                placeholder={`Option ${idx + 1}`}
-                                                className="h-8 text-sm"
-                                            />
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-8 w-8 shrink-0 text-muted-foreground hover:text-red-500"
-                                                onClick={() => setEditRsvpOptions(editRsvpOptions.filter((_, i) => i !== idx))}
-                                                aria-label="Remove RSVP option"
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                    {editRsvpOptions.length < 10 && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-8"
-                                            onClick={() => setEditRsvpOptions([...editRsvpOptions, ""])}
-                                        >
-                                            <Plus className="h-3 w-3 mr-1" /> Add Option
-                                        </Button>
-                                    )}
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">RSVP</h3>
-                                    <div className="flex gap-2 flex-wrap justify-end">
-                                        {rsvpOptions.length > 0 ? (
-                                            rsvpOptions.map((opt) => {
-                                                const isSelected = myRsvp === "going" && rsvps.find(r => r.user_id === currentUserId)?.rsvp_option_id === opt.id;
-                                                return (
-                                                    <Button
-                                                        key={opt.id}
-                                                        variant={isSelected ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => handleRsvp("going", opt.id)}
-                                                        disabled={loadingRsvp}
-                                                        className={cn(
-                                                            "h-8 transition-colors",
-                                                            isSelected && "bg-green-600 hover:bg-green-700 border-green-600 text-white",
-                                                            !isSelected && "text-muted-foreground"
-                                                        )}
-                                                    >
-                                                        {opt.label}
-                                                    </Button>
-                                                );
-                                            })
-                                        ) : (
-                                            rsvpButtons.map((btn) => (
-                                                <Button
-                                                    key={btn.status}
-                                                    variant={myRsvp === btn.status ? "default" : "outline"}
-                                                    size="sm"
-                                                    onClick={() => handleRsvp(btn.status)}
-                                                    disabled={loadingRsvp}
-                                                    className={cn(
-                                                        "h-8 transition-colors",
-                                                        myRsvp === btn.status && btn.status === "going" && "bg-green-600 hover:bg-green-700 border-green-600 text-white",
-                                                        myRsvp === btn.status && btn.status === "maybe" && "bg-amber-500 hover:bg-amber-600 border-amber-500 text-white",
-                                                        myRsvp !== btn.status && "text-muted-foreground"
-                                                    )}
-                                                >
-                                                    {btn.label}
-                                                </Button>
-                                            ))
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    {rsvpOptions.length > 0 ? (
-                                        <div className="text-sm space-y-1">
-                                            {rsvpOptions.map((opt) => {
-                                                const optRsvps = rsvps.filter(r => r.rsvp_option_id === opt.id);
-                                                if (optRsvps.length === 0) return null;
-                                                return (
-                                                    <p key={opt.id}>
-                                                        <span className="font-medium text-foreground">{opt.label} ({optRsvps.length}): </span>
-                                                        <span className="text-muted-foreground">
-                                                            {optRsvps.map((r) => `${r.users?.first_name || ""} ${r.users?.last_name || ""}`).map(n => n.trim()).filter(Boolean).join(", ")}
-                                                        </span>
-                                                    </p>
-                                                );
-                                            })}
-                                            {rsvps.filter(r => r.rsvp_option_id === null || r.rsvp_option_id === undefined).length > 0 && rsvps.filter(r => !r.rsvp_option_id).some(r => r.status !== "no") && (
-                                                <p>
-                                                    <span className="font-medium text-foreground">Other: </span>
-                                                    <span className="text-muted-foreground">
-                                                        {rsvps.filter(r => !r.rsvp_option_id && r.status !== "no").map((r) => `${r.users?.first_name || ""} ${r.users?.last_name || ""}`).map(n => n.trim()).filter(Boolean).join(", ")}
-                                                    </span>
-                                                </p>
-                                            )}
-                                            {rsvps.length === 0 && (
-                                                <p className="text-sm text-muted-foreground italic">No RSVPs yet.</p>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        (going.length > 0 || maybe.length > 0) ? (
-                                            <div className="text-sm space-y-1">
-                                                {going.length > 0 && (
-                                                    <p>
-                                                        <span className="font-medium text-foreground">Going ({going.length}): </span>
-                                                        <span className="text-muted-foreground">
-                                                            {going.map((r) => `${r.users?.first_name || ""} ${r.users?.last_name || ""}`).map(n => n.trim()).filter(Boolean).join(", ")}
-                                                        </span>
-                                                    </p>
-                                                )}
-                                                {maybe.length > 0 && (
-                                                    <p>
-                                                        <span className="font-medium text-foreground">Maybe ({maybe.length}): </span>
-                                                        <span className="text-muted-foreground">
-                                                            {maybe.map((r) => `${r.users?.first_name || ""} ${r.users?.last_name || ""}`).map(n => n.trim()).filter(Boolean).join(", ")}
-                                                        </span>
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground italic">No RSVPs yet.</p>
-                                        )
-                                    )}
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    <EventRsvpSection
+                        isEditing={isEditing}
+                        editRsvpOptions={editRsvpOptions}
+                        setEditRsvpOptions={setEditRsvpOptions}
+                        rsvpOptions={rsvpOptions}
+                        rsvps={rsvps}
+                        myRsvp={myRsvp}
+                        currentUserId={currentUserId}
+                        loadingRsvp={loadingRsvp}
+                        going={going}
+                        maybe={maybe}
+                        rsvpButtons={rsvpButtons}
+                        onRsvp={handleRsvp}
+                    />
 
                     <Separator />
 
                     {/* Attachments Section */}
                     {(attachments.length > 0 || canEditEvent) && (
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Attachments {attachments.length > 0 && `(${attachments.length})`}
-                                </h3>
-                                {canEditEvent && (
-                                    <>
-                                        <input
-                                            ref={attachmentInputRef}
-                                            type="file"
-                                            multiple
-                                            className="hidden"
-                                            onChange={(e) => handleAttachmentUpload(e.target.files)}
-                                        />
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-8"
-                                            onClick={() => attachmentInputRef.current?.click()}
-                                            disabled={uploadingAttachment}
-                                        >
-                                            {uploadingAttachment ? (
-                                                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                                            ) : (
-                                                <Paperclip className="h-3.5 w-3.5 mr-1" />
-                                            )}
-                                            {uploadingAttachment ? "Uploading…" : "Add"}
-                                        </Button>
-                                    </>
-                                )}
-                            </div>
-
-                            {attachments.length === 0 ? (
-                                <p className="text-sm text-muted-foreground italic">No attachments.</p>
-                            ) : (
-                                <div className="space-y-2">
-                                    {attachments.filter(isImageAttachment).length > 0 && (
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {attachments.filter(isImageAttachment).map((att) => (
-                                                <div key={att.id} className="relative group">
-                                                    <a href={att.file_url} target="_blank" rel="noopener noreferrer">
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img
-                                                            src={att.file_url}
-                                                            alt={att.file_name}
-                                                            className="rounded-md w-full h-32 object-cover border"
-                                                            loading="lazy"
-                                                        />
-                                                    </a>
-                                                    {canEditEvent && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => deleteAttachment(att.id)}
-                                                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            aria-label={`Remove ${att.file_name}`}
-                                                        >
-                                                            <X className="h-3 w-3" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {attachments.filter((a) => !isImageAttachment(a)).map((att) => (
-                                        <div key={att.id} className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm group">
-                                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                                            <a
-                                                href={att.file_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                download={att.file_name}
-                                                className="flex-1 truncate hover:underline"
-                                                title={att.file_name}
-                                            >
-                                                {att.file_name}
-                                            </a>
-                                            <a
-                                                href={att.file_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                download={att.file_name}
-                                                className="text-muted-foreground hover:text-foreground"
-                                                aria-label={`Download ${att.file_name}`}
-                                            >
-                                                <Download className="h-4 w-4" />
-                                            </a>
-                                            {canEditEvent && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deleteAttachment(att.id)}
-                                                    className="text-muted-foreground hover:text-red-500"
-                                                    aria-label={`Remove ${att.file_name}`}
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <EventAttachmentsSection
+                            attachments={attachments}
+                            canEditEvent={canEditEvent}
+                            uploadingAttachment={uploadingAttachment}
+                            attachmentInputRef={attachmentInputRef}
+                            onUpload={handleAttachmentUpload}
+                            onDelete={deleteAttachment}
+                            isImageAttachment={isImageAttachment}
+                        />
                     )}
 
                     <Separator />
 
                     {/* Comments Section */}
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                            Comments ({comments.length})
-                        </h3>
-
-                        <div className="space-y-4">
-                            {comments.map((c) => (
-                                <div key={c.id} className="flex gap-3 group">
-                                    <Avatar className="h-8 w-8">
-                                        {c.users?.avatar_url && <AvatarImage src={c.users.avatar_url} alt={`${c.users.first_name}'s avatar`} className="object-cover" />}
-                                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                                            {getInitials(c.users?.first_name, c.users?.last_name)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 space-y-1">
-                                        <div className="flex items-baseline justify-between">
-                                            <span className="text-sm font-medium">
-                                                {c.users?.first_name} {c.users?.last_name}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-muted-foreground">
-                                                    {new Date(c.created_at).toLocaleDateString([], {
-                                                        month: "short",
-                                                        day: "numeric",
-                                                        hour: "numeric",
-                                                        minute: "2-digit",
-                                                    })}
-                                                </span>
-                                                {(canEditComment(c)) && editingCommentId !== c.id && (
-                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => startEditComment(c)} className="text-muted-foreground hover:text-foreground" aria-label="Edit comment">
-                                                            <Pencil className="h-3 w-3" />
-                                                        </button>
-                                                        <button onClick={() => deleteComment(c.id)} className="text-muted-foreground hover:text-red-500" aria-label="Delete comment">
-                                                            <X className="h-3 w-3" />
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {editingCommentId === c.id ? (
-                                            <div className="flex gap-2">
-                                                <Input
-                                                    value={editCommentContent}
-                                                    onChange={e => setEditCommentContent(e.target.value)}
-                                                    className="h-8 text-sm"
-                                                />
-                                                <Button size="sm" onClick={() => saveCommentEdit(c.id)} className="h-8 w-8 p-0" aria-label="Save comment">
-                                                    <Check className="h-4 w-4" />
-                                                </Button>
-                                                <Button size="sm" variant="ghost" onClick={() => setEditingCommentId(null)} className="h-8 w-8 p-0" aria-label="Cancel editing comment">
-                                                    <X className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground">{c.content}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                            {comments.length === 0 && (
-                                <p className="text-sm text-muted-foreground py-4 text-center">No comments yet.</p>
-                            )}
-                        </div>
-                    </div>
+                    <EventCommentSection
+                        comments={comments}
+                        editingCommentId={editingCommentId}
+                        editCommentContent={editCommentContent}
+                        setEditCommentContent={setEditCommentContent}
+                        canEditComment={canEditComment}
+                        onStartEdit={startEditComment}
+                        onDelete={deleteComment}
+                        onSaveEdit={saveCommentEdit}
+                        onCancelEdit={() => setEditingCommentId(null)}
+                        getInitials={getInitials}
+                    />
                 </div>
             </ScrollArea>
 
             {/* Footer Input */}
             <div className="p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mt-auto">
-                <div className="flex gap-2">
-                    <Input
-                        placeholder="Write a comment..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); postComment(); } }}
-                        disabled={loadingComment}
-                        enterKeyHint="send"
-                        autoComplete="off"
-                    />
-                    <Button
-                        size="icon"
-                        onClick={postComment}
-                        disabled={loadingComment || !newComment.trim()}
-                        aria-label="Post comment"
-                    >
-                        {loadingComment ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Send className="h-4 w-4" />
-                        )}
-                    </Button>
-                </div>
+                <EventCommentInput
+                    newComment={newComment}
+                    setNewComment={setNewComment}
+                    loadingComment={loadingComment}
+                    onPost={postComment}
+                />
             </div>
         </div>
     );
