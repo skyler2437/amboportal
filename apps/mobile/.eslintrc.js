@@ -21,6 +21,20 @@ module.exports = {
   rules: {
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
+    // Keep spacing/sizing on the design-token scales (space.*, radius.*,
+    // fontSize.* from @/lib/theme) — flag raw numeric literals on these style
+    // props. 0/1 are allowed; an intentional one-off uses an inline disable.
+    // Enforced as 'error': the tree is fully on tokens, so any new raw literal
+    // fails lint/CI. An intentional one-off uses an inline disable.
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector:
+          "Property[key.name=/^(padding|paddingHorizontal|paddingVertical|paddingTop|paddingBottom|paddingLeft|paddingRight|paddingStart|paddingEnd|margin|marginHorizontal|marginVertical|marginTop|marginBottom|marginLeft|marginRight|marginStart|marginEnd|gap|rowGap|columnGap|borderRadius|fontSize)$/][value.type='Literal'][value.value!=0][value.value!=1]",
+        message:
+          'Use design tokens (space.*, radius.*, fontSize.* from @/lib/theme) instead of a raw numeric value for spacing/sizing. For an intentional one-off, add an inline // eslint-disable-next-line no-restricted-syntax.',
+      },
+    ],
   },
   ignorePatterns: [
     'node_modules/',
