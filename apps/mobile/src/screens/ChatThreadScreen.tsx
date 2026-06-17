@@ -12,6 +12,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { IconButton, Text } from 'react-native-paper';
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, DEMO_USER, demoChatGroups } from '@/lib/demo';
 import { useChatReadStore } from '@/stores/chatReadStore';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
@@ -60,6 +61,11 @@ export function ChatThreadScreen({ role }: { role: AppRole }) {
   // Fetch group name for the header
   useEffect(() => {
     if (!id) return;
+    if (DEMO_MODE) {
+      const group = demoChatGroups.find((g) => g.id === id);
+      setGroupName(group?.name || 'Chat');
+      return;
+    }
     async function fetchGroupName() {
       const { data: group } = await supabase
         .from('chat_groups')
@@ -91,6 +97,10 @@ export function ChatThreadScreen({ role }: { role: AppRole }) {
 
   // Cache user's first name for typing indicator
   useEffect(() => {
+    if (DEMO_MODE) {
+      setUserFirstName(DEMO_USER.first_name);
+      return;
+    }
     if (!userId) return;
     supabase
       .from('users')
@@ -109,6 +119,7 @@ export function ChatThreadScreen({ role }: { role: AppRole }) {
 
   // Persist read state to database
   useEffect(() => {
+    if (DEMO_MODE) return;
     if (!id || !userId) return;
     Promise.resolve(
       supabase
@@ -172,7 +183,7 @@ export function ChatThreadScreen({ role }: { role: AppRole }) {
   const handleSend = async (text: string) => {
     await sendMessage(userId, text);
     // Immediately update last_read_at after sending
-    if (id && userId) {
+    if (!DEMO_MODE && id && userId) {
       Promise.resolve(
         supabase
           .from('chat_participants')

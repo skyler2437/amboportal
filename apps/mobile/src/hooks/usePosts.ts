@@ -4,6 +4,7 @@ import { handleAuthError } from '@/lib/authError';
 import type { UserRole } from '@ambo/database';
 import { File } from 'expo-file-system';
 import { sanitizeFileName, type PickedAsset } from '@/lib/attachments';
+import { DEMO_MODE, demoPosts } from '@/lib/demo';
 
 const PAGE_SIZE = 20;
 
@@ -61,7 +62,7 @@ async function decoratePosts(rows: any[]): Promise<Post[]> {
   return posts.map((p) => ({ ...p, liked: likedSet.has(p.id) }));
 }
 
-export function usePosts() {
+function usePostsReal() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -206,3 +207,20 @@ export function usePosts() {
 
   return { posts, loading, error, hasMore, refetch: fetchPosts, fetchMore, createPost, editPost, deletePost, toggleLike };
 }
+
+function usePostsDemo() {
+  return {
+    posts: demoPosts as Post[],
+    loading: false,
+    error: null as string | null,
+    hasMore: false,
+    refetch: async () => {},
+    fetchMore: async () => {},
+    createPost: async (_userId: string, _content: string, _attachments: PickedAsset[] = []) => {},
+    editPost: async (_postId: string, _content: string) => {},
+    deletePost: async (_postId: string) => {},
+    toggleLike: async (_postId: string) => {},
+  };
+}
+
+export const usePosts = DEMO_MODE ? usePostsDemo : usePostsReal;

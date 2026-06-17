@@ -4,6 +4,7 @@ import { Card, Text, ActivityIndicator } from 'react-native-paper';
 import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, demoAdminCounts } from '@/lib/demo';
 import { CheddarRain } from '@/components/CheddarRain';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { space, radius, fontSize, fontWeight } from '@/lib/theme';
@@ -21,6 +22,14 @@ export default function AdminDashboard() {
   const hasLoadedOnce = useRef(false);
 
   const fetchStats = async () => {
+    if (DEMO_MODE) {
+      setPendingCount(demoAdminCounts.pendingCount);
+      setUserCount(demoAdminCounts.userCount);
+      setApplicationCount(demoAdminCounts.applicationCount);
+      setSubmissionCount(demoAdminCounts.submissionCount);
+      hasLoadedOnce.current = true;
+      return;
+    }
     const [pendingRes, usersRes, applicationsRes, submissionsRes] = await Promise.all([
       supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
       supabase.from('users').select('id', { count: 'exact', head: true }),

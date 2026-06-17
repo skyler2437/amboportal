@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { File } from 'expo-file-system';
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, demoResources } from '@/lib/demo';
 
 export interface Resource {
   id: string;
@@ -13,7 +14,7 @@ export interface Resource {
   created_at: string;
 }
 
-export function useResources() {
+function useResourcesReal() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,3 +96,24 @@ export function useResources() {
 
   return { resources, loading, error, refetch: fetchResources, uploadResource, deleteResource };
 }
+
+function useResourcesDemo() {
+  return {
+    resources: demoResources as Resource[],
+    loading: false,
+    error: null as string | null,
+    refetch: async () => {},
+    uploadResource: async (
+      _title: string,
+      _description: string,
+      _fileName: string,
+      _fileUri: string,
+      _fileType: string,
+      _fileSize: number,
+      _uploadedBy: string
+    ) => {},
+    deleteResource: async (_resourceId: string, _fileUrl: string) => {},
+  };
+}
+
+export const useResources = DEMO_MODE ? useResourcesDemo : useResourcesReal;

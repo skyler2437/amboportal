@@ -6,6 +6,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/providers/AuthProvider';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, demoUpcomingEvents, demoResources } from '@/lib/demo';
 import { DashboardSkeleton } from '@/components/SkeletonLoader';
 import { hapticMedium } from '@/lib/haptics';
 import { ErrorState } from '@/components/ErrorState';
@@ -36,6 +37,10 @@ export default function StudentDashboard() {
   }
 
   const fetchUpcoming = useCallback(async () => {
+    if (DEMO_MODE) {
+      setUpcomingEvents(demoUpcomingEvents);
+      return;
+    }
     const { data } = await supabase
       .from('events')
       .select('id, title, start_time')
@@ -46,6 +51,10 @@ export default function StudentDashboard() {
   }, []);
 
   const fetchResourceCount = useCallback(async () => {
+    if (DEMO_MODE) {
+      setResourceCount(demoResources.length);
+      return;
+    }
     const { count } = await supabase
       .from('resources')
       .select('id', { count: 'exact', head: true });

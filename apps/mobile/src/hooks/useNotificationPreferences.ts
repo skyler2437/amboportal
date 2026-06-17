@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, demoNotificationPrefs } from '@/lib/demo';
 
 export interface NotificationPreferences {
   chat_messages: boolean;
@@ -17,7 +18,7 @@ const DEFAULTS: NotificationPreferences = {
   event_reminders: true,
 };
 
-export function useNotificationPreferences(userId: string) {
+function useNotificationPreferencesReal(userId: string) {
   const [prefs, setPrefs] = useState<NotificationPreferences>(DEFAULTS);
   const [loading, setLoading] = useState(true);
 
@@ -64,3 +65,16 @@ export function useNotificationPreferences(userId: string) {
 
   return { prefs, loading, updatePref, refetch: fetchPrefs };
 }
+
+function useNotificationPreferencesDemo(_userId: string) {
+  return {
+    prefs: demoNotificationPrefs as NotificationPreferences,
+    loading: false,
+    updatePref: async (_key: keyof NotificationPreferences, _value: boolean) => {},
+    refetch: async () => {},
+  };
+}
+
+export const useNotificationPreferences = DEMO_MODE
+  ? useNotificationPreferencesDemo
+  : useNotificationPreferencesReal;

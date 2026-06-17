@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { handleAuthError } from '@/lib/authError';
 import { useChatReadStore } from '@/stores/chatReadStore';
 import { createChatGroup } from '@/lib/chat';
+import { DEMO_MODE, demoChatGroups } from '@/lib/demo';
 
 export interface ChatGroup {
   id: string;
@@ -27,7 +28,7 @@ function compareGroups(a: ChatGroupWithMeta, b: ChatGroupWithMeta): number {
   return new Date(bTime).getTime() - new Date(aTime).getTime();
 }
 
-export function useChatGroups(userId: string) {
+function useChatGroupsReal(userId: string) {
   const [groups, setGroups] = useState<ChatGroupWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -329,3 +330,17 @@ export function useChatGroups(userId: string) {
 
   return { groups, loading, error, refetch: fetchGroups, createGroup, toggleStar, deleteChat };
 }
+
+function useChatGroupsDemo(_userId: string) {
+  return {
+    groups: demoChatGroups as ChatGroupWithMeta[],
+    loading: false,
+    error: null as string | null,
+    refetch: async () => {},
+    createGroup: async (_name: string | null, _participantIds: string[]) => 'group-1',
+    toggleStar: async (_groupId: string, _starred: boolean) => {},
+    deleteChat: async (_groupId: string) => {},
+  };
+}
+
+export const useChatGroups = DEMO_MODE ? useChatGroupsDemo : useChatGroupsReal;

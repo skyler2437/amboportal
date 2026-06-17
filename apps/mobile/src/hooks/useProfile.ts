@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { User } from '@ambo/database';
+import { DEMO_MODE, DEMO_USER } from '@/lib/demo';
 
-export function useProfile(userId: string) {
+function useProfileReal(userId: string) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,3 +32,14 @@ export function useProfile(userId: string) {
 
   return { user, loading, error, refetch: fetch };
 }
+
+function useProfileDemo(_userId: string) {
+  return {
+    user: DEMO_USER as unknown as User,
+    loading: false,
+    error: null as string | null,
+    refetch: async () => {},
+  };
+}
+
+export const useProfile = DEMO_MODE ? useProfileDemo : useProfileReal;

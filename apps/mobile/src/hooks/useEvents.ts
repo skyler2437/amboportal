@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { EventDetails } from '@ambo/database';
+import { DEMO_MODE, demoEvents } from '@/lib/demo';
 
 export interface EventWithRsvp extends EventDetails {
   rsvpCounts?: { going: number; maybe: number };
@@ -8,7 +9,7 @@ export interface EventWithRsvp extends EventDetails {
   myRsvpOptionLabel?: string | null;
 }
 
-export function useEvents(userId?: string) {
+function useEventsReal(userId?: string) {
   const [events, setEvents] = useState<EventWithRsvp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,3 +64,14 @@ export function useEvents(userId?: string) {
 
   return { events, loading, error, refetch: fetchEvents };
 }
+
+function useEventsDemo(_userId?: string) {
+  return {
+    events: demoEvents as unknown as EventWithRsvp[],
+    loading: false,
+    error: null as string | null,
+    refetch: async () => {},
+  };
+}
+
+export const useEvents = DEMO_MODE ? useEventsDemo : useEventsReal;
