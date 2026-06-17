@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, FlatList, StyleSheet, RefreshControl, Alert } from 'react-native';
-import { FAB, Portal, Dialog, TextInput, Button, Text, ProgressBar } from 'react-native-paper';
+import { Portal, Dialog, TextInput, Button, Text, ProgressBar } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAuth } from '@/providers/AuthProvider';
 import { useResources, Resource } from '@/hooks/useResources';
 import { ResourceCard } from '@/components/ResourceCard';
+import { Fab } from '@/components/ui';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
@@ -101,7 +102,7 @@ export default function AdminResources() {
         refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} />}
       />
 
-      <FAB icon="plus" color={tokens.onAccent} style={styles.fab} onPress={handlePickFile} accessibilityLabel="Upload new resource" />
+      <Fab icon="plus" label="Upload new resource" onPress={handlePickFile} />
 
       <Portal>
         <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)}>
@@ -167,12 +168,6 @@ const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: { flex: 1, backgroundColor: t.background },
   list: { padding: space.lg },
   emptyContainer: { flex: 1, padding: space.lg },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-    backgroundColor: t.accentSolid,
-  },
   dialogContent: { gap: space.md },
   filePreview: {
     flexDirection: 'row',

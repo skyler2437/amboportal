@@ -150,6 +150,7 @@ function buildPaperTheme(base: MD3Theme, t: SemanticTokens): MD3Theme {
       primary: t.accent,
       onPrimary: t.onAccent,
       primaryContainer: t.accentContainer,
+      onPrimaryContainer: t.accent,
       secondary: t.secondary,
       onSecondary: t.onAccent,
       // SegmentedButtons (Appearance picker) and selected Chips (event filters)
@@ -166,6 +167,18 @@ function buildPaperTheme(base: MD3Theme, t: SemanticTokens): MD3Theme {
       outline: t.border,
       outlineVariant: t.divider,
       error: t.statusBadFg,
+      // MD3 tints elevated surfaces (Dialog, Menu, FAB, default Card) by
+      // overlaying the *default* primary on surface — which is purple. Override
+      // the precomputed levels with our neutral elevated surface so no purple
+      // tint leaks through. level0 (transparent) is kept from the base.
+      elevation: {
+        ...base.colors.elevation,
+        level1: t.surfaceElevated,
+        level2: t.surfaceElevated,
+        level3: t.surfaceElevated,
+        level4: t.surfaceElevated,
+        level5: t.surfaceElevated,
+      },
     },
   };
 }

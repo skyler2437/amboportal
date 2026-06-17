@@ -307,7 +307,7 @@ export default function StudentProfile() {
 
       {/* Biometric Lock */}
       {biometricAvailable && (
-        <Card style={[styles.card, { marginTop: space.md }]}>
+        <Card elevation={0} style={[styles.card, { marginTop: space.md }]}>
           <Card.Content>
             <View style={styles.switchRow}>
               <View style={{ flex: 1 }}>
