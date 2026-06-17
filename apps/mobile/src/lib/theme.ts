@@ -151,6 +151,13 @@ function buildPaperTheme(base: MD3Theme, t: SemanticTokens): MD3Theme {
       onPrimary: t.onAccent,
       primaryContainer: t.accentContainer,
       secondary: t.secondary,
+      onSecondary: t.onAccent,
+      // SegmentedButtons (Appearance picker) and selected Chips (event filters)
+      // tint their selected state from secondaryContainer — without these they
+      // fall back to MD3's default purple. Map to the brand accent tint so
+      // "selected" reads blue like the rest of the theme.
+      secondaryContainer: t.accentContainer,
+      onSecondaryContainer: t.accent,
       background: t.background,
       surface: t.surface,
       surfaceVariant: t.surfaceVariant,
