@@ -36,16 +36,17 @@ export function ServiceWorkerRegister() {
                                 throw new Error(`API error: ${res.status} ${errText}`);
                             }
                         }
-                    } catch (err: any) {
+                    } catch (err: unknown) {
                         // Ignore 401s (not logged in)
-                        if (err.message && err.message.includes("401")) {
+                        const errMessage = err instanceof Error ? err.message : String(err);
+                        if (errMessage.includes("401")) {
                             return;
                         }
                         console.error("Failed to sync sub:", err);
                         await fetch("/api/debug/log", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ level: "error", message: "Client: Sync failed", data: { error: err.toString() } }),
+                            body: JSON.stringify({ level: "error", message: "Client: Sync failed", data: { error: String(err) } }),
                         });
                     }
                 })

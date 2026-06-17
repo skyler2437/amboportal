@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
@@ -11,7 +11,6 @@ import { fetchAllPages } from "@/lib/fetch-all-pages";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -29,7 +28,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Check, AlertCircle, MoreHorizontal, ChevronRight, Search, CheckCircle2, XCircle, ClipboardList } from "lucide-react";
+import { Check, AlertCircle, MoreHorizontal, ChevronRight, Search, CheckCircle2, XCircle, ClipboardList, Upload } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -174,19 +173,15 @@ export function SubmissionsControl() {
     }
   };
 
-  const onCsvSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const csvInputRef = useRef<HTMLInputElement>(null);
+
+  const onCsvFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     setCsvError("");
     setCsvSuccess("");
     setUploading(true);
 
-    const input = (e.target as HTMLFormElement).querySelector('input[type="file"]') as HTMLInputElement;
-    const file = input?.files?.[0];
-    if (!file) {
-      setCsvError("Choose a file.");
-      setUploading(false);
-      return;
-    }
     const formData = new FormData();
     formData.set("file", file);
     const res = await fetch("/api/admin/submissions/csv", {
@@ -198,10 +193,10 @@ export function SubmissionsControl() {
       toast.success(`Uploaded ${data.count ?? 0} row(s)`);
       setCsvSuccess(`Uploaded ${data.count ?? 0} row(s).`);
       fetchSubmissions();
-      input.value = "";
     } else {
       setCsvError(data.error || "Upload failed.");
     }
+    if (csvInputRef.current) csvInputRef.current.value = "";
     setUploading(false);
   };
 
@@ -307,64 +302,70 @@ export function SubmissionsControl() {
 
   return (
     <div className="space-y-4">
-      {/* CSV Upload */}
-      <Card>
-        <CardContent className="p-4">
-          <form onSubmit={onCsvSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <Input type="file" accept=".csv,.txt" className="flex-1" disabled={uploading} />
-            <Button type="submit" variant="secondary" disabled={uploading} className="shrink-0">
+      <input
+        ref={csvInputRef}
+        type="file"
+        accept=".csv,.txt"
+        className="hidden"
+        onChange={onCsvFileSelected}
+      />
+
+      {/* Filter Chips, CSV Upload & Search */}
+      <div className="space-y-2">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex gap-2 flex-wrap">
+            {(["All", "Pending", "Approved", "Denied"] as StatusFilter[]).map((s) => (
+              <Button
+                key={s}
+                variant={statusFilter === s ? "default" : "outline"}
+                size="sm"
+                onClick={() => setStatusFilter(s)}
+                className="gap-1.5"
+              >
+                {s}
+                <Badge
+                  variant="secondary"
+                  className={`ml-0.5 px-1.5 py-0 text-[10px] min-w-[20px] text-center ${statusFilter === s ? "bg-background/20 text-primary-foreground" : ""}`}
+                >
+                  {statusCounts[s]}
+                </Badge>
+              </Button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 sm:ml-auto">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={uploading}
+              onClick={() => csvInputRef.current?.click()}
+              className="gap-2 shrink-0"
+            >
+              <Upload className="h-4 w-4" />
               {uploading ? "Uploading..." : "CSV Upload"}
             </Button>
-          </form>
-        </CardContent>
-        {(csvError || csvSuccess) && (
-          <CardFooter className="pt-0 pb-4 block">
-            {csvError && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{csvError}</AlertDescription>
-              </Alert>
-            )}
-            {csvSuccess && (
-              <Alert className="bg-green-50 text-green-800 border-green-200">
-                <Check className="h-4 w-4 text-green-600" />
-                <AlertDescription>{csvSuccess}</AlertDescription>
-              </Alert>
-            )}
-          </CardFooter>
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search student or type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+          </div>
+        </div>
+        {csvError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{csvError}</AlertDescription>
+          </Alert>
         )}
-      </Card>
-
-      {/* Filter Chips & Search */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex gap-2 flex-wrap">
-          {(["All", "Pending", "Approved", "Denied"] as StatusFilter[]).map((s) => (
-            <Button
-              key={s}
-              variant={statusFilter === s ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter(s)}
-              className="gap-1.5"
-            >
-              {s}
-              <Badge
-                variant="secondary"
-                className={`ml-0.5 px-1.5 py-0 text-[10px] min-w-[20px] text-center ${statusFilter === s ? "bg-background/20 text-primary-foreground" : ""}`}
-              >
-                {statusCounts[s]}
-              </Badge>
-            </Button>
-          ))}
-        </div>
-        <div className="relative sm:ml-auto sm:w-64">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search student or type..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9"
-          />
-        </div>
+        {csvSuccess && (
+          <Alert className="bg-green-50 text-green-800 border-green-200">
+            <Check className="h-4 w-4 text-green-600" />
+            <AlertDescription>{csvSuccess}</AlertDescription>
+          </Alert>
+        )}
       </div>
 
       {/* Mobile Card List */}

@@ -31,7 +31,7 @@ function mapWebUrlToMobileRoute(url: string, role: UserRole | null): string {
   const base = groupForRole(role) === '(admin)' ? '/(admin)' : '/(student)';
   if (url.includes('/chat')) return `${base}/chat`;
   if (url.includes('/posts')) return `${base}/posts`;
-  if (base === '/(admin)' && url.includes('/submissions')) return '/(admin)/submissions';
+  if (base === '/(admin)' && url.includes('/submissions')) return '/(admin)/(home)/submissions';
   return base;
 }
 

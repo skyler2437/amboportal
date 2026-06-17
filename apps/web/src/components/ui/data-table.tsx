@@ -27,11 +27,13 @@ import { DataTablePagination } from "./data-table-pagination"
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    initialPageSize?: number
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    initialPageSize = 10,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
 
@@ -42,6 +44,11 @@ export function DataTable<TData, TValue>({
         getPaginationRowModel: getPaginationRowModel(),
         onSortingChange: setSorting,
         getSortedRowModel: getSortedRowModel(),
+        initialState: {
+            pagination: {
+                pageSize: initialPageSize,
+            },
+        },
         state: {
             sorting,
         },

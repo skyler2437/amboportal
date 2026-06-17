@@ -13,12 +13,15 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || '';
 
 export default function RegisterScreen() {
   const { signIn } = useAuth();
   const router = useRouter();
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -162,7 +165,7 @@ export default function RegisterScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={tokens.onAccent} />
           ) : (
             <Text style={styles.buttonText}>Create Account</Text>
           )}
@@ -179,23 +182,23 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 28, fontWeight: '700', textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#666', textAlign: 'center', marginBottom: 32 },
-  row: { flexDirection: 'row', gap: 8 },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  flex: { flex: 1, backgroundColor: t.surface },
+  container: { flexGrow: 1, justifyContent: 'center', padding: space.xl },
+  title: { fontSize: fontSize.xxl, fontWeight: fontWeight.bold, textAlign: 'center', marginBottom: space.sm },
+  subtitle: { fontSize: fontSize.lg, color: t.textSecondary, textAlign: 'center', marginBottom: space.xxl },
+  row: { flexDirection: 'row', gap: space.sm },
   input: {
-    borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: '#fafafa',
+    borderWidth: 1, borderColor: t.border, borderRadius: radius.sm, padding: space.lg,
+    fontSize: fontSize.lg, marginBottom: space.md, backgroundColor: t.surfaceVariant,
   },
   halfInput: { flex: 1 },
   button: {
-    backgroundColor: '#005EFF', borderRadius: 8, padding: 16,
-    alignItems: 'center', marginTop: 8,
+    backgroundColor: t.accentSolid, borderRadius: radius.sm, padding: space.lg,
+    alignItems: 'center', marginTop: space.sm,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  linkButton: { alignItems: 'center', marginTop: 20, padding: 8 },
-  linkText: { fontSize: 15, color: '#6366f1', fontWeight: '500' },
+  buttonText: { color: t.onAccent, fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
+  linkButton: { alignItems: 'center', marginTop: space.xl, padding: space.sm },
+  linkText: { fontSize: fontSize.lg, color: t.secondary, fontWeight: fontWeight.medium },
 });

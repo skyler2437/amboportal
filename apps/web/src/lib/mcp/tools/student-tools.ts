@@ -68,7 +68,7 @@ export function registerStudentTools(server: McpServer) {
     description: "Submit service hours for credit. Service types include: " + SERVICE_TYPES.join(", "),
     inputSchema: schema({
       service_date: z.string().describe("Date of service (YYYY-MM-DD format)"),
-      service_type: z.enum(SERVICE_TYPES as unknown as [string, ...string[]]).describe("Type of service performed"),
+      service_type: z.enum(SERVICE_TYPES).describe("Type of service performed"),
       credits: z.number().min(0).optional().describe("Number of credits earned (default: 0)"),
       hours: z.number().min(0).max(24).optional().describe("Hours spent on service (default: 0)"),
       feedback: z.string().optional().describe("Optional feedback or notes about the service"),

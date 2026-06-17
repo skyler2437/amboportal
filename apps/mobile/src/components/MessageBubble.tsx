@@ -2,6 +2,8 @@ import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { Avatar, Icon, Text } from 'react-native-paper';
 import type { MessageStatus } from '@/hooks/useChatMessages';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface MessageBubbleProps {
   content: string;
@@ -17,6 +19,7 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ content, createdAt, senderName, senderAvatar, isOwn, status, onRetry, likeCount = 0, liked = false, onToggleLike }: MessageBubbleProps) {
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const time = new Date(createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const initials = senderName
     .split(' ')
@@ -50,7 +53,7 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
           {senderAvatar ? (
             <Avatar.Image size={28} source={{ uri: senderAvatar }} />
           ) : (
-            <Avatar.Text size={28} label={initials} style={styles.avatarFallback} labelStyle={{ fontSize: 11 }} />
+            <Avatar.Text size={28} label={initials} style={styles.avatarFallback} labelStyle={{ fontSize: fontSize.xxs }} />
           )}
         </View>
       )}
@@ -69,7 +72,7 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
               <Icon
                 source={liked ? 'heart' : 'heart-outline'}
                 size={12}
-                color={liked ? '#ef4444' : '#9ca3af'}
+                color={liked ? tokens.statusBadFg : tokens.textMuted}
               />
               <Text style={styles.likeBadgeText}>{likeCount}</Text>
             </View>
@@ -99,6 +102,7 @@ export function MessageBubble({ content, createdAt, senderName, senderAvatar, is
 
 /** Renders a date separator header between message groups */
 export function DateSeparator({ date }: { date: string }) {
+  const { styles } = useThemedStyles(makeStyles);
   return (
     <View style={styles.dateSeparator}>
       <View style={styles.dateLine} />
@@ -110,6 +114,7 @@ export function DateSeparator({ date }: { date: string }) {
 
 /** Renders a "typing" indicator bubble */
 export function TypingIndicator({ names }: { names: string[] }) {
+  const { styles } = useThemedStyles(makeStyles);
   if (names.length === 0) return null;
 
   const label =
@@ -137,11 +142,11 @@ export function TypingIndicator({ names }: { names: string[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
     flexDirection: 'row',
-    marginVertical: 4,
-    paddingHorizontal: 12,
+    marginVertical: space.xs,
+    paddingHorizontal: space.md,
   },
   ownContainer: {
     justifyContent: 'flex-end',
@@ -150,51 +155,51 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   avatarCol: {
-    marginRight: 8,
+    marginRight: space.sm,
     alignSelf: 'flex-end',
-    marginBottom: 16,
+    marginBottom: space.lg,
   },
-  avatarFallback: { backgroundColor: '#e5e7eb' },
+  avatarFallback: { backgroundColor: t.surfaceVariant },
   messageCol: {
     maxWidth: '75%',
   },
   bubble: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    borderRadius: radius.lg,
   },
   ownBubble: {
-    backgroundColor: '#005EFF',
-    borderBottomRightRadius: 4,
+    backgroundColor: t.accentSolid,
+    borderBottomRightRadius: radius.sm,
     alignSelf: 'flex-end',
   },
   otherBubble: {
-    backgroundColor: '#f3f4f6',
-    borderBottomLeftRadius: 4,
+    backgroundColor: t.surfaceVariant,
+    borderBottomLeftRadius: radius.sm,
     alignSelf: 'flex-start',
   },
   failedBubble: {
-    backgroundColor: '#451a1a',
+    backgroundColor: t.statusBadBg,
   },
   senderName: {
-    color: '#6b7280',
-    fontWeight: '600',
-    fontSize: 11,
-    marginBottom: 2,
-    marginLeft: 4,
+    color: t.textSecondary,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.xxs,
+    marginBottom: space.xxs,
+    marginLeft: space.xs,
   },
   ownText: {
-    color: '#fff',
+    color: t.onAccent,
   },
   otherText: {
-    color: '#1f2937',
+    color: t.textPrimary,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 2,
-    paddingHorizontal: 4,
+    gap: space.sm,
+    marginTop: space.xxs,
+    paddingHorizontal: space.xs,
   },
   ownMeta: {
     justifyContent: 'flex-end',
@@ -203,56 +208,57 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   timeOutside: {
-    fontSize: 10,
-    color: '#9ca3af',
+    fontSize: fontSize.xxs,
+    color: t.textMuted,
   },
   statusText: {
-    fontSize: 10,
-    color: '#9ca3af',
+    fontSize: fontSize.xxs,
+    color: t.textMuted,
   },
   failedText: {
-    fontSize: 11,
-    color: '#ef4444',
-    fontWeight: '600',
+    fontSize: fontSize.xxs,
+    color: t.statusBadFg,
+    fontWeight: fontWeight.semibold,
   },
   // Date separator
   dateSeparator: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 16,
-    paddingHorizontal: 20,
-    gap: 12,
+    marginVertical: space.lg,
+    paddingHorizontal: space.xl,
+    gap: space.md,
   },
   dateLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.border,
   },
   dateText: {
-    color: '#9ca3af',
-    fontWeight: '600',
-    fontSize: 11,
+    color: t.textMuted,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.xxs,
   },
   // Typing indicator
   typingBubble: {
-    paddingVertical: 14,
-    paddingHorizontal: 18,
+    paddingVertical: space.lg,
+    paddingHorizontal: space.lg,
   },
   typingLabel: {
-    fontSize: 10,
-    color: '#9ca3af',
-    marginTop: 2,
+    fontSize: fontSize.xxs,
+    color: t.textMuted,
+    marginTop: space.xxs,
   },
   dotsRow: {
     flexDirection: 'row',
-    gap: 4,
+    gap: space.xs,
     alignItems: 'center',
   },
   dot: {
     width: 7,
     height: 7,
+    // eslint-disable-next-line no-restricted-syntax -- intentional
     borderRadius: 3.5,
-    backgroundColor: '#9ca3af',
+    backgroundColor: t.textMuted,
     opacity: 0.4,
   },
   dot1: { opacity: 0.4 },
@@ -262,16 +268,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: 3,
-    backgroundColor: '#fff',
-    borderColor: '#e5e7eb',
+    gap: space.xs,
+    backgroundColor: t.surface,
+    borderColor: t.border,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 6,
+    borderRadius: radius.md,
+    paddingHorizontal: space.sm,
     paddingVertical: 1,
-    marginTop: -6,
+    marginTop: -space.sm,
   },
   likeBadgeOwn: { alignSelf: 'flex-end' },
   likeBadgeOther: { alignSelf: 'flex-start' },
-  likeBadgeText: { fontSize: 11, color: '#6b7280', fontWeight: '600' },
+  likeBadgeText: { fontSize: fontSize.xxs, color: t.textSecondary, fontWeight: fontWeight.semibold },
 });

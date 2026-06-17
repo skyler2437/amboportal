@@ -2,8 +2,19 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { handleAuthError } from '@/lib/authError';
 import type { UserRole } from '@ambo/database';
+import { File } from 'expo-file-system';
+import { sanitizeFileName, type PickedAsset } from '@/lib/attachments';
+import { DEMO_MODE, demoPosts } from '@/lib/demo';
 
 const PAGE_SIZE = 20;
+
+export interface Attachment {
+  id: string;
+  file_url: string;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+}
 
 export interface Post {
   id: string;
@@ -21,6 +32,7 @@ export interface Post {
   like_count: number;
   view_count: number;
   liked: boolean;
+  attachments: Attachment[];
 }
 
 async function decoratePosts(rows: any[]): Promise<Post[]> {
@@ -28,6 +40,7 @@ async function decoratePosts(rows: any[]): Promise<Post[]> {
     .filter((p) => p.users != null)
     .map((p: any) => ({
       ...p,
+      attachments: p.post_attachments ?? [],
       like_count: p.post_likes?.[0]?.count ?? 0,
       view_count: p.post_views?.[0]?.count ?? 0,
       liked: false,
@@ -49,7 +62,7 @@ async function decoratePosts(rows: any[]): Promise<Post[]> {
   return posts.map((p) => ({ ...p, liked: likedSet.has(p.id) }));
 }
 
-export function usePosts() {
+function usePostsReal() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +75,7 @@ export function usePosts() {
 
     const { data, error: err } = await supabase
       .from('posts')
-      .select('*, users(first_name, last_name, avatar_url, role), comments(count), post_likes(count), post_views(count)')
+      .select('*, users(first_name, last_name, avatar_url, role), comments(count), post_likes(count), post_views(count), post_attachments(id, file_url, file_name, file_type, file_size)')
       .order('created_at', { ascending: false })
       .range(0, PAGE_SIZE - 1);
 
@@ -86,7 +99,7 @@ export function usePosts() {
 
     const { data, error: err } = await supabase
       .from('posts')
-      .select('*, users(first_name, last_name, avatar_url, role), comments(count), post_likes(count), post_views(count)')
+      .select('*, users(first_name, last_name, avatar_url, role), comments(count), post_likes(count), post_views(count), post_attachments(id, file_url, file_name, file_type, file_size)')
       .order('created_at', { ascending: false })
       .range(posts.length, posts.length + PAGE_SIZE - 1);
 
@@ -102,11 +115,35 @@ export function usePosts() {
     fetchPosts();
   }, [fetchPosts]);
 
-  const createPost = async (userId: string, content: string) => {
-    const { error: err } = await supabase
+  const createPost = async (userId: string, content: string, attachments: PickedAsset[] = []) => {
+    const { data: inserted, error: err } = await supabase
       .from('posts')
-      .insert({ user_id: userId, content });
+      .insert({ user_id: userId, content })
+      .select('id')
+      .single();
     if (err) throw err;
+    const postId = inserted.id as string;
+
+    for (const [i, asset] of attachments.entries()) {
+      const bytes = await new File(asset.uri).bytes();
+      const path = `${postId}/${Date.now()}_${i}_${sanitizeFileName(asset.name)}`;
+      const { error: upErr } = await supabase.storage
+        .from('post-attachments')
+        .upload(path, bytes, { contentType: asset.mimeType || 'application/octet-stream' });
+      if (upErr) throw upErr;
+
+      const { data: urlData } = supabase.storage.from('post-attachments').getPublicUrl(path);
+      const { error: rowErr } = await supabase.from('post_attachments').insert({
+        post_id: postId,
+        file_url: urlData.publicUrl,
+        file_name: asset.name,
+        file_type: asset.mimeType || 'application/octet-stream',
+        file_size: asset.size,
+        uploaded_by: userId,
+      });
+      if (rowErr) throw rowErr;
+    }
+
     await fetchPosts();
   };
 
@@ -170,3 +207,20 @@ export function usePosts() {
 
   return { posts, loading, error, hasMore, refetch: fetchPosts, fetchMore, createPost, editPost, deletePost, toggleLike };
 }
+
+function usePostsDemo() {
+  return {
+    posts: demoPosts as Post[],
+    loading: false,
+    error: null as string | null,
+    hasMore: false,
+    refetch: async () => {},
+    fetchMore: async () => {},
+    createPost: async (_userId: string, _content: string, _attachments: PickedAsset[] = []) => {},
+    editPost: async (_postId: string, _content: string) => {},
+    deletePost: async (_postId: string) => {},
+    toggleLike: async (_postId: string) => {},
+  };
+}
+
+export const usePosts = DEMO_MODE ? usePostsDemo : usePostsReal;

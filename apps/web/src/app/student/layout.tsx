@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import StudentNav from "./StudentNav";
-import { StudentSidebar } from "@/components/StudentSidebar";
+import { StudentTopNav } from "@/components/StudentTopNav";
 
 // Student pages are auth-gated and per-request (they read the session cookie and
 // use the Supabase service-role client), so they must never be statically
@@ -22,15 +22,13 @@ export default async function StudentLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* Desktop Sidebar */}
-      <StudentSidebar />
+    <div className="flex min-h-screen flex-col bg-white">
+      {/* Desktop Top Nav */}
+      <StudentTopNav />
 
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 p-4 pb-24 md:p-8 md:pb-8">
-          {children}
-        </main>
-      </div>
+      <main className="flex-1 p-4 pb-24 md:p-8 md:pb-8">
+        {children}
+      </main>
 
       {/* Mobile Bottom Nav */}
       <StudentNav />

@@ -61,10 +61,10 @@ export async function POST(
         console.log("[gcal-sync] Result:", JSON.stringify(result));
 
         return NextResponse.json(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error("[gcal-sync] Failed:", err);
         return NextResponse.json(
-            { synced: false, reason: `Sync error: ${err?.message || err}` },
+            { synced: false, reason: `Sync error: ${err instanceof Error ? err.message : String(err)}` },
             { status: 500 }
         );
     }

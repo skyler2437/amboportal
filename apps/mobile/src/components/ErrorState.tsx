@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button, Icon } from 'react-native-paper';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface ErrorStateProps {
   message?: string;
@@ -8,9 +10,11 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
+  const { styles, tokens } = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.container}>
-      <Icon source="alert-circle-outline" size={48} color="#ef4444" />
+      <Icon source="alert-circle-outline" size={48} color={tokens.statusBadFg} />
       <Text variant="titleMedium" style={styles.title}>Something went wrong</Text>
       {message && (
         <Text variant="bodyMedium" style={styles.message}>{message}</Text>
@@ -29,25 +33,25 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-    gap: 12,
+    padding: space.xxl,
+    gap: space.md,
   },
   title: {
-    fontWeight: '600',
-    color: '#374151',
+    fontWeight: fontWeight.semibold,
+    color: t.textPrimary,
     textAlign: 'center',
   },
   message: {
-    color: '#6b7280',
+    color: t.textSecondary,
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: 8,
-    borderRadius: 8,
+    marginTop: space.sm,
+    borderRadius: radius.sm,
   },
 });

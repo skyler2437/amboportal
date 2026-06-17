@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, demoMessagesByGroup } from '@/lib/demo';
 
 const PAGE_SIZE = 50;
 
@@ -49,7 +50,7 @@ async function decorateMessageLikes(rows: ChatMessage[]): Promise<ChatMessage[]>
   return rows.map((m) => ({ ...m, like_count: counts.get(m.id) ?? 0, liked: mine.has(m.id) }));
 }
 
-export function useChatMessages(groupId: string) {
+function useChatMessagesReal(groupId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -414,3 +415,24 @@ export function useChatMessages(groupId: string) {
     stopTyping,
   };
 }
+
+function useChatMessagesDemo(groupId: string) {
+  return {
+    messages: (demoMessagesByGroup[groupId] ?? []) as ChatMessage[],
+    toggleMessageLike: async (_messageId: string) => {},
+    refreshLikes: async () => {},
+    loading: false,
+    loadingOlder: false,
+    hasOlderMessages: false,
+    error: null as string | null,
+    typingUsers: [] as TypingUser[],
+    refetch: async () => {},
+    sendMessage: async (_senderId: string, _content: string) => {},
+    retryMessage: async (_messageId: string, _senderId: string) => {},
+    loadOlderMessages: async () => {},
+    sendTyping: (_userId: string, _firstName: string) => {},
+    stopTyping: (_userId: string, _firstName: string) => {},
+  };
+}
+
+export const useChatMessages = DEMO_MODE ? useChatMessagesDemo : useChatMessagesReal;

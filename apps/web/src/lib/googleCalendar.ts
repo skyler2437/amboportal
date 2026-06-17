@@ -230,8 +230,8 @@ export async function syncEventToGoogle(
                 console.error("[GCal]", msg);
                 return { synced: false, reason: msg };
             }
-        } catch (err: any) {
-            const msg = `Failed to create GCal event: ${err?.message || err}`;
+        } catch (err: unknown) {
+            const msg = `Failed to create GCal event: ${err instanceof Error ? err.message : String(err)}`;
             console.error("[GCal]", msg);
             return { synced: false, reason: msg };
         }
@@ -319,10 +319,15 @@ export async function updateCalendarEvent(
             requestBody: body,
         });
         return { success: true };
-    } catch (err: any) {
+    } catch (err: unknown) {
         // Extract the most useful error info from the Google API error
-        const status = err?.response?.status || err?.code;
-        const message = err?.response?.data?.error?.message || err?.message || String(err);
+        const gErr = err as {
+            response?: { status?: number; data?: { error?: { message?: string } } };
+            code?: number;
+            message?: string;
+        };
+        const status = gErr?.response?.status || gErr?.code;
+        const message = gErr?.response?.data?.error?.message || gErr?.message || String(err);
         const detail = `[${status || "???"}] ${message}`;
         console.error("[GCal] Failed to update event:", detail);
 

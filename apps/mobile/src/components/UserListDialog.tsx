@@ -1,6 +1,9 @@
 import React from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
 import { Portal, Dialog, Avatar, Text, Button, ActivityIndicator } from 'react-native-paper';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getInitials } from '@/lib/format';
+import { type SemanticTokens, space, fontSize } from '@/lib/theme';
 
 export interface DialogUser {
   id: string;
@@ -17,25 +20,26 @@ interface UserListDialogProps {
 }
 
 export function UserListDialog({ visible, title, users, onDismiss }: UserListDialogProps) {
+  const { styles } = useThemedStyles(makeStyles);
   return (
     <Portal>
       <Dialog visible={visible} onDismiss={onDismiss}>
         <Dialog.Title>{title}</Dialog.Title>
         <Dialog.Content>
           {users === null ? (
-            <ActivityIndicator style={{ marginVertical: 16 }} />
+            <ActivityIndicator style={{ marginVertical: space.lg }} />
           ) : users.length === 0 ? (
             <Text style={styles.empty}>No one yet.</Text>
           ) : (
             <ScrollView style={{ maxHeight: 320 }}>
               {users.map((u) => {
-                const initials = `${u.first_name?.[0] || ''}${u.last_name?.[0] || ''}`;
+                const initials = getInitials(u.first_name, u.last_name);
                 return (
                   <View key={u.id} style={styles.row}>
                     {u.avatar_url ? (
                       <Avatar.Image size={32} source={{ uri: u.avatar_url }} />
                     ) : (
-                      <Avatar.Text size={32} label={initials} style={styles.fallback} labelStyle={{ fontSize: 12 }} />
+                      <Avatar.Text size={32} label={initials} style={styles.fallback} labelStyle={{ fontSize: fontSize.xs }} />
                     )}
                     <Text style={styles.name}>{u.first_name} {u.last_name}</Text>
                   </View>
@@ -52,9 +56,9 @@ export function UserListDialog({ visible, title, users, onDismiss }: UserListDia
   );
 }
 
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
-  fallback: { backgroundColor: '#e5e7eb' },
-  name: { fontSize: 15 },
-  empty: { color: '#9ca3af', paddingVertical: 8 },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm },
+  fallback: { backgroundColor: t.surfaceVariant },
+  name: { fontSize: fontSize.lg },
+  empty: { color: t.textMuted, paddingVertical: space.sm },
 });

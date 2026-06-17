@@ -1,14 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { SubmissionStatus } from '@ambo/database';
-import { statusColors } from '@/lib/theme';
+import { getStatusColors, space, radius, fontSize, fontWeight } from '@/lib/theme';
+import { useAppTheme } from '@/lib/ThemeProvider';
 
 interface StatusBadgeProps {
   status: SubmissionStatus;
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const colors = statusColors[status];
+  const { mode } = useAppTheme();
+  const colors = getStatusColors(mode)[status];
 
   return (
     <View
@@ -24,14 +26,14 @@ export function StatusBadge({ status }: StatusBadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xs,
+    borderRadius: radius.md,
     borderWidth: 1,
     alignSelf: 'flex-start',
   },
   text: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
   },
 });

@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:3000';
 
 export default function ForgotPasswordScreen() {
+  const { styles } = useThemedStyles(makeStyles);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -102,35 +105,35 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#fff' },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 12 },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  flex: { flex: 1, backgroundColor: t.background },
+  container: { flexGrow: 1, justifyContent: 'center', padding: space.xl },
+  title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, textAlign: 'center', marginBottom: space.md, color: t.textPrimary },
   description: {
-    fontSize: 15,
-    color: '#666',
+    fontSize: fontSize.lg,
+    color: t.textSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: space.xl,
     lineHeight: 22,
   },
   input: {
-    borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: '#fafafa',
+    borderWidth: 1, borderColor: t.border, borderRadius: radius.sm, padding: space.lg,
+    fontSize: fontSize.lg, marginBottom: space.md, backgroundColor: t.surfaceVariant, color: t.textPrimary,
   },
   button: {
-    backgroundColor: '#005EFF', borderRadius: 8, padding: 16,
-    alignItems: 'center', marginTop: 8,
+    backgroundColor: t.accentSolid, borderRadius: radius.sm, padding: space.lg,
+    alignItems: 'center', marginTop: space.sm,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  buttonText: { color: t.onAccent, fontSize: fontSize.lg, fontWeight: fontWeight.semibold },
   secondaryButton: {
     alignItems: 'center',
-    marginTop: 16,
-    padding: 12,
+    marginTop: space.lg,
+    padding: space.md,
   },
   secondaryButtonText: {
-    fontSize: 15,
-    color: '#6366f1',
-    fontWeight: '500',
+    fontSize: fontSize.lg,
+    color: t.secondary,
+    fontWeight: fontWeight.medium,
   },
 });

@@ -3,14 +3,17 @@ import { View, StyleSheet, Linking } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { Check } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export default function SuccessScreen() {
   const router = useRouter();
+  const { styles, tokens } = useThemedStyles(makeStyles);
 
   return (
     <View style={styles.container}>
       <View style={styles.iconCircle}>
-        <Check size={40} color="#16a34a" />
+        <Check size={40} color={tokens.statusGoodFg} />
       </View>
       <Text variant="headlineSmall" style={styles.title}>You did it!</Text>
       <Text variant="bodyMedium" style={styles.body}>
@@ -43,30 +46,31 @@ export default function SuccessScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: space.xl },
   iconCircle: {
     width: 80,
     height: 80,
+    // eslint-disable-next-line no-restricted-syntax -- intentional
     borderRadius: 40,
-    backgroundColor: '#dcfce7',
+    backgroundColor: t.statusGoodBg,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: space.xl,
   },
-  title: { fontWeight: '700', marginBottom: 12, textAlign: 'center' },
-  body: { color: '#6b7280', textAlign: 'center', lineHeight: 22, marginBottom: 24 },
+  title: { fontWeight: fontWeight.bold, marginBottom: space.md, textAlign: 'center' },
+  body: { color: t.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: space.xl },
   card: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: t.surfaceVariant,
+    borderRadius: radius.md,
+    padding: space.xl,
     width: '100%',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    marginBottom: 24,
+    borderColor: t.border,
+    marginBottom: space.xl,
   },
-  cardTitle: { fontWeight: '600', marginBottom: 6 },
-  cardBody: { color: '#6b7280' },
-  link: { color: '#6366f1', fontWeight: '500' },
-  button: { borderRadius: 8 },
+  cardTitle: { fontWeight: fontWeight.semibold, marginBottom: space.sm },
+  cardBody: { color: t.textSecondary },
+  link: { color: t.secondary, fontWeight: fontWeight.medium },
+  button: { borderRadius: radius.sm },
 });

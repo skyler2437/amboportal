@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Check, ChevronRight, ChevronLeft, Loader2, Save, Upload, FileText, AlertCircle } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Loader2, Save, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getApplicationByPhone, saveApplicationStep, submitApplication, submitApplicationForUser, uploadTranscript } from "@/actions/application";
 import { ApplicationData } from "@ambo/database/application-types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SignOutButton } from "@/components/SignOutButton";
+import { ContactStep } from "@/components/application/ContactStep";
+import { PersonalStep } from "@/components/application/PersonalStep";
+import { AcademicStep } from "@/components/application/AcademicStep";
+import { ReferencesStep } from "@/components/application/ReferencesStep";
+import { QuestionnaireStep } from "@/components/application/QuestionnaireStep";
 
 type StepKey = "contact" | "personal" | "academic" | "references" | "questionnaire";
 
@@ -346,226 +350,27 @@ export default function ApplicationForm({ userId, userData, initialData, resumeS
                     >
                         {/* --- Contact Info (Guest only) --- */}
                         {currentStepKey === "contact" && (
-                            <div className="space-y-6 max-w-md mx-auto py-8">
-                                <div className="text-center space-y-2">
-                                    <h2 className="text-xl font-semibold">Welcome</h2>
-                                    <p className="text-sm text-muted-foreground">
-                                        Enter your phone number to start or resume your application.
-                                    </p>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Cell Phone Number</label>
-                                    <Input
-                                        type="tel"
-                                        className="text-lg tracking-wide text-center h-12"
-                                        placeholder="(555) 555-5555"
-                                        value={resumeData.phone_number}
-                                        onChange={(e) => handleChange("phone_number", e.target.value)}
-                                    />
-                                </div>
-                            </div>
+                            <ContactStep data={resumeData} onChange={handleChange} />
                         )}
 
                         {/* --- Personal Info --- */}
                         {currentStepKey === "personal" && (
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Guest flow: show name and email fields */}
-                                    {!isAuthenticated && (
-                                        <>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">First Name <span className="text-red-500">*</span></label>
-                                                <Input value={resumeData.first_name || ""} onChange={(e) => handleChange("first_name", e.target.value)} />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">Last Name <span className="text-red-500">*</span></label>
-                                                <Input value={resumeData.last_name || ""} onChange={(e) => handleChange("last_name", e.target.value)} />
-                                            </div>
-                                            <div className="space-y-2 md:col-span-2">
-                                                <label className="text-sm font-medium">Student Email <span className="text-red-500">*</span></label>
-                                                <Input type="email" value={resumeData.email || ""} onChange={(e) => handleChange("email", e.target.value)} />
-                                            </div>
-                                        </>
-                                    )}
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Current Grade <span className="text-red-500">*</span></label>
-                                        <select
-                                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                            value={resumeData.grade_current || ""}
-                                            onChange={(e) => handleChange("grade_current", e.target.value)}
-                                        >
-                                            <option value="">Select...</option>
-                                            <option value="9">Freshman (9th)</option>
-                                            <option value="10">Sophomore (10th)</option>
-                                            <option value="11">Junior (11th)</option>
-                                            <option value="12">Senior (12th)</option>
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Grade Entered Linfield <span className="text-red-500">*</span></label>
-                                        <Input placeholder="e.g. 6th Grade" value={resumeData.grade_entry || ""} onChange={(e) => handleChange("grade_entry", e.target.value)} />
-                                    </div>
-                                </div>
-                            </div>
+                            <PersonalStep data={resumeData} onChange={handleChange} isAuthenticated={isAuthenticated} />
                         )}
 
                         {/* --- Academic Info --- */}
                         {currentStepKey === "academic" && (
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Current Cumulative GPA <span className="text-red-500">*</span></label>
-                                    <Input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="5"
-                                        className="max-w-[200px]"
-                                        value={resumeData.gpa || ""}
-                                        onChange={(e) => handleChange("gpa", parseFloat(e.target.value))}
-                                    />
-                                    <p className="text-xs text-muted-foreground">Must be between 0.00 and 5.00</p>
-                                </div>
-                                <div className="space-y-4 pt-4 border-t">
-                                    <label className="text-sm font-medium block">Current Unofficial Transcript <span className="text-red-500">*</span></label>
-                                    {resumeData.transcript_url ? (
-                                        <div className="flex items-center gap-3 p-3 bg-secondary rounded-md border">
-                                            <FileText className="w-5 h-5 text-primary" />
-                                            <span className="text-sm flex-1 truncate font-medium">Transcript Uploaded</span>
-                                            <button
-                                                onClick={() => handleChange("transcript_url", "")}
-                                                className="text-xs text-destructive hover:underline font-medium"
-                                            >
-                                                Remove
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col gap-2">
-                                            <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md text-sm font-medium transition-colors w-fit border shadow-sm">
-                                                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                                                <span>Upload File</span>
-                                                <input type="file" className="hidden" accept=".pdf,application/pdf" onChange={handleFileUpload} />
-                                            </label>
-                                            <span className="text-xs text-muted-foreground">PDF (Max 5MB)</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                            <AcademicStep data={resumeData} onChange={handleChange} uploading={uploading} onFileUpload={handleFileUpload} />
                         )}
 
                         {/* --- References --- */}
                         {currentStepKey === "references" && (
-                            <div className="space-y-8">
-                                <div className="space-y-4">
-                                    <h3 className="font-semibold border-b pb-2 flex items-center gap-2">
-                                        Academic Reference
-                                        <span className="text-xs font-normal text-muted-foreground ml-auto">Required</span>
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Teacher Name <span className="text-red-500">*</span></label>
-                                            <Input value={resumeData.referrer_academic_name || ""} onChange={(e) => handleChange("referrer_academic_name", e.target.value)} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Teacher Email <span className="text-red-500">*</span></label>
-                                            <Input type="email" value={resumeData.referrer_academic_email || ""} onChange={(e) => handleChange("referrer_academic_email", e.target.value)} />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="space-y-4">
-                                    <h3 className="font-semibold border-b pb-2 flex items-center gap-2">
-                                        Spiritual Reference
-                                        <span className="text-xs font-normal text-muted-foreground ml-auto">Required</span>
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Pastor/Teacher Name <span className="text-red-500">*</span></label>
-                                            <Input value={resumeData.referrer_bible_name || ""} onChange={(e) => handleChange("referrer_bible_name", e.target.value)} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-medium">Pastor/Teacher Email <span className="text-red-500">*</span></label>
-                                            <Input type="email" value={resumeData.referrer_bible_email || ""} onChange={(e) => handleChange("referrer_bible_email", e.target.value)} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <ReferencesStep data={resumeData} onChange={handleChange} />
                         )}
 
                         {/* --- Questionnaire --- */}
                         {currentStepKey === "questionnaire" && (
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Please list your current or past involvement... <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_involvement || ""}
-                                        onChange={(e) => handleChange("q_involvement", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Why do you want to be a Student Ambassador? <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_why_ambassador || ""}
-                                        onChange={(e) => handleChange("q_why_ambassador", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Have you accepted Jesus Christ as your Lord and Savior? <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_faith || ""}
-                                        onChange={(e) => handleChange("q_faith", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">What do you love most about Linfield? <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_love_linfield || ""}
-                                        onChange={(e) => handleChange("q_love_linfield", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">What would you change about Linfield? <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_change_linfield || ""}
-                                        onChange={(e) => handleChange("q_change_linfield", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Why did you/your family decide to attend Linfield? <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_family_decision || ""}
-                                        onChange={(e) => handleChange("q_family_decision", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Personal Strengths <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_strengths || ""}
-                                        onChange={(e) => handleChange("q_strengths", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Personal Weaknesses <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_weaknesses || ""}
-                                        onChange={(e) => handleChange("q_weaknesses", e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Time Commitment (Monthly) <span className="text-red-500">*</span></label>
-                                    <textarea
-                                        className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                        value={resumeData.q_time_commitment || ""}
-                                        onChange={(e) => handleChange("q_time_commitment", e.target.value)}
-                                    />
-                                </div>
-                            </div>
+                            <QuestionnaireStep data={resumeData} onChange={handleChange} />
                         )}
                     </motion.div>
                 </AnimatePresence>

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import { DEMO_MODE } from '@/lib/demo';
 
 export type PermissionStatus = 'undetermined' | 'granted' | 'denied';
 
@@ -10,7 +11,7 @@ export type PermissionStatus = 'undetermined' | 'granted' | 'denied';
  * requesting permission. Actual token registration and server sync is
  * handled by PushNotificationsProvider.
  */
-export function usePushNotifications(_userId: string) {
+function usePushNotificationsReal(_userId: string) {
   const [permissionStatus, setPermissionStatus] = useState<PermissionStatus>('undetermined');
   const [loading, setLoading] = useState(true);
 
@@ -55,3 +56,17 @@ export function usePushNotifications(_userId: string) {
     unregister: async () => {},
   };
 }
+
+function usePushNotificationsDemo(_userId: string) {
+  return {
+    permissionStatus: 'granted' as PermissionStatus,
+    expoPushToken: null as string | null,
+    loading: false,
+    requestPermission: async (): Promise<'granted' | null> => 'granted',
+    unregister: async () => {},
+  };
+}
+
+export const usePushNotifications = DEMO_MODE
+  ? usePushNotificationsDemo
+  : usePushNotificationsReal;

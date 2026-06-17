@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, Alert, Linking, Platform, Pressable, ActionSheetIOS, Share } from 'react-native';
-import { Card, Text, Button, Divider, TextInput, Switch, ActivityIndicator } from 'react-native-paper';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { View, ScrollView, StyleSheet, Alert, Linking, Platform, ActionSheetIOS, Share } from 'react-native';
+import { Text, Divider } from 'react-native-paper';
 import { useAuth } from '@/providers/AuthProvider';
 import { useProfile } from '@/hooks/useProfile';
 import { useNotificationPreferences } from '@/hooks/useNotificationPreferences';
@@ -12,9 +11,19 @@ import { AvatarUpload } from '@/components/AvatarUpload';
 import { supabase } from '@/lib/supabase';
 import Constants from 'expo-constants';
 import { ChangePasswordCard } from '@/components/ChangePasswordCard';
-import { openExternalLink } from '@/lib/openExternalLink';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { getInitials } from '@/lib/format';
+import { space, fontWeight, type SemanticTokens } from '@/lib/theme';
+import { ProfileFieldsForm } from '@/components/profile/ProfileFieldsForm';
+import { PushNotificationsCard } from '@/components/profile/PushNotificationsCard';
+import { NotificationPreferencesCard } from '@/components/profile/NotificationPreferencesCard';
+import { CalendarSubscribeCard } from '@/components/profile/CalendarSubscribeCard';
+import { SupportCard } from '@/components/profile/SupportCard';
+import { AccountActions } from '@/components/profile/AccountActions';
 
 export default function AdminProfile() {
+  const { styles } = useThemedStyles(makeStyles);
   const { session, signOut } = useAuth();
   const userId = session?.user?.id || '';
   const { user, loading, refetch } = useProfile(userId);
@@ -209,7 +218,7 @@ export default function AdminProfile() {
   if (loading) return <LoadingScreen />;
 
   const initials = user
-    ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`
+    ? getInitials(user.first_name, user.last_name)
     : '?';
 
   const displayAvatar = avatarUrl || user?.avatar_url;
@@ -231,194 +240,51 @@ export default function AdminProfile() {
 
       {/* Editable Profile Fields */}
       <Text variant="titleMedium" style={styles.sectionTitle}>Profile Information</Text>
-      <View style={styles.formSection}>
-        <TextInput
-          mode="outlined"
-          label="First Name"
-          value={firstName}
-          onChangeText={setFirstName}
-          dense
-          style={styles.input}
-        />
-        <TextInput
-          mode="outlined"
-          label="Last Name"
-          value={lastName}
-          onChangeText={setLastName}
-          dense
-          style={styles.input}
-        />
-        <TextInput
-          mode="outlined"
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          dense
-          style={styles.input}
-        />
-        <TextInput
-          mode="outlined"
-          label="Phone (10 digits)"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          maxLength={10}
-          dense
-          style={styles.input}
-        />
-        {hasChanges && (
-          <Button
-            mode="contained"
-            onPress={handleSave}
-            loading={saving}
-            disabled={saving}
-            style={styles.saveButton}
-          >
-            Save Changes
-          </Button>
-        )}
-      </View>
+      <ProfileFieldsForm
+        firstName={firstName}
+        onChangeFirstName={setFirstName}
+        lastName={lastName}
+        onChangeLastName={setLastName}
+        email={email}
+        onChangeEmail={setEmail}
+        phone={phone}
+        onChangePhone={setPhone}
+        hasChanges={hasChanges}
+        saving={saving}
+        onSave={handleSave}
+      />
 
       <Divider style={styles.divider} />
 
       {/* Notification Permission */}
       <Text variant="titleMedium" style={styles.sectionTitle}>Notifications</Text>
-      <Card elevation={0} style={styles.pushCard}>
-        <Card.Content>
-          <View style={styles.pushHeader}>
-            <MaterialCommunityIcons name="bell-ring-outline" size={24} color="#111827" />
-            <View style={styles.pushInfo}>
-              <Text variant="bodyLarge" style={styles.pushTitle}>Push Notifications</Text>
-              <Text variant="bodySmall" style={styles.pushSubtitle}>
-                {permissionStatus === 'granted'
-                  ? 'Notifications are enabled'
-                  : permissionStatus === 'denied'
-                  ? 'Notifications are blocked in device settings'
-                  : 'Enable to receive alerts for messages, posts, and events'}
-              </Text>
-            </View>
-          </View>
-          {pushLoading ? (
-            <ActivityIndicator style={styles.pushLoader} />
-          ) : permissionStatus === 'granted' ? (
-            <View style={styles.pushStatus}>
-              <MaterialCommunityIcons name="check-circle" size={16} color="#16a34a" />
-              <Text variant="bodySmall" style={styles.pushStatusText}>Enabled</Text>
-            </View>
-          ) : permissionStatus === 'denied' ? (
-            <Button
-              mode="outlined"
-              icon="cog"
-              onPress={() => {
-                if (Platform.OS === 'ios') {
-                  Linking.openURL('app-settings:');
-                } else {
-                  Linking.openSettings();
-                }
-              }}
-              compact
-            >
-              Open Settings
-            </Button>
-          ) : (
-            <Button
-              mode="contained"
-              icon="bell"
-              onPress={requestPermission}
-              style={styles.pushEnableButton}
-            >
-              Enable Notifications
-            </Button>
-          )}
-        </Card.Content>
-      </Card>
+      <PushNotificationsCard
+        permissionStatus={permissionStatus}
+        pushLoading={pushLoading}
+        onRequestPermission={requestPermission}
+        defaultSubtitle="Enable to receive alerts for messages, posts, and events"
+        cardStyle={styles.pushCard}
+      />
 
       {/* Notification Preferences */}
       <Text variant="titleSmall" style={styles.prefsLabel}>Notification Types</Text>
-      <Card elevation={0} style={styles.prefsCard}>
-        <Card.Content style={styles.prefsContent}>
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="chat-outline" size={20} color="#6b7280" />
-              <Text variant="bodyMedium">Chat Messages</Text>
-            </View>
-            <Switch
-              value={prefs.chat_messages}
-              onValueChange={(v) => updatePref('chat_messages', v)}
-            />
-          </View>
-          <Divider />
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="message-text-outline" size={20} color="#6b7280" />
-              <Text variant="bodyMedium">New Posts</Text>
-            </View>
-            <Switch
-              value={prefs.new_posts}
-              onValueChange={(v) => updatePref('new_posts', v)}
-            />
-          </View>
-          <Divider />
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="comment-text-outline" size={20} color="#6b7280" />
-              <Text variant="bodyMedium">Comments on My Posts</Text>
-            </View>
-            <Switch
-              value={prefs.post_comments}
-              onValueChange={(v) => updatePref('post_comments', v)}
-            />
-          </View>
-          <Divider />
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="calendar-text-outline" size={20} color="#6b7280" />
-              <Text variant="bodyMedium">Event Comments</Text>
-            </View>
-            <Switch
-              value={prefs.event_comments}
-              onValueChange={(v) => updatePref('event_comments', v)}
-            />
-          </View>
-          <Divider />
-          <View style={styles.prefRow}>
-            <View style={styles.prefInfo}>
-              <MaterialCommunityIcons name="bell-alert-outline" size={20} color="#6b7280" />
-              <Text variant="bodyMedium">Event Reminders</Text>
-            </View>
-            <Switch
-              value={prefs.event_reminders}
-              onValueChange={(v) => updatePref('event_reminders', v)}
-            />
-          </View>
-        </Card.Content>
-      </Card>
+      <NotificationPreferencesCard
+        prefs={prefs}
+        updatePref={updatePref}
+        cardStyle={styles.prefsCard}
+      />
 
       <Divider style={styles.divider} />
 
       {/* Calendar Subscription */}
       <Text variant="titleMedium" style={styles.sectionTitle}>Integrations</Text>
-      <Card elevation={0} style={styles.gcalCard}>
-        <Card.Content>
-          <View style={styles.gcalHeader}>
-            <MaterialCommunityIcons name="calendar-sync" size={24} color="#4285F4" />
-            <View style={styles.gcalInfo}>
-              <Text variant="bodyLarge" style={styles.gcalTitle}>Subscribe to Calendar</Text>
-              <Text variant="bodySmall" style={styles.gcalSubtitle}>Add ambassador events to your calendar app. Events auto-update with RSVPs and details.</Text>
-            </View>
-          </View>
-          <Button
-            mode="contained"
-            icon="calendar-plus"
-            onPress={handleSubscribeCalendar}
-            style={styles.gcalConnectButton}
-          >
-            Subscribe to Calendar
-          </Button>
-        </Card.Content>
-      </Card>
+      <CalendarSubscribeCard onSubscribe={handleSubscribeCalendar} cardStyle={styles.gcalCard} />
+
+      <Divider style={styles.divider} />
+
+      {/* Appearance */}
+      <Text variant="titleMedium" style={styles.sectionTitle}>Appearance</Text>
+      <ThemeToggle cardStyle={styles.appearanceCard} />
 
       <Divider style={styles.divider} />
 
@@ -430,60 +296,12 @@ export default function AdminProfile() {
 
       {/* Support */}
       <Text variant="titleMedium" style={styles.sectionTitle}>Support</Text>
-      <Card elevation={0} style={styles.supportCard}>
-        <Card.Content style={styles.supportContent}>
-          <Pressable style={styles.supportRow} onPress={() => Linking.openURL('mailto:support@127makes.com')}>
-            <MaterialCommunityIcons name="email-outline" size={20} color="#6b7280" />
-            <Text variant="bodyMedium">Contact Support</Text>
-          </Pressable>
-          <Pressable
-            style={styles.supportRow}
-            onPress={() => {
-              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://amboportal.vercel.app';
-              openExternalLink(`${webUrl}/privacy`);
-            }}
-          >
-            <MaterialCommunityIcons name="shield-lock-outline" size={20} color="#6b7280" />
-            <Text variant="bodyMedium">Privacy Policy</Text>
-          </Pressable>
-          <Pressable
-            style={styles.supportRow}
-            onPress={() => {
-              const webUrl = process.env.EXPO_PUBLIC_WEB_URL || 'https://amboportal.vercel.app';
-              openExternalLink(`${webUrl}/terms`);
-            }}
-          >
-            <MaterialCommunityIcons name="file-document-outline" size={20} color="#6b7280" />
-            <Text variant="bodyMedium">Terms of Service</Text>
-          </Pressable>
-        </Card.Content>
-      </Card>
+      <SupportCard cardStyle={styles.supportCard} />
 
       <Divider style={styles.divider} />
 
-      {/* Sign Out */}
-      <Button
-        mode="contained"
-        buttonColor="#ef4444"
-        icon="logout"
-        onPress={signOut}
-        style={styles.signOutButton}
-      >
-        Sign Out
-      </Button>
-
-      {/* Delete Account */}
-      <Button
-        mode="text"
-        textColor="#ef4444"
-        icon="delete-outline"
-        onPress={handleDeleteAccount}
-        loading={deleting}
-        disabled={deleting}
-        style={styles.deleteButton}
-      >
-        Delete Account
-      </Button>
+      {/* Sign Out + Delete Account */}
+      <AccountActions onSignOut={signOut} onDeleteAccount={handleDeleteAccount} deleting={deleting} />
 
       <Text variant="bodySmall" style={styles.versionText}>
         AmboPortal v{Constants.expoConfig?.version || '1.0.0'}
@@ -492,44 +310,17 @@ export default function AdminProfile() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  content: { padding: 16, paddingBottom: 48 },
-  avatarSection: { alignItems: 'center', gap: 8, paddingVertical: 16 },
-  divider: { marginVertical: 16 },
-  sectionTitle: { fontWeight: '600', marginBottom: 12 },
-  formSection: { gap: 12 },
-  input: { backgroundColor: '#fff' },
-  saveButton: { borderRadius: 12, marginTop: 4 },
-  pushCard: { backgroundColor: '#f9fafb', marginBottom: 12 },
-  pushHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  pushInfo: { flex: 1 },
-  pushTitle: { fontWeight: '600' },
-  pushSubtitle: { color: '#6b7280' },
-  pushLoader: { marginVertical: 8 },
-  pushStatus: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  pushStatusText: { color: '#16a34a', fontWeight: '600' },
-  pushEnableButton: { borderRadius: 8 },
-  prefsLabel: { fontWeight: '600', marginBottom: 8, color: '#6b7280' },
-  prefsCard: { backgroundColor: '#f9fafb' },
-  prefsContent: { gap: 4 },
-  prefRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  prefInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  gcalCard: { backgroundColor: '#f9fafb' },
-  gcalHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  gcalInfo: { flex: 1 },
-  gcalTitle: { fontWeight: '600' },
-  gcalSubtitle: { color: '#6b7280' },
-  gcalConnectButton: { borderRadius: 8 },
-  supportCard: { backgroundColor: '#f9fafb' },
-  supportContent: { gap: 0 },
-  supportRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
-  signOutButton: { borderRadius: 12 },
-  deleteButton: { marginTop: 12 },
-  versionText: { color: '#d1d5db', textAlign: 'center', marginTop: 16 },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.background },
+  content: { padding: space.lg, paddingBottom: space.xxl },
+  avatarSection: { alignItems: 'center', gap: space.sm, paddingVertical: space.lg },
+  divider: { marginVertical: space.lg },
+  sectionTitle: { fontWeight: fontWeight.semibold, marginBottom: space.md },
+  pushCard: { backgroundColor: t.surfaceVariant, marginBottom: space.md },
+  prefsLabel: { fontWeight: fontWeight.semibold, marginBottom: space.sm, color: t.textSecondary },
+  prefsCard: { backgroundColor: t.surfaceVariant },
+  gcalCard: { backgroundColor: t.surfaceVariant },
+  appearanceCard: { backgroundColor: t.surfaceVariant },
+  supportCard: { backgroundColor: t.surfaceVariant },
+  versionText: { color: t.textMuted, textAlign: 'center', marginTop: space.lg },
 });

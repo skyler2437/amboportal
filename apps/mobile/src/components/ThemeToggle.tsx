@@ -1,0 +1,46 @@
+import React from 'react';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { Card, Text, SegmentedButtons } from 'react-native-paper';
+import { useThemeStore, type ThemePref } from '@/stores/themeStore';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import { space, fontWeight } from '@/lib/theme';
+
+const OPTIONS: { value: ThemePref; label: string; icon: string }[] = [
+  { value: 'system', label: 'System', icon: 'cellphone' },
+  { value: 'light', label: 'Light', icon: 'white-balance-sunny' },
+  { value: 'dark', label: 'Dark', icon: 'moon-waning-crescent' },
+];
+
+/**
+ * App appearance picker (System / Light / Dark). Writes to the persisted theme
+ * preference; 'system' follows the OS. Lives in each profile's settings.
+ */
+export function ThemeToggle({ cardStyle }: { cardStyle?: StyleProp<ViewStyle> }) {
+  const pref = useThemeStore((s) => s.pref);
+  const setPref = useThemeStore((s) => s.setPref);
+  const { tokens } = useAppTheme();
+
+  return (
+    <Card elevation={0} style={[styles.card, { backgroundColor: tokens.surface }, cardStyle]}>
+      <Card.Content>
+        <Text variant="bodyMedium" style={styles.title}>
+          Appearance
+        </Text>
+        <Text variant="bodySmall" style={[styles.subtitle, { color: tokens.textSecondary }]}>
+          Choose how the app looks. System follows your device setting.
+        </Text>
+        <SegmentedButtons
+          value={pref}
+          onValueChange={(v) => setPref(v as ThemePref)}
+          buttons={OPTIONS}
+        />
+      </Card.Content>
+    </Card>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: { marginTop: space.md },
+  title: { fontWeight: fontWeight.semibold, marginBottom: space.xxs },
+  subtitle: { marginBottom: space.md },
+});

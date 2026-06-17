@@ -1,9 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useNetwork } from '@/providers/NetworkProvider';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 export function OfflineBanner() {
   const { isOffline } = useNetwork();
+  const { styles } = useThemedStyles(makeStyles);
 
   if (!isOffline) return null;
 
@@ -16,17 +19,17 @@ export function OfflineBanner() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   banner: {
-    backgroundColor: '#f59e0b',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    backgroundColor: t.statusWarnFg,
+    paddingVertical: space.sm,
+    paddingHorizontal: space.lg,
     alignItems: 'center',
   },
   text: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '600',
+    color: t.onAccent,
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
     textAlign: 'center',
   },
 });

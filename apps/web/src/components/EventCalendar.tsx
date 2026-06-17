@@ -5,16 +5,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Clock, MapPin, RefreshCw, AlertTriangle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, CalendarDays, Clock, LayoutList, MapPin, RefreshCw, AlertTriangle, CheckCircle2, HelpCircle, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import type { EventDetails } from "@ambo/database/types";
 import { tintForStatus } from "@/lib/eventColors";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { EventMonthCalendar } from "@/components/EventMonthCalendar";
 
-type EventDetailsWithMyRsvp = EventDetails & {
+export type EventDetailsWithMyRsvp = EventDetails & {
     my_rsvp_status?: string | null;
     my_rsvp_option_id?: string | null;
 };
+
+type EventsView = "card" | "calendar";
+
+const VIEW_STORAGE_KEY = "events_view_pref";
 
 const RSVP_LABEL: Record<string, string> = {
     going: "Going",
@@ -49,6 +56,26 @@ export function EventCalendar({
     const [error, setError] = useState(false);
     const upcomingRef = useRef<HTMLDivElement>(null);
 
+    // View preference: month calendar is desktop-only; mobile always gets cards.
+    const [view, setView] = useState<EventsView>("card");
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+    const effectiveView = isDesktop ? view : "card";
+
+    // Read the stored preference after mount to avoid an SSR hydration mismatch.
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem(VIEW_STORAGE_KEY);
+            if (stored === "card" || stored === "calendar") setView(stored);
+        } catch {}
+    }, []);
+
+    const setViewPref = (v: EventsView) => {
+        setView(v);
+        try {
+            localStorage.setItem(VIEW_STORAGE_KEY, v);
+        } catch {}
+    };
+
     const fetchEvents = async () => {
         try {
             const res = await fetch("/api/events");
@@ -77,8 +104,9 @@ export function EventCalendar({
         onRefreshRef?.(fetchEvents);
     }, [onRefreshRef]);
 
-    // Scroll to upcoming events after initial load
+    // Scroll to upcoming events after initial load (card view only)
     useEffect(() => {
+        if (effectiveView !== "card") return;
         if (!loading && events.length > 0 && upcomingRef.current) {
             const timer = setTimeout(() => {
                 upcomingRef.current?.scrollIntoView({
@@ -88,7 +116,7 @@ export function EventCalendar({
             }, 300);
             return () => clearTimeout(timer);
         }
-    }, [loading, events.length]);
+    }, [loading, events.length, effectiveView]);
 
     const grouped = events.reduce(
         (acc, ev) => {
@@ -148,7 +176,39 @@ export function EventCalendar({
         );
     }
 
+    const viewToggle = (
+        <div className="hidden md:flex justify-end">
+            <Tabs value={view} onValueChange={(v) => setViewPref(v as EventsView)}>
+                <TabsList>
+                    <TabsTrigger value="card" className="gap-1.5">
+                        <LayoutList className="h-4 w-4" />
+                        Cards
+                    </TabsTrigger>
+                    <TabsTrigger value="calendar" className="gap-1.5">
+                        <CalendarDays className="h-4 w-4" />
+                        Calendar
+                    </TabsTrigger>
+                </TabsList>
+            </Tabs>
+        </div>
+    );
+
+    if (effectiveView === "calendar") {
+        return (
+            // 8rem = TopNav (4rem) + the layout's md:p-8 top and bottom padding
+            // (2rem each), so the calendar block fills the viewport exactly.
+            <div className="flex h-[calc(100dvh-8rem)] min-h-[32rem] flex-col gap-4">
+                {viewToggle}
+                <div className="min-h-0 flex-1">
+                    <EventMonthCalendar events={events} onEventClick={onEventClick} />
+                </div>
+            </div>
+        );
+    }
+
     return (
+        <div className="space-y-4">
+        {viewToggle}
         <motion.div
             className="space-y-8"
             variants={containerVariants}
@@ -248,5 +308,6 @@ export function EventCalendar({
                 )
             }
         </motion.div >
+        </div>
     );
 }

@@ -2,14 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { handleAuthError } from '@/lib/authError';
 import { useChatReadStore } from '@/stores/chatReadStore';
-
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
+import { createChatGroup } from '@/lib/chat';
+import { DEMO_MODE, demoChatGroups } from '@/lib/demo';
 
 export interface ChatGroup {
   id: string;
@@ -23,9 +17,18 @@ export interface ChatGroupWithMeta extends ChatGroup {
   participants: { user_id: string; users: { first_name: string; last_name: string; avatar_url?: string } }[];
   lastMessage?: { content: string; created_at: string; sender_id?: string };
   hasUnread?: boolean;
+  starred?: boolean;
 }
 
-export function useChatGroups(userId: string) {
+// Starred chats float to the top; within each tier, most-recent activity wins.
+function compareGroups(a: ChatGroupWithMeta, b: ChatGroupWithMeta): number {
+  if (!!a.starred !== !!b.starred) return a.starred ? -1 : 1;
+  const aTime = a.lastMessage?.created_at || a.updated_at || a.created_at;
+  const bTime = b.lastMessage?.created_at || b.updated_at || b.created_at;
+  return new Date(bTime).getTime() - new Date(aTime).getTime();
+}
+
+function useChatGroupsReal(userId: string) {
   const [groups, setGroups] = useState<ChatGroupWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -129,6 +132,31 @@ export function useChatGroups(userId: string) {
       .order('created_at', { ascending: false })
       .limit(groupIds.length * 3); // Fetch a small multiple to ensure coverage
 
+    // Fetch this user's starred group ids. Degrades gracefully if the
+    // chat_stars table/policy isn't applied yet (data is null → no stars);
+    // we log the error so a missing migration is visible while debugging.
+    const { data: starData, error: starErr } = await supabase
+      .from('chat_stars')
+      .select('group_id')
+      .eq('user_id', userId);
+    if (starErr) {
+      console.warn('[useChatGroups] chat_stars fetch failed (is the 20260613 migration applied?)', starErr.message);
+    }
+    const starredSet = new Set<string>((starData || []).map((s: any) => s.group_id));
+
+    // Per-user soft delete. Fetched separately (not folded into the primary
+    // participant query) so a missing deleted_at column degrades on its own —
+    // it must not take unread detection down with it. Empty map → nothing hidden.
+    const { data: delData, error: delErr } = await supabase
+      .from('chat_participants')
+      .select('group_id, deleted_at')
+      .eq('user_id', userId);
+    if (delErr) {
+      console.warn('[useChatGroups] deleted_at fetch failed (is the soft-delete migration applied?)', delErr.message);
+    }
+    const deletedAtMap = new Map<string, string | null>();
+    for (const d of (delData || []) as any[]) deletedAtMap.set(d.group_id, d.deleted_at ?? null);
+
     // Build map of group_id -> latest message (O(n) dedup)
     const lastMessageMap = new Map<string, { content: string; created_at: string; sender_id: string }>();
     if (recentMessages) {
@@ -146,6 +174,13 @@ export function useChatGroups(userId: string) {
 
       const lastMessage = lastMessageMap.get(group.id);
 
+      // Per-user soft delete: a chat the user deleted stays hidden until a newer
+      // message arrives (so deleting never silently buries new activity).
+      const deletedAt = deletedAtMap.get(group.id);
+      const hidden =
+        !!deletedAt && (!lastMessage || new Date(lastMessage.created_at) <= new Date(deletedAt));
+      if (hidden) return null;
+
       // Determine unread status (only if last_read_at column exists)
       // Own messages should never trigger unread indicators
       let hasUnread = false;
@@ -160,15 +195,11 @@ export function useChatGroups(userId: string) {
         hasUnread = false;
       }
 
-      return { ...group, participants, lastMessage: lastMessage || undefined, hasUnread };
-    });
+      return { ...group, participants, lastMessage: lastMessage || undefined, hasUnread, starred: starredSet.has(group.id) };
+    }).filter((g): g is ChatGroupWithMeta => g !== null);
 
-    // Sort by last message time or group updated_at
-    result.sort((a, b) => {
-      const aTime = a.lastMessage?.created_at || a.updated_at || a.created_at;
-      const bTime = b.lastMessage?.created_at || b.updated_at || b.created_at;
-      return new Date(bTime).getTime() - new Date(aTime).getTime();
-    });
+    // Starred first, then by most-recent activity
+    result.sort(compareGroups);
 
     setGroups(result);
     hasLoadedOnce.current = true;
@@ -222,12 +253,8 @@ export function useChatGroups(userId: string) {
 
             updated[idx] = group;
 
-            // Re-sort so most recent message bubbles to top
-            updated.sort((a, b) => {
-              const aTime = a.lastMessage?.created_at || a.updated_at || a.created_at;
-              const bTime = b.lastMessage?.created_at || b.updated_at || b.created_at;
-              return new Date(bTime).getTime() - new Date(aTime).getTime();
-            });
+            // Re-sort: starred first, then most recent message bubbles to top
+            updated.sort(compareGroups);
 
             return updated;
           });
@@ -241,24 +268,79 @@ export function useChatGroups(userId: string) {
   }, [userId, fetchGroups]);
 
   const createGroup = async (name: string | null, participantIds: string[]) => {
-    const groupId = generateUUID();
-
-    const { error: err } = await supabase
-      .from('chat_groups')
-      .insert({ id: groupId, name, created_by: userId });
-    if (err) throw err;
-
-    const rows = participantIds.map((uid) => ({ group_id: groupId, user_id: uid }));
-    if (!participantIds.includes(userId)) {
-      rows.push({ group_id: groupId, user_id: userId });
-    }
-
-    const { error: pErr } = await supabase.from('chat_participants').insert(rows);
-    if (pErr) throw pErr;
-
+    const groupId = await createChatGroup(userId, name, participantIds);
     await fetchGroups();
     return groupId;
   };
 
-  return { groups, loading, error, refetch: fetchGroups, createGroup };
+  // Star/unstar a chat. Optimistically re-sorts, then persists; reverts on
+  // failure (e.g. the chat_stars migration hasn't been applied yet).
+  const toggleStar = useCallback(
+    async (groupId: string, starred: boolean) => {
+      setGroups((prev) => {
+        const updated = prev.map((g) => (g.id === groupId ? { ...g, starred } : g));
+        updated.sort(compareGroups);
+        return updated;
+      });
+
+      try {
+        if (starred) {
+          const { error: insErr } = await supabase
+            .from('chat_stars')
+            .insert({ user_id: userId, group_id: groupId });
+          // 23505 = already starred; treat as success
+          if (insErr && insErr.code !== '23505') throw insErr;
+        } else {
+          const { error: delErr } = await supabase
+            .from('chat_stars')
+            .delete()
+            .eq('user_id', userId)
+            .eq('group_id', groupId);
+          if (delErr) throw delErr;
+        }
+      } catch (e) {
+        setGroups((prev) => {
+          const reverted = prev.map((g) => (g.id === groupId ? { ...g, starred: !starred } : g));
+          reverted.sort(compareGroups);
+          return reverted;
+        });
+        console.warn('[useChatGroups] toggleStar failed', e);
+      }
+    },
+    [userId],
+  );
+
+  // Per-user soft delete: hide the chat from this user's list by stamping their
+  // own chat_participants row. Optimistically removes it; reverts on failure.
+  const deleteChat = useCallback(
+    async (groupId: string) => {
+      setGroups((prev) => prev.filter((g) => g.id !== groupId));
+      const { error: delErr } = await supabase
+        .from('chat_participants')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('group_id', groupId)
+        .eq('user_id', userId);
+      if (delErr) {
+        console.warn('[useChatGroups] deleteChat failed', delErr.message);
+        fetchGroups();
+      }
+    },
+    [userId, fetchGroups],
+  );
+
+  return { groups, loading, error, refetch: fetchGroups, createGroup, toggleStar, deleteChat };
 }
+
+function useChatGroupsDemo(_userId: string) {
+  return {
+    groups: demoChatGroups as ChatGroupWithMeta[],
+    loading: false,
+    error: null as string | null,
+    refetch: async () => {},
+    createGroup: async (_name: string | null, _participantIds: string[]) => 'group-1',
+    toggleStar: async (_groupId: string, _starred: boolean) => {},
+    deleteChat: async (_groupId: string) => {},
+  };
+}
+
+export const useChatGroups = DEMO_MODE ? useChatGroupsDemo : useChatGroupsReal;

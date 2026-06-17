@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { unregisterCurrentPushToken } from '@/lib/push-token-manager';
 import type { UserRole } from '@ambo/database/types';
 import type { Session } from '@supabase/supabase-js';
+import { DEMO_MODE, DEMO_ROLE, DEMO_SESSION } from '@/lib/demo';
 
 // Max time to wait for initial auth check before unblocking the UI as a
 // safety net against a hung getSession(). 4s was too aggressive — on slow
@@ -33,14 +34,17 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    session: null,
-    userRole: null,
-    isLoading: true,
-  });
+  const [state, setState] = useState<AuthState>(
+    DEMO_MODE
+      ? { session: DEMO_SESSION, userRole: DEMO_ROLE, isLoading: false }
+      : { session: null, userRole: null, isLoading: true },
+  );
   const initialAuthResolved = useRef(false);
 
   useEffect(() => {
+    // Demo mode: synthetic session is already set; never touch Supabase auth.
+    if (DEMO_MODE) return;
+
     // Timeout: unblock the UI if auth takes too long (cold-start hang fix).
     // The onAuthStateChange listener below will still update state if the
     // session resolves after the timeout, so the user won't be locked out.

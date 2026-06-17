@@ -27,7 +27,7 @@ export const submissionSchema = z.object({
     tomorrow.setHours(0, 0, 0, 0);
     return date < tomorrow;
   }, "Service date must not be in the future"),
-  service_type: z.enum(SERVICE_TYPES as unknown as [string, ...string[]], {
+  service_type: z.enum(SERVICE_TYPES, {
     message: "Invalid service type",
   }),
   credits: z.coerce.number().min(0, "Credits must be non-negative").default(0),

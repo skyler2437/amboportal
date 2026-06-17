@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Alert } from 'react-native';
 import { Avatar, ActivityIndicator } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
+import { File } from 'expo-file-system';
 import { supabase } from '@/lib/supabase';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import type { SemanticTokens } from '@/lib/theme';
 
 interface AvatarUploadProps {
   userId: string;
@@ -13,6 +16,7 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ userId, avatarUrl, initials, size = 80, onUploaded }: AvatarUploadProps) {
+  const { styles } = useThemedStyles(makeStyles);
   const [uploading, setUploading] = useState(false);
 
   const handlePress = async () => {
@@ -36,14 +40,15 @@ export function AvatarUpload({ userId, avatarUrl, initials, size = 80, onUploade
       const asset = result.assets[0];
       const fileName = `${userId}.jpg`;
 
-      // Fetch the image as blob
-      const response = await fetch(asset.uri);
-      const blob = await response.blob();
+      // Read the picked image's real bytes. In React Native, fetch(uri).blob()
+      // yields an empty/opaque blob that supabase-js uploads as a 0-byte file,
+      // which then renders as a blank (blue) avatar.
+      const bytes = await new File(asset.uri).bytes();
 
       // Upload to avatars bucket
       const { error: uploadErr } = await supabase.storage
         .from('avatars')
-        .upload(fileName, blob, { upsert: true, contentType: 'image/jpeg' });
+        .upload(fileName, bytes, { upsert: true, contentType: 'image/jpeg' });
       if (uploadErr) throw uploadErr;
 
       // Get public URL
@@ -84,13 +89,13 @@ export function AvatarUpload({ userId, avatarUrl, initials, size = 80, onUploade
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
   },
   fallback: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.surfaceVariant,
   },
 });

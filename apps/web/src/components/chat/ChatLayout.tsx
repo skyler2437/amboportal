@@ -150,6 +150,10 @@ export function ChatLayout({ currentUserId, currentUserFirstName = "", currentUs
         <div
             className="fixed inset-x-0 top-0 z-30 md:relative md:inset-auto md:z-auto flex md:border md:rounded-lg overflow-hidden bg-background"
             style={
+                // The 4rem here matches an h-16 nav bar: the mobile bottom nav
+                // (fallback before visualViewport kicks in) and, on desktop, the
+                // TopNav above this container. If either nav height changes,
+                // this calc must change with it.
                 mobileStyle ?? { height: "calc(100dvh - 4rem - env(safe-area-inset-bottom, 0px))" }
             }
         >

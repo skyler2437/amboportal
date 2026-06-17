@@ -3,6 +3,8 @@ import { View, StyleSheet, TextInput, TextInput as RNTextInput } from 'react-nat
 import { IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hapticLight } from '@/lib/haptics';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontSize, type SemanticTokens } from '@/lib/theme';
 
 interface ChatInputProps {
   onSend: (text: string) => Promise<void>;
@@ -11,6 +13,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
+  const { styles, tokens } = useThemedStyles(makeStyles);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const insets = useSafeAreaInsets();
@@ -41,11 +44,11 @@ export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: Math.max(8, insets.bottom) }]}>
+    <View style={[styles.container, { paddingBottom: Math.max(space.sm, insets.bottom) }]}>
       <TextInput
         ref={inputRef}
         placeholder="Type a message..."
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor={tokens.textMuted}
         value={text}
         onChangeText={handleChangeText}
         style={styles.input}
@@ -65,26 +68,26 @@ export function ChatInput({ onSend, onTyping, disabled }: ChatInputProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 8,
-    paddingTop: 8,
-    paddingBottom: 8,
-    backgroundColor: '#fff',
+    paddingHorizontal: space.sm,
+    paddingTop: space.sm,
+    paddingBottom: space.sm,
+    backgroundColor: t.surface,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    gap: 4,
+    borderTopColor: t.border,
+    gap: space.xs,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
+    backgroundColor: t.surfaceVariant,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    fontSize: fontSize.lg,
     maxHeight: 100,
-    color: '#111827',
+    color: t.textPrimary,
   },
 });

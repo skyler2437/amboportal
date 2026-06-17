@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as Sentry from '@sentry/react-native';
 import { Slot, useRouter, useSegments } from 'expo-router';
-import { PaperProvider } from 'react-native-paper';
+import { StatusBar } from 'expo-status-bar';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import { NetworkProvider } from '@/providers/NetworkProvider';
@@ -12,7 +12,8 @@ import { BiometricLockScreen } from '@/components/BiometricLockScreen';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
 import { validateEnv } from '@/lib/env';
 import { useChatReadStore } from '@/stores/chatReadStore';
-import { theme } from '@/lib/theme';
+import { useThemeStore } from '@/stores/themeStore';
+import { AppThemeProvider, useAppTheme } from '@/lib/ThemeProvider';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -26,6 +27,9 @@ validateEnv();
 
 // Kick off async hydration of persisted chat read state
 useChatReadStore.getState().hydrate();
+
+// Kick off async hydration of the persisted theme preference
+useThemeStore.getState().hydrate();
 
 function RootNavigator() {
   const { session, userRole, isLoading } = useAuth();
@@ -74,8 +78,11 @@ function RootNavigator() {
     router.replace(target as Parameters<typeof router.replace>[0]);
   }, [session, userRole, isLoading, segments, router]);
 
+  const { mode } = useAppTheme();
+
   return (
     <>
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
       <OfflineBanner />
       <Slot />
     </>
@@ -97,7 +104,7 @@ function RootLayout() {
     <ErrorBoundary>
       <AuthProvider>
         <KeyboardProvider>
-          <PaperProvider theme={theme}>
+          <AppThemeProvider>
             <NetworkProvider>
               <PushNotificationsProvider>
                 <BiometricGate>
@@ -105,7 +112,7 @@ function RootLayout() {
                 </BiometricGate>
               </PushNotificationsProvider>
             </NetworkProvider>
-          </PaperProvider>
+          </AppThemeProvider>
         </KeyboardProvider>
       </AuthProvider>
     </ErrorBoundary>

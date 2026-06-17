@@ -4,6 +4,8 @@ import { Text, Switch } from 'react-native-paper';
 import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 type ActiveField =
   | 'startDate'
@@ -44,6 +46,7 @@ export function EventDateTimePicker({
   onEndDateChange,
   onAllDayChange,
 }: EventDateTimePickerProps) {
+  const { styles } = useThemedStyles(makeStyles);
   const [activeField, setActiveField] = useState<ActiveField>(null);
 
   const toggleField = (field: ActiveField) => {
@@ -264,53 +267,54 @@ export function EventDateTimePicker({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginVertical: 8,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-  },
-  label: {
-    fontWeight: '600',
-    color: '#111827',
-  },
-  pills: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  pill: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#e2e5ea',
-  },
-  pillActive: {
-    backgroundColor: '#005EFF',
-    borderColor: '#005EFF',
-  },
-  pillText: {
-    fontSize: 15,
-    color: '#111827',
-    fontWeight: '500',
-  },
-  pillTextActive: {
-    color: '#ffffff',
-  },
-  separator: {
-    height: 1,
-    backgroundColor: '#f3f4f6',
-  },
-  pickerContainer: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  iosPicker: {
-    height: 'auto' as any,
-  },
-});
+const makeStyles = (t: SemanticTokens) =>
+  StyleSheet.create({
+    container: {
+      marginVertical: space.sm,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: space.md,
+    },
+    label: {
+      fontWeight: fontWeight.semibold,
+      color: t.textPrimary,
+    },
+    pills: {
+      flexDirection: 'row',
+      gap: space.sm,
+    },
+    pill: {
+      backgroundColor: t.surfaceVariant,
+      borderRadius: radius.sm,
+      paddingHorizontal: space.lg,
+      paddingVertical: space.sm,
+      borderWidth: 1,
+      borderColor: t.border,
+    },
+    pillActive: {
+      backgroundColor: t.accentSolid,
+      borderColor: t.accentSolid,
+    },
+    pillText: {
+      fontSize: fontSize.lg,
+      color: t.textPrimary,
+      fontWeight: fontWeight.medium,
+    },
+    pillTextActive: {
+      color: t.onAccent,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: t.divider,
+    },
+    pickerContainer: {
+      alignItems: 'center',
+      paddingVertical: space.sm,
+    },
+    iosPicker: {
+      height: 'auto' as any,
+    },
+  });

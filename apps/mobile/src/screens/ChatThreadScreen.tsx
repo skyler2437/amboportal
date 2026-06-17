@@ -1,0 +1,256 @@
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import { FlatList, StyleSheet, Platform, Pressable, ActivityIndicator } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '@/providers/AuthProvider';
+import { useChatMessages, ChatMessage } from '@/hooks/useChatMessages';
+import { MessageBubble, DateSeparator, TypingIndicator } from '@/components/MessageBubble';
+import { ChatInput } from '@/components/ChatInput';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { EmptyState } from '@/components/EmptyState';
+import { IconButton, Text } from 'react-native-paper';
+import { useChatThreadMeta } from '@/hooks/useChatThreadMeta';
+import { useChatReadStore } from '@/stores/chatReadStore';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { formatMessageDateLabel, getMessageDateKey } from '@/lib/format';
+import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
+import type { AppRole } from '@/lib/roles';
+
+type ListItem =
+  | { type: 'date'; date: string; key: string }
+  | { type: 'message'; message: ChatMessage; key: string };
+
+/** Message thread shared by the admin and student routes. */
+export function ChatThreadScreen({ role }: { role: AppRole }) {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { styles, tokens } = useThemedStyles(makeStyles);
+  const { session } = useAuth();
+  const userId = session?.user?.id || '';
+  const {
+    messages,
+    loading,
+    loadingOlder,
+    hasOlderMessages,
+    sendMessage,
+    retryMessage,
+    loadOlderMessages,
+    typingUsers,
+    sendTyping,
+    stopTyping,
+    toggleMessageLike,
+    refreshLikes,
+  } = useChatMessages(id || '');
+  const flatListRef = useRef<FlatList>(null);
+
+  // Reconcile like counts from the server when the screen regains focus
+  // (realtime deltas can drift if events are missed while backgrounded).
+  useFocusEffect(useCallback(() => { refreshLikes(); }, [refreshLikes]));
+  const insets = useSafeAreaInsets();
+  const { groupName, userFirstName, markRead } = useChatThreadMeta(id || '', userId);
+  const markGroupRead = useChatReadStore((s) => s.markGroupRead);
+  // Track if user is scrolled away from bottom
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const isNearBottomRef = useRef(true);
+
+  // Optimistically mark group as read so badge and chat list update instantly
+  useEffect(() => {
+    if (id) markGroupRead(id);
+  }, [id, markGroupRead]);
+
+  // Persist read state to the database (re-marks as new messages arrive).
+  useEffect(() => {
+    markRead();
+  }, [markRead, messages.length]);
+
+  // Auto-scroll to bottom when new messages arrive (only if user is near bottom)
+  useEffect(() => {
+    if (messages.length > 0 && isNearBottomRef.current) {
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    }
+  }, [messages.length]);
+
+  // Build list items with date separators
+  const listItems: ListItem[] = useMemo(() => {
+    const items: ListItem[] = [];
+    let lastDateKey = '';
+
+    for (const msg of messages) {
+      const dateKey = getMessageDateKey(msg.created_at);
+      if (dateKey !== lastDateKey) {
+        lastDateKey = dateKey;
+        items.push({
+          type: 'date',
+          date: formatMessageDateLabel(msg.created_at),
+          key: `date-${dateKey}`,
+        });
+      }
+      items.push({ type: 'message', message: msg, key: msg.id });
+    }
+    return items;
+  }, [messages]);
+
+  const handleScroll = useCallback((event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
+    const nearBottom = distanceFromBottom < 100;
+    isNearBottomRef.current = nearBottom;
+    setShowScrollToBottom(!nearBottom && contentSize.height > layoutMeasurement.height * 1.5);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, []);
+
+  const handleTyping = useCallback(() => {
+    if (userId && userFirstName) {
+      sendTyping(userId, userFirstName);
+    }
+  }, [userId, userFirstName, sendTyping]);
+
+  // Filter out own typing presence
+  const othersTyping = typingUsers.filter((t) => t.userId !== userId);
+
+  if (loading && messages.length === 0) return <LoadingScreen />;
+
+  const handleSend = async (text: string) => {
+    await sendMessage(userId, text);
+    // Immediately update last_read_at after sending.
+    markRead();
+  };
+
+  const renderItem = ({ item }: { item: ListItem }) => {
+    if (item.type === 'date') {
+      return <DateSeparator date={item.date} />;
+    }
+
+    const msg = item.message;
+    const isOwn = msg.sender_id === userId;
+    const senderName = msg.users
+      ? `${msg.users.first_name} ${msg.users.last_name}`
+      : 'Unknown';
+
+    return (
+      <MessageBubble
+        content={msg.content}
+        createdAt={msg.created_at}
+        senderName={senderName}
+        senderAvatar={msg.users?.avatar_url}
+        isOwn={isOwn}
+        status={msg.status}
+        onRetry={
+          msg.status === 'failed'
+            ? () => retryMessage(msg.id, userId)
+            : undefined
+        }
+        likeCount={msg.like_count}
+        liked={msg.liked}
+        onToggleLike={() => toggleMessageLike(msg.id)}
+      />
+    );
+  };
+
+  const keyboardOffset = Platform.OS === 'ios' ? insets.top + 44 : 0;
+
+  return (
+    <>
+      <Stack.Screen options={{
+        title: groupName,
+        // Explicit back button: the native one only appears when this screen
+        // has a prior entry in the chat stack, which it doesn't when opened
+        // cross-tab (e.g. from an event). Falls back to the chat list.
+        headerLeft: () => (
+          <IconButton
+            icon="chevron-left"
+            accessibilityLabel="Back"
+            onPress={() => (router.canGoBack() ? router.back() : router.replace(`/(${role})/chat` as Parameters<typeof router.replace>[0]))}
+          />
+        ),
+        headerRight: () => (
+          <IconButton icon="dots-vertical" accessibilityLabel="Chat settings" onPress={() => router.push({ pathname: `/(${role})/chat/edit`, params: { id } } as Parameters<typeof router.push>[0])} />
+        ),
+      }} />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior="padding"
+        keyboardVerticalOffset={keyboardOffset}
+      >
+        <FlatList
+          ref={flatListRef}
+          data={listItems}
+          keyExtractor={(item) => item.key}
+          renderItem={renderItem}
+          contentContainerStyle={messages.length === 0 ? styles.emptyContainer : styles.list}
+          ListEmptyComponent={<EmptyState icon="chat-outline" title="No messages yet" subtitle="Send the first message!" />}
+          ListHeaderComponent={
+            hasOlderMessages && messages.length > 0 ? (
+              <Pressable onPress={loadOlderMessages} style={styles.loadOlderBtn} accessibilityLabel="Load older messages" accessibilityRole="button">
+                {loadingOlder ? (
+                  <ActivityIndicator size="small" color={tokens.textMuted} />
+                ) : (
+                  <Text variant="bodySmall" style={styles.loadOlderText}>Load older messages</Text>
+                )}
+              </Pressable>
+            ) : null
+          }
+          ListFooterComponent={
+            othersTyping.length > 0 ? (
+              <TypingIndicator names={othersTyping.map((t) => t.firstName)} />
+            ) : null
+          }
+          onScroll={handleScroll}
+          scrollEventThrottle={100}
+          onContentSizeChange={() => {
+            if (isNearBottomRef.current) {
+              flatListRef.current?.scrollToEnd({ animated: false });
+            }
+          }}
+          ItemSeparatorComponent={() => null}
+        />
+
+        {/* Scroll-to-bottom FAB */}
+        {showScrollToBottom && (
+          <Pressable style={styles.scrollToBottomBtn} onPress={scrollToBottom} accessibilityLabel="Scroll to latest messages" accessibilityRole="button">
+            <MaterialCommunityIcons name="chevron-down" size={22} color={tokens.onAccent} />
+          </Pressable>
+        )}
+
+        <ChatInput onSend={handleSend} onTyping={handleTyping} />
+      </KeyboardAvoidingView>
+    </>
+  );
+}
+
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: t.surface },
+  list: { paddingVertical: space.md },
+  emptyContainer: { flex: 1 },
+  loadOlderBtn: {
+    alignItems: 'center',
+    paddingVertical: space.md,
+  },
+  loadOlderText: {
+    color: t.accent,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.sm,
+  },
+  scrollToBottomBtn: {
+    position: 'absolute',
+    right: 16,
+    bottom: 80,
+    width: 36,
+    height: 36,
+    borderRadius: radius.lg,
+    backgroundColor: t.accentSolid,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+});

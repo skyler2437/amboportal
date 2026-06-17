@@ -2,6 +2,8 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { TextInput, Text, Divider } from 'react-native-paper';
 import type { ApplicationData } from '@ambo/database/application-types';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface StepReferencesProps {
   data: ApplicationData;
@@ -9,6 +11,7 @@ interface StepReferencesProps {
 }
 
 export default function StepReferences({ data, onChange }: StepReferencesProps) {
+  const { styles } = useThemedStyles(makeStyles);
   return (
     <View style={styles.container}>
       <Text variant="titleSmall" style={styles.sectionTitle}>Academic Reference</Text>
@@ -52,9 +55,9 @@ export default function StepReferences({ data, onChange }: StepReferencesProps) 
   );
 }
 
-const styles = StyleSheet.create({
-  container: { gap: 10 },
-  sectionTitle: { fontWeight: '600', marginTop: 4 },
-  input: { backgroundColor: '#fff' },
-  divider: { marginVertical: 8 },
+const makeStyles = (t: SemanticTokens) => StyleSheet.create({
+  container: { gap: space.md },
+  sectionTitle: { fontWeight: fontWeight.semibold, marginTop: space.xs },
+  input: { backgroundColor: t.surface },
+  divider: { marginVertical: space.sm },
 });

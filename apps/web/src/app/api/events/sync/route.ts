@@ -12,7 +12,10 @@ export async function POST(req: Request) {
     const supabase = createAdminClient();
 
     // Fetch all events
-    // TODO: Pagination if many events? For now assume <1000 active events.
+    // NOTE: This fetches every event in one query (no pagination). It works
+    // because the event count is small (well under Supabase's ~1000-row
+    // default limit). If the dataset ever grows past that, pagination would
+    // need to be added here — a future consideration, not a current issue.
     const { data: events, error } = await supabase
         .from("events")
         .select("*");

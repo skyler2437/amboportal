@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Submission } from '@ambo/database';
+import { DEMO_MODE, demoSubmissions } from '@/lib/demo';
 
 const PAGE_SIZE = 20;
 
@@ -8,7 +9,7 @@ interface SubmissionWithUser extends Submission {
   users?: { first_name: string; last_name: string; email: string };
 }
 
-export function useSubmissions(userId?: string) {
+function useSubmissionsReal(userId?: string) {
   const [submissions, setSubmissions] = useState<SubmissionWithUser[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -96,3 +97,21 @@ export function useSubmissions(userId?: string) {
     fetchMore,
   };
 }
+
+function useSubmissionsDemo(userId?: string) {
+  // Mirror the real hook: a userId (student) sees only their own; admin (no
+  // userId) sees everyone.
+  const rows = userId ? demoSubmissions.filter((s) => s.user_id === userId) : demoSubmissions;
+  return {
+    submissions: rows as unknown as SubmissionWithUser[],
+    loading: false,
+    refreshing: false,
+    error: null as string | null,
+    hasMore: false,
+    refetch: async () => {},
+    silentRefresh: () => {},
+    fetchMore: async () => {},
+  };
+}
+
+export const useSubmissions = DEMO_MODE ? useSubmissionsDemo : useSubmissionsReal;

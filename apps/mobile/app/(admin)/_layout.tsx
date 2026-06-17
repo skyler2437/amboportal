@@ -2,10 +2,13 @@ import { Tabs, Redirect, Slot } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { useBadgeCounts } from '@/hooks/useBadgeCounts';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { useAppTheme } from '@/lib/ThemeProvider';
+import { fontSize } from '@/lib/theme';
 import { LayoutDashboard, Calendar, MessageSquare, MessageCircle, UserCircle } from 'lucide-react-native';
 
 export default function AdminLayout() {
   const { session, userRole } = useAuth();
+  const { tokens } = useAppTheme();
   const userId = session?.user?.id || '';
   const { unreadChats, pendingSubmissions } = useBadgeCounts(userId, 'admin');
 
@@ -31,11 +34,11 @@ export default function AdminLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: '#005EFF',
-        tabBarInactiveTintColor: '#9ca3af',
+        tabBarActiveTintColor: tokens.accent,
+        tabBarInactiveTintColor: tokens.textMuted,
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: '#e5e7eb',
+          backgroundColor: tokens.surfaceElevated,
+          borderTopColor: tokens.border,
         },
       }}
     >
@@ -48,7 +51,7 @@ export default function AdminLayout() {
             <LayoutDashboard size={size} color={color} />
           ),
           tabBarBadge: pendingSubmissions > 0 ? pendingSubmissions : undefined,
-          tabBarBadgeStyle: { backgroundColor: '#f59e0b', fontSize: 10 },
+          tabBarBadgeStyle: { backgroundColor: tokens.statusWarnFg, fontSize: fontSize.xxs },
         }}
       />
       <Tabs.Screen
@@ -80,7 +83,7 @@ export default function AdminLayout() {
             <MessageCircle size={size} color={color} />
           ),
           tabBarBadge: unreadChats > 0 ? unreadChats : undefined,
-          tabBarBadgeStyle: { backgroundColor: '#005EFF', fontSize: 10 },
+          tabBarBadgeStyle: { backgroundColor: tokens.accentSolid, fontSize: fontSize.xxs },
         }}
       />
       <Tabs.Screen
@@ -93,11 +96,6 @@ export default function AdminLayout() {
           ),
         }}
       />
-      {/* Hidden from tab bar but still accessible via navigation */}
-      <Tabs.Screen name="submissions" options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="users" options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="resources" options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="applications" options={{ href: null, headerShown: false }} />
     </Tabs>
   );
 }

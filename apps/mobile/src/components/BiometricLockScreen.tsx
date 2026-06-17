@@ -2,15 +2,19 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useThemedStyles } from '@/hooks/useThemedStyles';
+import { space, radius, fontWeight, type SemanticTokens } from '@/lib/theme';
 
 interface BiometricLockScreenProps {
   onUnlock: () => Promise<boolean>;
 }
 
 export function BiometricLockScreen({ onUnlock }: BiometricLockScreenProps) {
+  const { styles, tokens } = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.container}>
-      <MaterialCommunityIcons name="lock" size={48} color="#111827" />
+      <MaterialCommunityIcons name="lock" size={48} color={tokens.textPrimary} />
       <Text variant="headlineSmall" style={styles.title}>
         AmboPortal Locked
       </Text>
@@ -29,24 +33,25 @@ export function BiometricLockScreen({ onUnlock }: BiometricLockScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-    gap: 12,
-  },
-  title: {
-    fontWeight: '700',
-    marginTop: 8,
-  },
-  subtitle: {
-    color: '#6b7280',
-  },
-  button: {
-    marginTop: 16,
-    borderRadius: 8,
-  },
-});
+const makeStyles = (t: SemanticTokens) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: t.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: space.xl,
+      gap: space.md,
+    },
+    title: {
+      fontWeight: fontWeight.bold,
+      marginTop: space.sm,
+    },
+    subtitle: {
+      color: t.textSecondary,
+    },
+    button: {
+      marginTop: space.lg,
+      borderRadius: radius.sm,
+    },
+  });

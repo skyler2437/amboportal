@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppState } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useChatReadStore } from '@/stores/chatReadStore';
+import { DEMO_MODE } from '@/lib/demo';
 
-export function useBadgeCounts(userId: string, role: 'admin' | 'student') {
+function useBadgeCountsReal(userId: string, role: 'admin' | 'student') {
   const [pendingSubmissions, setPendingSubmissions] = useState(0);
   const [serverUnreadGroupIds, setServerUnreadGroupIds] = useState<Set<string>>(new Set());
   const readGroups = useChatReadStore((s) => s.readGroups);
@@ -153,3 +154,13 @@ export function useBadgeCounts(userId: string, role: 'admin' | 'student') {
 
   return { unreadChats, pendingSubmissions, refetch: fetchCounts };
 }
+
+function useBadgeCountsDemo(_userId: string, role: 'admin' | 'student') {
+  return {
+    unreadChats: 1,
+    pendingSubmissions: role === 'admin' ? 1 : 0,
+    refetch: async () => {},
+  };
+}
+
+export const useBadgeCounts = DEMO_MODE ? useBadgeCountsDemo : useBadgeCountsReal;
