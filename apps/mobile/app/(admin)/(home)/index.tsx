@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text, ActivityIndicator } from 'react-native-paper';
-import { Stack, useRouter, useFocusEffect } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { supabase } from '@/lib/supabase';
-import { DEMO_MODE, demoAdminCounts } from '@/lib/demo';
+import { useAdminDashboardStats } from '@/hooks/useDashboardStats';
 import { CheddarRain } from '@/components/CheddarRain';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { space, radius, fontSize, fontWeight } from '@/lib/theme';
@@ -13,50 +12,11 @@ import type { SemanticTokens } from '@/lib/theme';
 export default function AdminDashboard() {
   const router = useRouter();
   const { styles, tokens } = useThemedStyles(makeStyles);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [userCount, setUserCount] = useState(0);
-  const [applicationCount, setApplicationCount] = useState(0);
-  const [submissionCount, setSubmissionCount] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
+  const { pendingCount, userCount, applicationCount, submissionCount, loaded, refreshing, onRefresh } =
+    useAdminDashboardStats();
   const [cheddarActive, setCheddarActive] = useState(false);
-  const hasLoadedOnce = useRef(false);
 
-  const fetchStats = async () => {
-    if (DEMO_MODE) {
-      setPendingCount(demoAdminCounts.pendingCount);
-      setUserCount(demoAdminCounts.userCount);
-      setApplicationCount(demoAdminCounts.applicationCount);
-      setSubmissionCount(demoAdminCounts.submissionCount);
-      hasLoadedOnce.current = true;
-      return;
-    }
-    const [pendingRes, usersRes, applicationsRes, submissionsRes] = await Promise.all([
-      supabase.from('submissions').select('id', { count: 'exact', head: true }).eq('status', 'Pending'),
-      supabase.from('users').select('id', { count: 'exact', head: true }),
-      supabase.from('applications').select('id', { count: 'exact', head: true }).eq('status', 'submitted'),
-      supabase.from('submissions').select('id', { count: 'exact', head: true }),
-    ]);
-    setPendingCount(pendingRes.count || 0);
-    setUserCount(usersRes.count || 0);
-    setApplicationCount(applicationsRes.count || 0);
-    setSubmissionCount(submissionsRes.count || 0);
-    hasLoadedOnce.current = true;
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchStats();
-    setRefreshing(false);
-  };
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  // Refetch when screen comes back into focus
-  useFocusEffect(useCallback(() => { fetchStats(); }, []));
-
-  if (!hasLoadedOnce.current) {
+  if (!loaded) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
@@ -84,7 +44,7 @@ export default function AdminDashboard() {
       <ScrollView
       style={styles.flex}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.statsGrid}>
         <Pressable style={[styles.statCard, pendingCount > 0 && styles.pendingCard]} onPress={() => router.push('/(admin)/(home)/submissions')}>

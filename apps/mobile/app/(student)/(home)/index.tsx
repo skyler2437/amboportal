@@ -1,12 +1,11 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { View, ScrollView, StyleSheet, RefreshControl, Pressable } from 'react-native';
 import { Card, Text, Button, Divider } from 'react-native-paper';
 import { Stack, useRouter, useFocusEffect } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuth } from '@/providers/AuthProvider';
 import { useSubmissions } from '@/hooks/useSubmissions';
-import { supabase } from '@/lib/supabase';
-import { DEMO_MODE, demoUpcomingEvents, demoResources } from '@/lib/demo';
+import { useStudentDashboardStats } from '@/hooks/useDashboardStats';
 import { DashboardSkeleton } from '@/components/SkeletonLoader';
 import { hapticMedium } from '@/lib/haptics';
 import { ErrorState } from '@/components/ErrorState';
@@ -14,73 +13,35 @@ import { CheddarRain } from '@/components/CheddarRain';
 import { useThemedStyles } from '@/hooks/useThemedStyles';
 import { space, radius, fontSize, fontWeight, type SemanticTokens } from '@/lib/theme';
 
-interface UpcomingEvent {
-  id: string;
-  title: string;
-  start_time: string;
-}
-
 export default function StudentDashboard() {
   const { styles, tokens } = useThemedStyles(makeStyles);
   const { session } = useAuth();
   const userId = session?.user?.id || '';
   const { submissions, loading, error, refetch } = useSubmissions(userId);
-  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
-  const [resourceCount, setResourceCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [cheddarActive, setCheddarActive] = useState(false);
   const initialLoadDone = useRef(false);
   const router = useRouter();
+  const { upcomingEvents, resourceCount, refresh: refreshDash } = useStudentDashboardStats();
 
   if (!loading && !initialLoadDone.current) {
     initialLoadDone.current = true;
   }
 
-  const fetchUpcoming = useCallback(async () => {
-    if (DEMO_MODE) {
-      setUpcomingEvents(demoUpcomingEvents);
-      return;
-    }
-    const { data } = await supabase
-      .from('events')
-      .select('id, title, start_time')
-      .gte('start_time', new Date().toISOString())
-      .order('start_time', { ascending: true })
-      .limit(3);
-    setUpcomingEvents((data as UpcomingEvent[]) || []);
-  }, []);
-
-  const fetchResourceCount = useCallback(async () => {
-    if (DEMO_MODE) {
-      setResourceCount(demoResources.length);
-      return;
-    }
-    const { count } = await supabase
-      .from('resources')
-      .select('id', { count: 'exact', head: true });
-    setResourceCount(count || 0);
-  }, []);
-
-  useEffect(() => {
-    fetchUpcoming();
-    fetchResourceCount();
-  }, [fetchUpcoming, fetchResourceCount]);
-
   // Silent refetch when screen regains focus (e.g. after submitting activity)
   useFocusEffect(useCallback(() => {
     if (initialLoadDone.current) {
       refetch();
-      fetchUpcoming();
-      fetchResourceCount();
+      refreshDash();
     }
-  }, [refetch, fetchUpcoming, fetchResourceCount]));
+  }, [refetch, refreshDash]));
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), fetchUpcoming(), fetchResourceCount()]);
+    await Promise.all([refetch(), refreshDash()]);
     hapticMedium();
     setRefreshing(false);
-  }, [refetch, fetchUpcoming, fetchResourceCount]);
+  }, [refetch, refreshDash]);
 
   const stats = useMemo(() => {
     const approved = submissions.filter((s) => s.status === 'Approved');
