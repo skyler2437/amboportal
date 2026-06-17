@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { fetchAllPages } from "@/lib/fetch-all-pages";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,7 +19,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -30,7 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserPlus, Check, AlertCircle, MoreHorizontal, ChevronRight, Search, Users } from "lucide-react";
+import { UserPlus, Check, AlertCircle, MoreHorizontal, ChevronRight, Search, Upload, Users } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -170,19 +168,15 @@ export function UserControl() {
     setDeletingUser(false);
   };
 
-  const onCsvSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const csvInputRef = useRef<HTMLInputElement>(null);
+
+  const onCsvFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     setCsvError("");
     setCsvSuccess("");
     setUploading(true);
 
-    const input = (e.target as HTMLFormElement).querySelector('input[type="file"]') as HTMLInputElement;
-    const file = input?.files?.[0];
-    if (!file) {
-      setCsvError("Choose a file.");
-      setUploading(false);
-      return;
-    }
     const formData = new FormData();
     formData.set("file", file);
     const res = await fetch("/api/admin/users/csv", {
@@ -193,10 +187,10 @@ export function UserControl() {
     if (res.ok) {
       setCsvSuccess(`Uploaded ${data.count ?? 0} row(s).`);
       fetchUsers();
-      input.value = "";
     } else {
       setCsvError(data.error || "Upload failed.");
     }
+    if (csvInputRef.current) csvInputRef.current.value = "";
     setUploading(false);
   };
 
@@ -274,126 +268,130 @@ export function UserControl() {
 
   return (
     <div className="space-y-4">
-      {/* Actions Bar */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          {/* Row 1: Add User + CSV */}
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2 w-full sm:w-auto">
-                  <UserPlus className="h-4 w-4" />
-                  Add User
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New User</DialogTitle>
-                  <DialogDescription>Create a new student or admin manually.</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={onAddSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>First Name</Label>
-                      <Input
-                        value={addForm.first_name}
-                        onChange={(e) => setAddForm((f) => ({ ...f, first_name: e.target.value }))}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Last Name</Label>
-                      <Input
-                        value={addForm.last_name}
-                        onChange={(e) => setAddForm((f) => ({ ...f, last_name: e.target.value }))}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Phone</Label>
-                    <Input
-                      type="tel"
-                      placeholder="10-digit Phone"
-                      value={addForm.phone}
-                      onChange={(e) => setAddForm((f) => ({ ...f, phone: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input
-                      type="email"
-                      placeholder="Email"
-                      value={addForm.email}
-                      onChange={(e) => setAddForm((f) => ({ ...f, email: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Role</Label>
-                    <Select
-                      value={addForm.role}
-                      onValueChange={(val) => setAddForm((f) => ({ ...f, role: val }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="student">Student</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+      {/* Add User dialog (trigger rendered in the actions row below) */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>Create a new student or admin manually.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={onAddSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>First Name</Label>
+                <Input
+                  value={addForm.first_name}
+                  onChange={(e) => setAddForm((f) => ({ ...f, first_name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Last Name</Label>
+                <Input
+                  value={addForm.last_name}
+                  onChange={(e) => setAddForm((f) => ({ ...f, last_name: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input
+                type="tel"
+                placeholder="10-digit Phone"
+                value={addForm.phone}
+                onChange={(e) => setAddForm((f) => ({ ...f, phone: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                placeholder="Email"
+                value={addForm.email}
+                onChange={(e) => setAddForm((f) => ({ ...f, email: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <Select
+                value={addForm.role}
+                onValueChange={(val) => setAddForm((f) => ({ ...f, role: val }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                  {addError && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{addError}</AlertDescription>
-                    </Alert>
-                  )}
-                  <DialogFooter>
-                    <Button type="submit">Create User</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-
-            <form onSubmit={onCsvSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-1">
-              <Input type="file" accept=".csv,.txt" className="flex-1" disabled={uploading} />
-              <Button type="submit" variant="secondary" disabled={uploading} className="shrink-0">
-                {uploading ? "Uploading..." : "CSV Upload"}
-              </Button>
-            </form>
-          </div>
-        </CardContent>
-        {(csvError || csvSuccess) && (
-          <CardFooter className="pt-0 pb-4 block">
-            {csvError && (
+            {addError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{csvError}</AlertDescription>
+                <AlertDescription>{addError}</AlertDescription>
               </Alert>
             )}
-            {csvSuccess && (
-              <Alert className="bg-green-50 text-green-800 border-green-200">
-                <Check className="h-4 w-4 text-green-600" />
-                <AlertDescription>{csvSuccess}</AlertDescription>
-              </Alert>
-            )}
-          </CardFooter>
-        )}
-      </Card>
+            <DialogFooter>
+              <Button type="submit">Create User</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-      {/* Search */}
-      <div className="relative sm:w-64">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by name, email, or role..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 h-9"
-        />
+      <input
+        ref={csvInputRef}
+        type="file"
+        accept=".csv,.txt"
+        className="hidden"
+        onChange={onCsvFileSelected}
+      />
+
+      {/* Actions: Add User, CSV Upload & Search */}
+      <div className="space-y-2">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button onClick={() => setAddDialogOpen(true)} className="gap-2 w-full sm:w-auto">
+            <UserPlus className="h-4 w-4" />
+            Add User
+          </Button>
+          <div className="flex items-center gap-2 sm:ml-auto">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={uploading}
+              onClick={() => csvInputRef.current?.click()}
+              className="gap-2 shrink-0"
+            >
+              <Upload className="h-4 w-4" />
+              {uploading ? "Uploading..." : "CSV Upload"}
+            </Button>
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, or role..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+          </div>
+        </div>
+        {csvError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{csvError}</AlertDescription>
+          </Alert>
+        )}
+        {csvSuccess && (
+          <Alert className="bg-green-50 text-green-800 border-green-200">
+            <Check className="h-4 w-4 text-green-600" />
+            <AlertDescription>{csvSuccess}</AlertDescription>
+          </Alert>
+        )}
       </div>
 
       {/* Mobile Card List */}
@@ -443,7 +441,7 @@ export function UserControl() {
             </p>
           </div>
         ) : (
-          <DataTable columns={columns} data={filteredRows} />
+          <DataTable columns={columns} data={filteredRows} initialPageSize={50} />
         )}
       </div>
 
