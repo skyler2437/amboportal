@@ -4,6 +4,7 @@
 
 - **Single branch:** `main` is the only branch, locally and on GitHub. There is no `develop` branch.
 - Work directly on `main` and push to `main`. Do NOT create feature branches unless explicitly asked.
+- **Branch naming:** When you DO create a new local branch, name it after a Greek or Roman god followed by the creation date as `MM-DD-YYYY` (zero-padded) — e.g. `mars-06-20-2026`, `zeus-06-17-2026`, `kronos-06-17-2026`. Format: `<god-name>-<month>-<day>-<year>`, all lowercase.
 - (Claude Code web/cloud sessions run on an isolated `claude/*` branch; their PRs target `main` and the branch is deleted after merge.)
 
 ## Scope of Changes
