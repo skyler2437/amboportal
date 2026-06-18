@@ -469,13 +469,13 @@ export function SpaceInvaders({
             <Link
                 href={homeHref}
                 aria-label="Exit game"
-                className="absolute right-3 top-3 z-10 rounded border border-[#39FF14]/40 px-2 py-0.5 text-xs text-[#39FF14]/70 transition-colors hover:bg-[#39FF14]/10 hover:text-[#39FF14]"
+                className="absolute left-3 top-3 z-10 rounded border border-[#39FF14]/40 px-2 py-0.5 text-xs text-[#39FF14]/70 transition-colors hover:bg-[#39FF14]/10 hover:text-[#39FF14]"
             >
                 ✕ EXIT
             </Link>
 
             {/* Game area. */}
-            <div className="relative flex flex-1 flex-col items-center justify-center p-3">
+            <div className="relative flex flex-1 flex-col items-center justify-center p-3 pt-12 sm:pt-3">
                 <div className="mb-2 flex w-full max-w-[640px] items-center justify-between text-xs tracking-widest sm:text-sm">
                     <span>SCORE {String(score).padStart(5, "0")}</span>
                     <span>WAVE {wave}</span>
