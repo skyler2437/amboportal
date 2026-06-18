@@ -20,9 +20,9 @@ End-to-end process for shipping a change. Follow in order. **Mobile steps (2, 5,
   - One-time setup: the device must be registered in the Apple provisioning profile, and the Expo APNs key (`.p8`) must be configured in EAS credentials. Mobile uses Expo push (`ExponentPushToken` via `exp.host`). The committed `aps-environment=development` entitlement is Expo's **standard** value and is correct for **both** local testing and App Store builds — it only needs to be *present* (missing it → ITMS-90078 + no push); Expo routes production delivery via the APNs key, and EAS does not rewrite the value.
 - Do NOT push until Skyler confirms the build is good.
 
-**3. Push the feature branch to GitHub.** This triggers (a) a Vercel **preview deployment** (per-branch URL) and (b) CI (lint, typecheck, tests, build — both apps). Confirm web works on the preview URL and that CI is green.
+**3. Push the feature branch to GitHub.** This triggers a Vercel **preview deployment** (per-branch URL) via Vercel's GitHub integration. Confirm web works on the preview URL. Note: GitHub Actions CI does **not** run on a feature-branch push — `ci.yml` triggers only on `pull_request` → `main` and `push` → `main` — so CI starts when the PR is opened (next step).
 
-**4. Open a PR (base `main`, compare = feature branch).** After Skyler confirms the preview + CI, open the PR. Skyler reviews/merges on GitHub (or tells Claude to merge).
+**4. Open a PR (base `main`, compare = feature branch).** Opening the PR triggers **CI** (lint, typecheck, tests, build — both apps); subsequent pushes to the branch re-run it. Confirm CI is green, then Skyler reviews/merges on GitHub (or tells Claude to merge).
 
 **After every merge (both paths):** `git checkout main && git pull`, then delete the merged feature branch **locally and on remote** — restoring the single-feature-branch invariant. Web-only changes are now done (production deploys automatically). Mobile changes continue to step 5.
 
