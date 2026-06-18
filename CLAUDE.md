@@ -2,10 +2,37 @@
 
 ## Git Workflow
 
-- **Single branch:** `main` is the only branch, locally and on GitHub. There is no `develop` branch.
-- Work directly on `main` and push to `main`. Do NOT create feature branches unless explicitly asked.
-- **Branch naming:** When you DO create a new local branch, name it after a Greek or Roman god followed by the creation date as `MM-DD-YYYY` (zero-padded) — e.g. `mars-06-20-2026`, `zeus-06-17-2026`, `kronos-06-17-2026`. Format: `<god-name>-<month>-<day>-<year>`, all lowercase.
+- **Branch model:** `main` is the only long-lived branch (no `develop`). When Skyler starts coding (web or mobile), create a feature branch off `main`; `main` is updated **only via merged PRs**, never direct pushes.
+- **One feature branch at a time:** locally there is always `main` plus **at most one** feature branch. If a feature branch already exists when new work starts, STOP and confirm with Skyler before creating another.
+- **Branch naming:** name a new local branch after a Greek or Roman god followed by the creation date as `MM-DD-YYYY` (zero-padded) — e.g. `mars-06-20-2026`, `zeus-06-17-2026`, `kronos-06-17-2026`. Format: `<god-name>-<month>-<day>-<year>`, all lowercase.
 - (Claude Code web/cloud sessions run on an isolated `claude/*` branch; their PRs target `main` and the branch is deleted after merge.)
+- See **Feature Development & Release Workflow** below for the full start → test → push → CI → PR → merge → EAS → submit process.
+
+## Feature Development & Release Workflow
+
+End-to-end process for shipping a change. Follow in order. **Mobile steps (2, 5, 6) are skipped for web-only changes** — anything that does NOT touch `apps/mobile/` or shared code goes straight from push → preview/CI → PR → merge, then deploys to production automatically.
+
+**1. Start work → new feature branch.** Branch off `main` using the naming convention above. Respect the one-feature-branch-at-a-time invariant.
+
+**2. Test mobile changes with a RELEASE build (mobile changes only).** All mobile testing uses a **Release build via Xcode — never Metro/dev client.** A Release build embeds the JS bundle, so no Metro server is needed; the accepted tradeoff is a full native rebuild (no hot reload) on every change.
+- **Simulator** (general UI/logic): `cd apps/mobile && npx expo run:ios --configuration Release`
+- **Physical device** (required for notifications — push does NOT work on the simulator): `cd apps/mobile && npx expo run:ios --device --configuration Release`
+  - One-time setup: the device must be registered in the Apple provisioning profile, and the Expo APNs key (`.p8`) must be configured in EAS credentials. Mobile uses Expo push (`ExponentPushToken` via `exp.host`). The committed `aps-environment=development` entitlement is Expo's **standard** value and is correct for **both** local testing and App Store builds — it only needs to be *present* (missing it → ITMS-90078 + no push); Expo routes production delivery via the APNs key, and EAS does not rewrite the value.
+- Do NOT push until Skyler confirms the build is good.
+
+**3. Push the feature branch to GitHub.** This triggers a Vercel **preview deployment** (per-branch URL) via Vercel's GitHub integration. Confirm web works on the preview URL. Note: GitHub Actions CI does **not** run on a feature-branch push — `ci.yml` triggers only on `pull_request` → `main` and `push` → `main` — so CI starts when the PR is opened (next step).
+
+**4. Open a PR (base `main`, compare = feature branch).** Opening the PR triggers **CI** (lint, typecheck, tests, build — both apps); subsequent pushes to the branch re-run it. Confirm CI is green, then Skyler reviews/merges on GitHub (or tells Claude to merge).
+
+**After every merge (both paths):** `git checkout main && git pull`, then delete the merged feature branch **locally and on remote** — restoring the single-feature-branch invariant. Web-only changes are now done (production deploys automatically). Mobile changes continue to step 5.
+
+**5. After merge + Skyler's go-ahead → EAS production build (mobile).** Only on explicit go:
+- Confirm you are on clean, freshly pulled `main` (`git status` must be clean — EAS uploads the whole monorepo **including untracked files**; stray files break the remote `npm ci`).
+- **Bump the iOS build number** in the native files (Info.plist `CFBundleVersion` + pbxproj `CURRENT_PROJECT_VERSION`) — App Store Connect rejects duplicate build numbers. (Versioning is `appVersionSource: local`.)
+- **Always suggest a marketing version** (e.g. `1.2.0`) based on the previous submitted version plus the scope of changes since it; Skyler confirms or overrides.
+- Build from `apps/mobile/`: `npm run build:prod:ios`.
+
+**6. After the build is good + at Skyler's command → submit to the App Store.** `cd apps/mobile && npm run submit:ios`.
 
 ## Scope of Changes
 
