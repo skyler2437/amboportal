@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
 interface CheddarRainProps {
@@ -57,7 +58,10 @@ export function CheddarRain({ isActive, onComplete }: CheddarRainProps) {
 
     if (!isActive || pieces.length === 0) return null;
 
-    return (
+    // Portal to <body> so the fixed overlay covers the whole viewport. Rendered
+    // inline, an ancestor with backdrop-filter/transform (e.g. the sticky
+    // TopNav) becomes the containing block and the rain only falls in that box.
+    return createPortal(
         <div
             className={cn(
                 "fixed inset-0 pointer-events-none z-50 overflow-hidden transition-opacity duration-[4000ms] ease-in-out",
@@ -77,6 +81,7 @@ export function CheddarRain({ isActive, onComplete }: CheddarRainProps) {
                     🧀
                 </span>
             ))}
-        </div>
+        </div>,
+        document.body
     );
 }

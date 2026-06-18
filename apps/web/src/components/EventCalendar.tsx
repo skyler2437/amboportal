@@ -56,8 +56,10 @@ export function EventCalendar({
     const [error, setError] = useState(false);
     const upcomingRef = useRef<HTMLDivElement>(null);
 
-    // View preference: month calendar is desktop-only; mobile always gets cards.
-    const [view, setView] = useState<EventsView>("card");
+    // View preference: defaults to the month calendar on desktop. The calendar
+    // is desktop-only; mobile always gets cards (see effectiveView below). A
+    // stored user preference still wins over this default.
+    const [view, setView] = useState<EventsView>("calendar");
     const isDesktop = useMediaQuery("(min-width: 768px)");
     const effectiveView = isDesktop ? view : "card";
 

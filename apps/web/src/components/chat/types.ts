@@ -4,6 +4,7 @@ export type User = {
     last_name: string;
     role: string;
     email: string;
+    avatar_url?: string;
 };
 
 export type Message = {
@@ -25,4 +26,5 @@ export type Group = {
     updated_at?: string;
     participants?: { user: User }[];
     last_message?: Message;
+    starred?: boolean;
 };

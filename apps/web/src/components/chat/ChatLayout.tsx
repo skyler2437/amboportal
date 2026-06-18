@@ -2,12 +2,24 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { MessageSquare, Loader2, Plus, ChevronLeft, Settings } from "lucide-react";
+import { Loader2, Plus, ChevronLeft, Settings, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { MessageList } from "./MessageList";
 import { Group } from "./types";
+
+// Sort starred chats to the top, then by most-recent activity. Mirrors the
+// server ordering so optimistic star toggles re-sort consistently.
+function sortGroups(list: Group[]): Group[] {
+    return [...list].sort((a, b) => {
+        if (!!a.starred !== !!b.starred) return a.starred ? -1 : 1;
+        const aTime = a.last_message?.created_at || a.updated_at || a.created_at;
+        const bTime = b.last_message?.created_at || b.updated_at || b.created_at;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+    });
+}
 import { useSearchParams, usePathname } from "next/navigation";
 import { toast } from "sonner";
 
@@ -140,6 +152,21 @@ export function ChatLayout({ currentUserId, currentUserFirstName = "", currentUs
         setLoading(false);
     };
 
+    const toggleStar = async (groupId: string, starred: boolean) => {
+        // Optimistically update + re-sort, then reconcile with the server.
+        setGroups(prev => sortGroups(prev.map(g => (g.id === groupId ? { ...g, starred } : g))));
+        try {
+            const res = await fetch(`/api/chat/groups/${groupId}/star`, {
+                method: starred ? "POST" : "DELETE",
+            });
+            if (!res.ok) throw new Error("Failed to update star");
+        } catch {
+            // Revert on failure.
+            setGroups(prev => sortGroups(prev.map(g => (g.id === groupId ? { ...g, starred: !starred } : g))));
+            toast.error("Couldn't update star");
+        }
+    };
+
     useEffect(() => {
         fetchGroups();
     }, [currentUserId]);
@@ -183,32 +210,51 @@ export function ChatLayout({ currentUserId, currentUserFirstName = "", currentUs
                         ) : (
                             <div className="flex flex-col gap-1 p-2">
                                 {groups.map((group) => {
+                                    const others = (group.participants || []).filter(
+                                        p => p.user && p.user.id !== currentUserId
+                                    );
+
                                     let displayName = group.name;
-                                    if (!displayName && group.participants) {
-                                        const others = group.participants
-                                            .filter(p => p.user && p.user.id !== currentUserId)
-                                            .map(p => p.user.first_name);
-                                        displayName = others.length > 0 ? others.slice(0, 2).join(", ") + (others.length > 2 ? ` +${others.length - 2}` : "") : "Empty Group";
+                                    if (!displayName) {
+                                        const names = others.map(p => p.user.first_name);
+                                        displayName = names.length > 0
+                                            ? names.slice(0, 2).join(", ") + (names.length > 2 ? ` +${names.length - 2}` : "")
+                                            : "Empty Group";
                                     }
 
+                                    // Like mobile: use the first other participant's avatar/initials.
+                                    const primary = others[0]?.user;
+                                    const avatarUrl = primary?.avatar_url;
+                                    const initials = `${(primary?.first_name || displayName || "?")[0] || "?"}${(primary?.last_name || "")[0] || ""}`.toUpperCase();
+
                                     const isUnread = unreadGroups.has(group.id);
+                                    const isSelected = selectedGroupId === group.id;
 
                                     return (
-                                        <Button
+                                        <div
                                             key={group.id}
-                                            variant={selectedGroupId === group.id ? "secondary" : "ghost"}
-                                            className={cn(
-                                                "justify-start h-auto py-3 px-4 w-full",
-                                                selectedGroupId === group.id && "bg-muted"
-                                            )}
+                                            role="button"
+                                            tabIndex={0}
                                             onClick={() => selectGroup(group.id)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" || e.key === " ") {
+                                                    e.preventDefault();
+                                                    selectGroup(group.id);
+                                                }
+                                            }}
+                                            className={cn(
+                                                "group flex items-center gap-2 rounded-md py-2.5 px-3 w-full cursor-pointer text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                                isSelected ? "bg-muted" : "hover:bg-muted/60"
+                                            )}
                                         >
-                                            <MessageSquare className="mr-2 h-4 w-4 shrink-0" />
-                                            <div className="overflow-hidden text-left w-full">
-                                                <div className={cn(
-                                                    "truncate",
-                                                    isUnread ? "font-bold" : "font-medium"
-                                                )}>
+                                            <Avatar className="h-9 w-9 shrink-0">
+                                                {avatarUrl && <AvatarImage src={avatarUrl} alt="" className="object-cover" />}
+                                                <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
+                                                    {initials}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0 flex-1">
+                                                <div className={cn("truncate", isUnread ? "font-bold" : "font-medium")}>
                                                     {displayName}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground truncate">
@@ -216,9 +262,26 @@ export function ChatLayout({ currentUserId, currentUserFirstName = "", currentUs
                                                 </div>
                                             </div>
                                             {isUnread && (
-                                                <span className="ml-auto h-2.5 w-2.5 rounded-full bg-foreground shrink-0" />
+                                                <span className="h-2.5 w-2.5 rounded-full bg-primary shrink-0" />
                                             )}
-                                        </Button>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleStar(group.id, !group.starred);
+                                                }}
+                                                aria-label={group.starred ? "Unstar chat" : "Star chat"}
+                                                aria-pressed={!!group.starred}
+                                                className={cn(
+                                                    "shrink-0 rounded-md p-1 transition-opacity",
+                                                    group.starred
+                                                        ? "text-amber-500 opacity-100"
+                                                        : "text-muted-foreground opacity-0 hover:text-amber-500 group-hover:opacity-100 focus-visible:opacity-100"
+                                                )}
+                                            >
+                                                <Star className={cn("h-4 w-4", group.starred && "fill-current")} />
+                                            </button>
+                                        </div>
                                     );
                                 })}
                             </div>
