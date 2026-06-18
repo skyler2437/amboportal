@@ -24,7 +24,7 @@ export default async function AdminProfilePage() {
 
     return (
         <div className="space-y-6 pb-20">
-            <div className="max-w-xl space-y-6">
+            <div className="mx-auto max-w-xl space-y-6">
                 <AvatarUpload
                     currentAvatarUrl={user?.avatar_url || null}
                     firstName={user?.first_name || ""}

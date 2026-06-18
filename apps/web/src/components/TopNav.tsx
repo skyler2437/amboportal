@@ -31,14 +31,23 @@ export function TopNav({ items }: { items: TopNavItem[] }) {
         // calc(100dvh - 4rem - safe-area), which assumes this exact nav height.
         <header className="sticky top-0 z-40 hidden h-16 md:flex items-center border-b border-border/40 bg-background/95 backdrop-blur px-4 lg:px-6">
             <CheddarRain isActive={rainActive} onComplete={() => setRainActive(false)} />
-            <button
-                type="button"
-                onClick={() => setRainActive(true)}
-                aria-label="Trigger cheddar rain"
-                className="text-2xl leading-none transition-transform hover:scale-110 active:scale-95"
-            >
-                <span role="img" aria-hidden>🧀</span>
-            </button>
+            {/* Hover the cheddar to reveal a secret "Play?" link → /play easter egg. */}
+            <div className="group relative flex items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => setRainActive(true)}
+                    aria-label="Trigger cheddar rain"
+                    className="text-2xl leading-none transition-transform hover:scale-110 active:scale-95"
+                >
+                    <span role="img" aria-hidden>🧀</span>
+                </button>
+                <Link
+                    href="/play"
+                    className="select-none text-sm font-medium text-muted-foreground opacity-0 transition-opacity duration-200 hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+                >
+                    Play?
+                </Link>
+            </div>
             <nav className="mx-4 flex flex-1 items-center justify-center gap-2 lg:gap-6">
                 {items.map((item) => {
                     const isActive = item.href === activeHref;
