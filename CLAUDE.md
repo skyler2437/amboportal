@@ -2,7 +2,7 @@
 
 ## Git Workflow
 
-- **Branch model:** `main` is the only long-lived branch (no `develop`). When Skyler starts coding (web or mobile), create a feature branch off `main`; `main` is updated **only via merged PRs**, never direct pushes.
+- **Branch model:** `main` is the only long-lived branch (no `develop`). Create a feature branch off `main` **only when Skyler explicitly asks for one** — do NOT auto-create a branch just because coding has started (when in doubt, ask). New branches still follow the naming convention below. `main` is updated **only via merged PRs**, never direct pushes.
 - **One feature branch at a time:** locally there is always `main` plus **at most one** feature branch. If a feature branch already exists when new work starts, STOP and confirm with Skyler before creating another.
 - **Branch naming:** name a new local branch after a Greek or Roman god followed by the creation date as `MM-DD-YYYY` (zero-padded) — e.g. `mars-06-20-2026`, `zeus-06-17-2026`, `kronos-06-17-2026`. Format: `<god-name>-<month>-<day>-<year>`, all lowercase.
 - (Claude Code web/cloud sessions run on an isolated `claude/*` branch; their PRs target `main` and the branch is deleted after merge.)
@@ -12,7 +12,7 @@
 
 End-to-end process for shipping a change. Follow in order. **Mobile steps (2, 5, 6) are skipped for web-only changes** — anything that does NOT touch `apps/mobile/` or shared code goes straight from push → preview/CI → PR → merge, then deploys to production automatically.
 
-**1. Start work → new feature branch.** Branch off `main` using the naming convention above. Respect the one-feature-branch-at-a-time invariant.
+**1. Skyler explicitly asks for a branch → new feature branch.** Only create the branch when Skyler explicitly requests it (not automatically at the start of work). Branch off `main` using the naming convention above. Respect the one-feature-branch-at-a-time invariant.
 
 **2. Test mobile changes with a RELEASE build (mobile changes only).** All mobile testing uses a **Release build via Xcode — never Metro/dev client.** A Release build embeds the JS bundle, so no Metro server is needed; the accepted tradeoff is a full native rebuild (no hot reload) on every change.
 - **Simulator** (general UI/logic): `cd apps/mobile && npx expo run:ios --configuration Release`
