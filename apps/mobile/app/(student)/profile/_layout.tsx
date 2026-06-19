@@ -1,9 +1,9 @@
 import { Stack } from 'expo-router';
-import { stackScreenOptions } from '@/lib/navigation';
+import { useStackScreenOptions } from '@/lib/navigation';
 
 export default function ProfileLayout() {
   return (
-    <Stack screenOptions={stackScreenOptions}>
+    <Stack screenOptions={useStackScreenOptions()}>
       <Stack.Screen name="index" options={{ title: 'Profile' }} />
     </Stack>
   );

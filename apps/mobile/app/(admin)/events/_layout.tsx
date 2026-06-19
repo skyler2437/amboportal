@@ -1,9 +1,9 @@
 import { Stack } from 'expo-router';
-import { stackScreenOptions } from '@/lib/navigation';
+import { useStackScreenOptions } from '@/lib/navigation';
 
 export default function AdminEventsLayout() {
   return (
-    <Stack screenOptions={stackScreenOptions}>
+    <Stack screenOptions={useStackScreenOptions()}>
       <Stack.Screen name="index" options={{ title: 'Events' }} />
       <Stack.Screen name="new" options={{ title: 'Create Event' }} />
       <Stack.Screen name="[id]" options={{ title: 'Event Details' }} />
