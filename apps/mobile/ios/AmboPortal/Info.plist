@@ -90,6 +90,14 @@
 	</array>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<!-- Opt out of the iOS 26 "Liquid Glass" redesign and keep the flat legacy
+	     appearance app-wide. Building against the iOS 26 SDK (Xcode 26) otherwise
+	     makes navigation bars and scroll views render frosted "glass" scroll-edge
+	     effects that fight this app's flat design. NOTE: this is an Apple
+	     transitional flag and is expected to stop being honored once the app is
+	     built against the iOS 27 SDK — revisit Liquid Glass adoption then. -->
+	<key>UIDesignRequiresCompatibility</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>SplashScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

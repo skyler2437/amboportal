@@ -20,7 +20,8 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Take a photo for your profile picture.",
-        "NSPhotoLibraryUsageDescription": "Choose a photo from your library for your profile picture."
+        "NSPhotoLibraryUsageDescription": "Choose a photo from your library for your profile picture.",
+        "UIDesignRequiresCompatibility": true
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
